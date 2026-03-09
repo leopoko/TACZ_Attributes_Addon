@@ -1,0 +1,152 @@
+package com.github.leopoko.tacz_attributes_addon.data;
+
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Rarity;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Static helper for reading/writing addon attribute data from/to gun ItemStack NBT.
+ *
+ * NBT structure:
+ * TaczAddon: {
+ *   Modifiers: [{Attr:"...", Val:0.15, Op:1}, ...],
+ *   FixedModifiers: [{Attr:"...", Val:0.1, Op:1}, ...],
+ *   Score: 42,
+ *   Rarity: 0,
+ *   Sealed: 1
+ * }
+ */
+public class GunAttributeData {
+    public static final String ROOT_TAG = "TaczAddon";
+    public static final String MODIFIERS_TAG = "Modifiers";
+    public static final String FIXED_MODIFIERS_TAG = "FixedModifiers";
+    public static final String SCORE_TAG = "Score";
+    public static final String RARITY_TAG = "Rarity";
+    public static final String SEALED_TAG = "Sealed";
+    public static final String REROLL_COUNT_TAG = "RerollCount";
+
+    public static boolean hasAddonData(ItemStack stack) {
+        CompoundTag tag = stack.getTag();
+        if (tag == null) return false;
+        return tag.contains(ROOT_TAG, Tag.TAG_COMPOUND);
+    }
+
+    public static boolean isSealed(ItemStack stack) {
+        CompoundTag root = getOrCreateRoot(stack);
+        return root.getBoolean(SEALED_TAG);
+    }
+
+    public static void setSealed(ItemStack stack, boolean sealed) {
+        getOrCreateRoot(stack).putBoolean(SEALED_TAG, sealed);
+    }
+
+    public static List<GunModifier> getModifiers(ItemStack stack) {
+        return readModifierList(stack, MODIFIERS_TAG);
+    }
+
+    public static void setModifiers(ItemStack stack, List<GunModifier> modifiers) {
+        writeModifierList(stack, MODIFIERS_TAG, modifiers);
+    }
+
+    public static List<GunModifier> getFixedModifiers(ItemStack stack) {
+        return readModifierList(stack, FIXED_MODIFIERS_TAG);
+    }
+
+    public static void setFixedModifiers(ItemStack stack, List<GunModifier> modifiers) {
+        writeModifierList(stack, FIXED_MODIFIERS_TAG, modifiers);
+    }
+
+    public static List<GunModifier> getAllModifiers(ItemStack stack) {
+        List<GunModifier> all = new ArrayList<>();
+        all.addAll(getModifiers(stack));
+        all.addAll(getFixedModifiers(stack));
+        return all;
+    }
+
+    public static int getScore(ItemStack stack) {
+        return getOrCreateRoot(stack).getInt(SCORE_TAG);
+    }
+
+    public static void setScore(ItemStack stack, int score) {
+        getOrCreateRoot(stack).putInt(SCORE_TAG, score);
+    }
+
+    public static int getRarityOrdinal(ItemStack stack) {
+        return getOrCreateRoot(stack).getInt(RARITY_TAG);
+    }
+
+    public static void setRarityOrdinal(ItemStack stack, int rarityOrdinal) {
+        getOrCreateRoot(stack).putInt(RARITY_TAG, rarityOrdinal);
+    }
+
+    // ========== Reroll Count ==========
+
+    public static int getRerollCount(ItemStack stack) {
+        return getOrCreateRoot(stack).getInt(REROLL_COUNT_TAG);
+    }
+
+    public static void setRerollCount(ItemStack stack, int count) {
+        getOrCreateRoot(stack).putInt(REROLL_COUNT_TAG, count);
+    }
+
+    public static void incrementRerollCount(ItemStack stack) {
+        setRerollCount(stack, getRerollCount(stack) + 1);
+    }
+
+    // ========== Remove all addon data ==========
+
+    /**
+     * Remove the entire TaczAddon NBT compound from the item, fully resetting it.
+     */
+    public static void removeAllAddonData(ItemStack stack) {
+        CompoundTag tag = stack.getTag();
+        if (tag != null && tag.contains(ROOT_TAG)) {
+            tag.remove(ROOT_TAG);
+        }
+    }
+
+    // ========== Rarity ==========
+
+    public static Rarity getRarity(ItemStack stack) {
+        if (!hasAddonData(stack)) return Rarity.COMMON;
+        int ordinal = getRarityOrdinal(stack);
+        Rarity[] values = Rarity.values();
+        if (ordinal >= 0 && ordinal < values.length) {
+            return values[ordinal];
+        }
+        return Rarity.COMMON;
+    }
+
+    private static CompoundTag getOrCreateRoot(ItemStack stack) {
+        CompoundTag tag = stack.getOrCreateTag();
+        if (!tag.contains(ROOT_TAG, Tag.TAG_COMPOUND)) {
+            tag.put(ROOT_TAG, new CompoundTag());
+        }
+        return tag.getCompound(ROOT_TAG);
+    }
+
+    private static List<GunModifier> readModifierList(ItemStack stack, String key) {
+        List<GunModifier> result = new ArrayList<>();
+        CompoundTag root = getOrCreateRoot(stack);
+        if (!root.contains(key, Tag.TAG_LIST)) return result;
+        ListTag list = root.getList(key, Tag.TAG_COMPOUND);
+        for (int i = 0; i < list.size(); i++) {
+            result.add(GunModifier.fromNbt(list.getCompound(i)));
+        }
+        return result;
+    }
+
+    private static void writeModifierList(ItemStack stack, String key, List<GunModifier> modifiers) {
+        CompoundTag root = getOrCreateRoot(stack);
+        ListTag list = new ListTag();
+        for (GunModifier mod : modifiers) {
+            list.add(mod.toNbt());
+        }
+        root.put(key, list);
+    }
+}

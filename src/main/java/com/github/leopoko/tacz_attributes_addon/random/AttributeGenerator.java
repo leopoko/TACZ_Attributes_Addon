@@ -1,0 +1,180 @@
+package com.github.leopoko.tacz_attributes_addon.random;
+
+import com.github.leopoko.tacz_attributes_addon.config.CommonConfig;
+import com.github.leopoko.tacz_attributes_addon.data.AttributeEntry;
+import com.github.leopoko.tacz_attributes_addon.data.AttributeRegistry;
+import com.github.leopoko.tacz_attributes_addon.data.GunModifier;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.ItemStack;
+
+import java.util.*;
+
+/**
+ * Core attribute generation logic supporting multiple random modes.
+ */
+public class AttributeGenerator {
+
+    /**
+     * Generate random attributes for a gun.
+     */
+    public static List<GunModifier> generate(ItemStack gun, RandomSource random) {
+        CommonConfig.RandomMode mode = CommonConfig.RANDOM_MODE.get();
+        int min = CommonConfig.MIN_ATTRIBUTES.get();
+        int max = CommonConfig.MAX_ATTRIBUTES.get();
+        CommonConfig.DistributionType distType = CommonConfig.VALUE_DISTRIBUTION.get();
+        double exponent = CommonConfig.DISTRIBUTION_EXPONENT.get();
+        double raritySpread = CommonConfig.RARITY_SPREAD_FACTOR.get();
+        double buffRatio = CommonConfig.BUFF_DEBUFF_RATIO.get();
+
+        return generate(gun, mode, min, max, distType, exponent, raritySpread, buffRatio, random);
+    }
+
+    public static List<GunModifier> generate(ItemStack gun, CommonConfig.RandomMode mode,
+                                             int minCount, int maxCount,
+                                             CommonConfig.DistributionType distType, double exponent,
+                                             double raritySpread, double buffRatio,
+                                             RandomSource random) {
+        // Resolve gun type and fire modes
+        String gunType = GunTypeFilter.resolveGunType(gun);
+        Set<String> fireModes = GunTypeFilter.getAvailableFireModes(gun);
+
+        // Get filtered attribute pool
+        List<AttributeEntry> pool = getPool(mode, gunType, fireModes);
+        if (pool.isEmpty()) return Collections.emptyList();
+
+        // Determine count
+        int count = minCount + (maxCount > minCount ? random.nextInt(maxCount - minCount + 1) : 0);
+        count = Math.min(count, pool.size());
+
+        // Select attributes
+        List<AttributeEntry> selected = selectAttributes(pool, count, mode, raritySpread, random);
+
+        // Generate values and create modifiers
+        List<GunModifier> modifiers = new ArrayList<>();
+        int buffCount = 0;
+        int debuffCount = 0;
+
+        for (AttributeEntry entry : selected) {
+            double value;
+
+            if (mode == CommonConfig.RandomMode.RARITY_ADAPTIVE || mode == CommonConfig.RandomMode.BALANCED) {
+                // Skewed distribution favoring lower absolute values
+                value = ValueDistribution.sampleAbsoluteSkewed(
+                        entry.getMinValue(), entry.getMaxValue(), distType, exponent, random);
+            } else {
+                // Uniform distribution
+                value = ValueDistribution.sample(
+                        entry.getMinValue(), entry.getMaxValue(),
+                        CommonConfig.DistributionType.LINEAR, 1.0, random);
+            }
+
+            value = ValueDistribution.roundToPercent(value);
+
+            // BALANCED mode: adjust for buff/debuff ratio
+            if (mode == CommonConfig.RandomMode.BALANCED) {
+                boolean isBuff = entry.isValueBuff(value);
+                if (isBuff) buffCount++;
+                else debuffCount++;
+
+                // If ratio is off, try to flip the sign
+                if (buffCount > 0 && debuffCount > 0) {
+                    double currentRatio = (double) buffCount / debuffCount;
+                    if (currentRatio > buffRatio * 1.5 && isBuff && entry.getMinValue() < entry.getBuffThreshold()) {
+                        // Too many buffs, flip to debuff
+                        value = ValueDistribution.sample(
+                                entry.getMinValue(), entry.getBuffThreshold(),
+                                distType, exponent, random);
+                        value = ValueDistribution.roundToPercent(value);
+                        buffCount--;
+                        debuffCount++;
+                    } else if (currentRatio < buffRatio * 0.5 && !isBuff && entry.getMaxValue() > entry.getBuffThreshold()) {
+                        // Too many debuffs, flip to buff
+                        value = ValueDistribution.sample(
+                                entry.getBuffThreshold(), entry.getMaxValue(),
+                                distType, exponent, random);
+                        value = ValueDistribution.roundToPercent(value);
+                        debuffCount--;
+                        buffCount++;
+                    }
+                }
+            }
+
+            if (value != 0.0) {
+                modifiers.add(new GunModifier(entry.getAttributeId(), value, entry.getOperation()));
+            }
+        }
+
+        return modifiers;
+    }
+
+    private static List<AttributeEntry> getPool(CommonConfig.RandomMode mode, String gunType, Set<String> fireModes) {
+        List<AttributeEntry> all = AttributeRegistry.getEntries();
+
+        switch (mode) {
+            case FULL_RANDOM:
+                return new ArrayList<>(all);
+            case ADAPTIVE:
+            case RARITY_ADAPTIVE:
+            case BALANCED:
+                return GunTypeFilter.filter(all, gunType, fireModes, true);
+            default:
+                return new ArrayList<>(all);
+        }
+    }
+
+    private static List<AttributeEntry> selectAttributes(List<AttributeEntry> pool, int count,
+                                                         CommonConfig.RandomMode mode, double raritySpread,
+                                                         RandomSource random) {
+        if (mode == CommonConfig.RandomMode.FULL_RANDOM || mode == CommonConfig.RandomMode.ADAPTIVE) {
+            // Uniform selection by weight
+            return weightedSelect(pool, count, false, 1.0, random);
+        } else {
+            // Rarity-weighted selection
+            return weightedSelect(pool, count, true, raritySpread, random);
+        }
+    }
+
+    /**
+     * Weighted random selection without replacement.
+     */
+    private static List<AttributeEntry> weightedSelect(List<AttributeEntry> pool, int count,
+                                                       boolean useRarityWeight, double raritySpread,
+                                                       RandomSource random) {
+        List<AttributeEntry> available = new ArrayList<>(pool);
+        List<AttributeEntry> selected = new ArrayList<>();
+
+        for (int i = 0; i < count && !available.isEmpty(); i++) {
+            double totalWeight = 0;
+            double[] weights = new double[available.size()];
+
+            for (int j = 0; j < available.size(); j++) {
+                AttributeEntry entry = available.get(j);
+                double w = entry.getWeight();
+                if (useRarityWeight) {
+                    // Higher rarity tier = lower weight (rarer)
+                    w /= Math.pow(entry.getRarityTier(), raritySpread);
+                }
+                weights[j] = w;
+                totalWeight += w;
+            }
+
+            if (totalWeight <= 0) break;
+
+            // Select based on weight
+            double roll = random.nextDouble() * totalWeight;
+            double cumulative = 0;
+            int selectedIndex = 0;
+            for (int j = 0; j < weights.length; j++) {
+                cumulative += weights[j];
+                if (roll < cumulative) {
+                    selectedIndex = j;
+                    break;
+                }
+            }
+
+            selected.add(available.remove(selectedIndex));
+        }
+
+        return selected;
+    }
+}
