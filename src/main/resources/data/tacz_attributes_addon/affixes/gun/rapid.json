@@ -1,0 +1,13 @@
+{
+  "type": "apotheosis:attribute",
+  "attribute": "tacz_attributes:rpm_multiplier",
+  "operation": "MULTIPLY_BASE",
+  "values": {
+    "uncommon": { "min": 0.03, "steps": 5, "step": 0.005 },
+    "rare":     { "min": 0.05, "steps": 5, "step": 0.006 },
+    "epic":     { "min": 0.08, "steps": 5, "step": 0.008 },
+    "mythic":   { "min": 0.10, "steps": 5, "step": 0.010 },
+    "ancient":  { "min": 0.15, "steps": 10, "step": 0.010 }
+  },
+  "types": ["gun"]
+}

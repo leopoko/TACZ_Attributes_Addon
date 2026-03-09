@@ -1,0 +1,20 @@
+{
+  "weight": 8,
+  "quality": 0.5,
+  "bonuses": [
+    {
+      "type": "apotheosis:attribute",
+      "gem_class": { "key": "gun", "types": ["gun"] },
+      "attribute": "tacz_attributes:headshot_multiplier",
+      "operation": "MULTIPLY_BASE",
+      "values": {
+        "common": 0.02,
+        "uncommon": 0.05,
+        "rare": 0.08,
+        "epic": 0.12,
+        "mythic": 0.17,
+        "ancient": 0.22
+      }
+    }
+  ]
+}

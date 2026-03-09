@@ -1,0 +1,20 @@
+{
+  "weight": 5,
+  "quality": 1.0,
+  "min_rarity": "uncommon",
+  "bonuses": [
+    {
+      "type": "apotheosis:attribute",
+      "gem_class": { "key": "gun", "types": ["gun"] },
+      "attribute": "tacz_attributes:rpm_multiplier",
+      "operation": "MULTIPLY_BASE",
+      "values": {
+        "uncommon": 0.03,
+        "rare": 0.06,
+        "epic": 0.10,
+        "mythic": 0.13,
+        "ancient": 0.15
+      }
+    }
+  ]
+}

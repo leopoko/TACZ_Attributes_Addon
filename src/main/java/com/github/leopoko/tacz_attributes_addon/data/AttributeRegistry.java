@@ -121,7 +121,9 @@ public class AttributeRegistry {
         }
         // Empty set means all gun types
 
-        return new AttributeEntry(id, min, max, op, weight, rarityTier, gunTypes, buffThreshold, scoreWeight);
+        String linkedAttribute = obj.has("linkedAttribute") ? obj.get("linkedAttribute").getAsString() : null;
+
+        return new AttributeEntry(id, min, max, op, weight, rarityTier, gunTypes, buffThreshold, scoreWeight, linkedAttribute);
     }
 
     private static AttributeModifier.Operation parseOperation(String op) {
@@ -147,7 +149,9 @@ public class AttributeRegistry {
                     + "rarityTier: 1-4 (1=common, 4=epic, affects RARITY_ADAPTIVE mode) | "
                     + "applicableGunTypes: [] for all types, or list like [\"rifle\",\"smg\"] | "
                     + "buffThreshold: values above this are considered buffs (usually 0.0) | "
-                    + "scoreWeight: rarity score contribution per unit value (negative for inverted attributes like recoil)");
+                    + "scoreWeight: rarity score contribution per unit value (negative for inverted attributes like recoil) | "
+                    + "linkedAttribute: (optional) attributeId of a partner that must be selected together "
+                    + "(e.g. ammo_recovery_chance needs ammo_recovery_amount to function)");
 
             JsonArray attrs = new JsonArray();
             for (AttributeEntry entry : ENTRIES) {
@@ -179,6 +183,9 @@ public class AttributeRegistry {
 
         obj.addProperty("buffThreshold", entry.getBuffThreshold());
         obj.addProperty("scoreWeight", entry.getScoreWeight());
+        if (entry.hasLinkedAttribute()) {
+            obj.addProperty("linkedAttribute", entry.getLinkedAttribute());
+        }
         return obj;
     }
 
@@ -229,14 +236,14 @@ public class AttributeRegistry {
         add("tacz_attributes:ammo_save_chance", 0.0, 0.15, ADD, 8, 3, noRpg, 0.0, 200);
         add("tacz_attributes:reload_ammo_save_chance", 0.0, 0.10, ADD, 6, 3, noRpg, 0.0, 150);
 
-        // === Kill recovery attributes ===
-        add("tacz_attributes:ammo_recovery_chance", 0.0, 0.20, ADD, 6, 3, noRpg, 0.0, 180);
-        add("tacz_attributes:ammo_recovery_amount", 0.0, 5.0, ADD, 5, 3, noRpg, 0.0, 30);
-        add("tacz_attributes:ammo_recovery_percent", 0.0, 0.10, ADD, 4, 4, noRpg, 0.0, 200);
+        // === Kill recovery attributes (chance and amount/percent are linked pairs) ===
+        addLinked("tacz_attributes:ammo_recovery_chance", 0.0, 0.20, ADD, 6, 3, noRpg, 0.0, 180, "tacz_attributes:ammo_recovery_amount");
+        addLinked("tacz_attributes:ammo_recovery_amount", 0.0, 5.0, ADD, 5, 3, noRpg, 0.0, 30, "tacz_attributes:ammo_recovery_chance");
+        addLinked("tacz_attributes:ammo_recovery_percent", 0.0, 0.10, ADD, 4, 4, noRpg, 0.0, 200, "tacz_attributes:ammo_recovery_chance");
 
-        // === Bonus ammo ===
-        add("tacz_attributes:bonus_ammo_chance", 0.0, 0.15, ADD, 5, 3, noRpg, 0.0, 180);
-        add("tacz_attributes:bonus_ammo_amount", 0.0, 3.0, ADD, 4, 3, noRpg, 0.0, 30);
+        // === Bonus ammo (chance and amount are linked pairs) ===
+        addLinked("tacz_attributes:bonus_ammo_chance", 0.0, 0.15, ADD, 5, 3, noRpg, 0.0, 180, "tacz_attributes:bonus_ammo_amount");
+        addLinked("tacz_attributes:bonus_ammo_amount", 0.0, 3.0, ADD, 4, 3, noRpg, 0.0, 30, "tacz_attributes:bonus_ammo_chance");
 
         // === Combat modifiers ===
         add("tacz_attributes:knockback_multiplier", -0.20, 0.40, MULT, 8, 2, all, 0.0, 40);
@@ -268,5 +275,11 @@ public class AttributeRegistry {
     private static void add(String id, double min, double max, AttributeModifier.Operation op,
                             int weight, int rarityTier, Set<String> gunTypes, double buffThreshold, double scoreWeight) {
         ENTRIES.add(new AttributeEntry(id, min, max, op, weight, rarityTier, gunTypes, buffThreshold, scoreWeight));
+    }
+
+    private static void addLinked(String id, double min, double max, AttributeModifier.Operation op,
+                                  int weight, int rarityTier, Set<String> gunTypes, double buffThreshold,
+                                  double scoreWeight, String linkedAttribute) {
+        ENTRIES.add(new AttributeEntry(id, min, max, op, weight, rarityTier, gunTypes, buffThreshold, scoreWeight, linkedAttribute));
     }
 }

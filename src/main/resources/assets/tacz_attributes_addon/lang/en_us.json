@@ -58,5 +58,35 @@
   "attribute.tacz_attributes.auto_bullet_amount": "Auto Bullet Amount",
   "attribute.tacz_attributes.burst_bullet_amount": "Burst Bullet Amount",
   "attribute.tacz_attributes.draw_speed": "Draw Speed",
-  "attribute.tacz_attributes.burst_speed": "Burst Speed"
+  "attribute.tacz_attributes.burst_speed": "Burst Speed",
+
+  "tooltip.tacz_attributes_addon.sockets": "Sockets: %d/%d",
+  "tooltip.tacz_attributes_addon.empty_socket": "  [Empty Socket]",
+
+  "item.apotheosis.gem.tacz_attributes_addon:marksman": "Marksman Gem",
+  "item.apotheosis.gem.tacz_attributes_addon:stabilizer": "Stabilizer Gem",
+  "item.apotheosis.gem.tacz_attributes_addon:quickloader": "Quickloader Gem",
+  "item.apotheosis.gem.tacz_attributes_addon:sharpshooter": "Sharpshooter Gem",
+  "item.apotheosis.gem.tacz_attributes_addon:extended_mag": "Extended Mag Gem",
+  "item.apotheosis.gem.tacz_attributes_addon:rapid_fire": "Rapid Fire Gem",
+  "item.apotheosis.gem.tacz_attributes_addon:tactical": "Tactical Gem",
+  "item.apotheosis.gem.tacz_attributes_addon:conservation": "Conservation Gem",
+  "item.apotheosis.gem.tacz_attributes_addon:ammo_recovery": "Ammo Recovery Gem",
+  "item.apotheosis.gem.tacz_attributes_addon:bonus_ammo": "Bonus Ammo Gem",
+  "item.apotheosis.gem.tacz_attributes_addon:knockback": "Knockback Gem",
+
+  "affix.tacz_attributes_addon:gun/deadly": "Deadly",
+  "affix.tacz_attributes_addon:gun/steadfast": "Steadfast",
+  "affix.tacz_attributes_addon:gun/swift": "Swift",
+  "affix.tacz_attributes_addon:gun/precise": "Precise",
+  "affix.tacz_attributes_addon:gun/capacious": "Capacious",
+  "affix.tacz_attributes_addon:gun/rapid": "Rapid",
+  "affix.tacz_attributes_addon:gun/focused": "Focused",
+  "affix.tacz_attributes_addon:gun/economical": "Economical",
+  "affix.tacz_attributes_addon:gun/accurate": "Accurate",
+  "affix.tacz_attributes_addon:gun/agile": "Agile",
+  "affix.tacz_attributes_addon:gun/forceful": "Forceful",
+
+  "item.tacz_attributes_addon.barrage": "???",
+  "item.tacz_attributes_addon.barrage.desc": "Barrage!"
 }

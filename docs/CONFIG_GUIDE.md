@@ -29,7 +29,10 @@ Attribute Station ブロックの機能を有効にします。
 - `false`: ブロックは設置可能だが加工処理が行われない
 
 ### `enableApotheosis` (デフォルト: `true`)
-Apotheosis MOD との連携機能を有効にします（現在はスタブ実装）。
+Apotheosis MOD との連携機能を有効にします。Apotheosisがインストールされている場合、銃にソケットスロットが追加され、銃専用ジェムの挿入が可能になります。
+
+- `true`: Apotheosisが存在する場合、ソケット/ジェム統合を有効化
+- `false`: Apotheosisが存在してもソケット/ジェム機能を無効化
 
 ### `enableRarityScoring` (デフォルト: `true`)
 属性に基づくレアリティスコアリングシステムを有効にします。
@@ -192,6 +195,33 @@ consumeItemId = "tacz:gunsmith_table"        # TACZ MODのアイテム
 
 ---
 
+## [apotheosis] Apotheosis連携設定
+
+Apotheosis MODがインストールされている場合に有効になるソケット/ジェム機能の設定です。
+
+### `gunBaseSockets` (デフォルト: `2`, 範囲: 0〜6)
+レアリティに連動しない場合（`socketsScaleWithRarity = false`）の固定ソケット数。
+
+### `socketsScaleWithRarity` (デフォルト: `true`)
+ソケット数をレアリティに連動させるかどうか。
+
+- `true`: レアリティに応じてソケット数が変動（下記の設定値を使用）
+- `false`: 全ての銃が `gunBaseSockets` で指定された固定数のソケットを持つ
+
+### `commonSockets` (デフォルト: `1`, 範囲: 0〜6)
+COMMONレアリティ銃のソケット数。
+
+### `uncommonSockets` (デフォルト: `2`, 範囲: 0〜6)
+UNCOMMONレアリティ銃のソケット数。
+
+### `rareSockets` (デフォルト: `3`, 範囲: 0〜6)
+RAREレアリティ銃のソケット数。
+
+### `epicSockets` (デフォルト: `4`, 範囲: 0〜6)
+EPICレアリティ銃のソケット数。
+
+---
+
 ## 銃モデル別固定属性（weapon_attributes.json）
 
 ファイル: `config/tacz_attributes_addon/weapon_attributes.json`
@@ -335,7 +365,8 @@ ItemStack NBT → TaczAddon: {
       "rarityTier": 1,
       "applicableGunTypes": [],
       "buffThreshold": 0.0,
-      "scoreWeight": 100
+      "scoreWeight": 100,
+      "linkedAttribute": "tacz_attributes:some_other_attribute"
     }
   ]
 }
@@ -354,6 +385,21 @@ ItemStack NBT → TaczAddon: {
 | `applicableGunTypes` | 対象銃タイプ（空=全種類）。`pistol`, `sniper`, `rifle`, `shotgun`, `smg`, `rpg`, `mg` | `["rifle", "smg"]` |
 | `buffThreshold` | この値以上がバフ（通常は0.0） | `0.0` |
 | `scoreWeight` | レアリティスコアへの寄与度（マイナス=リコイルのような反転属性） | `100` or `-90` |
+| `linkedAttribute` | （任意）ペアで生成すべきパートナー属性のID。設定するとこの属性が選ばれた際、パートナーも自動で追加される | `"tacz_attributes:ammo_recovery_amount"` |
+
+### リンク属性（ペア生成）
+
+`linkedAttribute` フィールドを使用すると、属性のペア生成を設定できます。例えば `ammo_recovery_chance` が選ばれた場合、`ammo_recovery_amount` も自動的にセットで付与されます。
+
+デフォルトでは以下のペアが設定されています：
+
+| 属性 | リンク先 | 説明 |
+|------|----------|------|
+| `ammo_recovery_chance` | `ammo_recovery_amount` | 弾薬回復の確率→量 |
+| `ammo_recovery_amount` | `ammo_recovery_chance` | 弾薬回復の量→確率 |
+| `ammo_recovery_percent` | `ammo_recovery_chance` | 弾薬回復の割合→確率 |
+| `bonus_ammo_chance` | `bonus_ammo_amount` | 追加弾薬の確率→量 |
+| `bonus_ammo_amount` | `bonus_ammo_chance` | 追加弾薬の量→確率 |
 
 ### カスタマイズ例
 
@@ -372,11 +418,19 @@ ItemStack NBT → TaczAddon: {
 }
 ```
 
-出現率を変更（weightを下げると出にくくなる）:
+リンク属性をカスタム設定:
 ```json
 {
-  "attributeId": "tacz_attributes:gun_damage",
-  "weight": 5
+  "attributeId": "tacz_attributes:custom_chance",
+  "minValue": 0.0,
+  "maxValue": 0.20,
+  "operation": "ADDITION",
+  "weight": 5,
+  "rarityTier": 3,
+  "applicableGunTypes": [],
+  "buffThreshold": 0.0,
+  "scoreWeight": 150,
+  "linkedAttribute": "tacz_attributes:custom_amount"
 }
 ```
 
@@ -406,7 +460,7 @@ OP権限（レベル2）が必要です。
 ゲームを再起動せずに設定変更を反映できます。
 
 ### `/taczaddon info`
-手持ちの銃に付与されているアドオンデータの詳細を表示します。
+手持ちの銃に付与されているアドオンデータの詳細を表示します。Apotheosis連携有効時は、ソケット/ジェム情報も表示されます。
 
 ### `/taczaddon config get <key>`
 設定値を取得します。タブ補完で設定キーが表示されます。
@@ -425,6 +479,8 @@ OP権限（レベル2）が必要です。
 - `uncommonThreshold`, `rareThreshold`, `epicThreshold`
 - `processingTime`, `consumeItem`, `consumeItemId`, `consumeCount`
 - `allowReroll`, `maxRerolls`
+- `gunBaseSockets`, `socketsScaleWithRarity`
+- `commonSockets`, `uncommonSockets`, `rareSockets`, `epicSockets`
 
 ---
 
@@ -440,3 +496,39 @@ OP権限（レベル2）が必要です。
 1. 初回取得時: 固定 `gun_damage: 0.95` + ランダム属性が付与
 2. リロール後: 固定 `gun_damage: 0.95` は維持、ランダム属性のみ変更
 3. ランダムで `gun_damage: 1.2` が付いても、固定の `0.95` は消えず両立
+
+---
+
+## Apotheosis 銃専用ジェム一覧
+
+Apotheosis連携が有効な場合、以下の銃専用ジェムが利用可能です。
+
+| ジェム | 属性 | タイプ |
+|--------|------|--------|
+| マークスマンの宝石 | gun_damage | 単体属性 |
+| 安定の宝石 | recoil（軽減） | 単体属性 |
+| 速装填の宝石 | reload_speed | 単体属性 |
+| 精密射撃の宝石 | headshot_multiplier | 単体属性 |
+| 拡張弾倉の宝石 | magazine_capacity | 単体属性 |
+| 速射の宝石 | rpm_multiplier | 単体属性 |
+| 戦術の宝石 | ads_speed + ads_accuracy | 複合属性 |
+| 弾薬節約の宝石 | ammo_save_chance | 単体属性 |
+| 弾薬回復の宝石 | ammo_recovery_chance + ammo_recovery_amount | 複合属性 |
+| 追加弾薬の宝石 | bonus_ammo_chance + bonus_ammo_amount | 複合属性 |
+| ノックバックの宝石 | knockback_base | 単体属性 |
+
+## Apotheosis 銃専用アフィックス一覧
+
+| アフィックス | 属性 |
+|-------------|------|
+| 殺傷の | gun_damage |
+| 安定の | recoil（軽減） |
+| 迅速の | reload_speed |
+| 精密の | headshot_multiplier |
+| 大容量の | magazine_capacity |
+| 速射の | rpm_multiplier |
+| 集中の | ads_speed |
+| 節約の | ammo_save_chance |
+| 命中の | ads_accuracy |
+| 敏捷の | draw_speed |
+| 強打の | knockback_base |

@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GGG",
+    "GVG",
+    "GGG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:enchanted_golden_apple"
+    },
+    "V": {
+      "type": "tacz_attributes_addon:gun",
+      "gun_id": "tacz:vector45"
+    }
+  },
+  "result": {
+    "item": "tacz_attributes_addon:barrage",
+    "count": 1
+  }
+}

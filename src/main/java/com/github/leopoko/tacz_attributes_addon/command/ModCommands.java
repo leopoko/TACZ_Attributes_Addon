@@ -89,7 +89,9 @@ public class ModCommands {
             "valueDistribution", "distributionExponent", "raritySpreadFactor", "buffDebuffRatio",
             "uncommonThreshold", "rareThreshold", "epicThreshold",
             "processingTime", "consumeItem", "consumeItemId", "consumeCount",
-            "allowReroll", "maxRerolls"
+            "allowReroll", "maxRerolls",
+            "gunBaseSockets", "socketsScaleWithRarity",
+            "commonSockets", "uncommonSockets", "rareSockets", "epicSockets"
     };
 
     // ========== Clear commands ==========
@@ -278,7 +280,19 @@ public class ModCommands {
             }
         }
 
+        // Show gem/socket info if Apotheosis is present
+        showGemInfo(source, held);
+
         return 1;
+    }
+
+    private static void showGemInfo(CommandSourceStack source, ItemStack held) {
+        try {
+            if (!com.github.leopoko.tacz_attributes_addon.compat.apotheosis.ApotheosisCompat.isApotheosisPresent()) return;
+            com.github.leopoko.tacz_attributes_addon.compat.apotheosis.GemInfoHelper.showInfo(source, held);
+        } catch (NoClassDefFoundError ignored) {
+            // Apotheosis classes not available
+        }
     }
 
     // ========== Config commands ==========
@@ -331,6 +345,12 @@ public class ModCommands {
             case "consumeCount": return String.valueOf(CommonConfig.STATION_CONSUME_COUNT.get());
             case "allowReroll": return String.valueOf(CommonConfig.STATION_ALLOW_REROLL.get());
             case "maxRerolls": return String.valueOf(CommonConfig.STATION_MAX_REROLLS.get());
+            case "gunBaseSockets": return String.valueOf(CommonConfig.GUN_BASE_SOCKETS.get());
+            case "socketsScaleWithRarity": return String.valueOf(CommonConfig.SOCKETS_SCALE_WITH_RARITY.get());
+            case "commonSockets": return String.valueOf(CommonConfig.COMMON_SOCKETS.get());
+            case "uncommonSockets": return String.valueOf(CommonConfig.UNCOMMON_SOCKETS.get());
+            case "rareSockets": return String.valueOf(CommonConfig.RARE_SOCKETS.get());
+            case "epicSockets": return String.valueOf(CommonConfig.EPIC_SOCKETS.get());
             default: return null;
         }
     }
@@ -360,6 +380,12 @@ public class ModCommands {
                 case "consumeCount": CommonConfig.STATION_CONSUME_COUNT.set(Integer.parseInt(value)); return true;
                 case "allowReroll": CommonConfig.STATION_ALLOW_REROLL.set(Boolean.parseBoolean(value)); return true;
                 case "maxRerolls": CommonConfig.STATION_MAX_REROLLS.set(Integer.parseInt(value)); return true;
+                case "gunBaseSockets": CommonConfig.GUN_BASE_SOCKETS.set(Integer.parseInt(value)); return true;
+                case "socketsScaleWithRarity": CommonConfig.SOCKETS_SCALE_WITH_RARITY.set(Boolean.parseBoolean(value)); return true;
+                case "commonSockets": CommonConfig.COMMON_SOCKETS.set(Integer.parseInt(value)); return true;
+                case "uncommonSockets": CommonConfig.UNCOMMON_SOCKETS.set(Integer.parseInt(value)); return true;
+                case "rareSockets": CommonConfig.RARE_SOCKETS.set(Integer.parseInt(value)); return true;
+                case "epicSockets": CommonConfig.EPIC_SOCKETS.set(Integer.parseInt(value)); return true;
                 default: return false;
             }
         } catch (Exception e) {

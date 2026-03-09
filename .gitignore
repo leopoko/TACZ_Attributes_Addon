@@ -1,3 +1,6 @@
+# Apotheosis runtime data (generated at runtime, not part of addon source)
+/data/
+
 # User-specific stuff
 .idea/
 

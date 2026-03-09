@@ -90,6 +90,18 @@ public class TooltipHandler {
                 addModifierTooltip(tooltip, mod, entryMap);
             }
         }
+
+        // Add gem/socket info if Apotheosis is present
+        addGemTooltipsIfPresent(stack, tooltip);
+    }
+
+    private static void addGemTooltipsIfPresent(ItemStack stack, List<Component> tooltip) {
+        try {
+            if (!com.github.leopoko.tacz_attributes_addon.compat.apotheosis.ApotheosisCompat.isApotheosisPresent()) return;
+            com.github.leopoko.tacz_attributes_addon.compat.apotheosis.GemTooltipHelper.addGemTooltips(stack, tooltip);
+        } catch (NoClassDefFoundError ignored) {
+            // Apotheosis classes not available
+        }
     }
 
     private static void addModifierTooltip(List<Component> tooltip, GunModifier mod,

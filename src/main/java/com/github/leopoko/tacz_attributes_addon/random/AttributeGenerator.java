@@ -49,6 +49,11 @@ public class AttributeGenerator {
         // Select attributes
         List<AttributeEntry> selected = selectAttributes(pool, count, mode, raritySpread, random);
 
+        // Resolve linked attributes: if a selected entry has a linkedAttribute,
+        // ensure the linked partner is also in the selection.
+        // e.g., ammo_recovery_chance requires ammo_recovery_amount to function.
+        selected = resolveLinkedAttributes(selected, pool);
+
         // Generate values and create modifiers
         List<GunModifier> modifiers = new ArrayList<>();
         int buffCount = 0;
@@ -132,6 +137,40 @@ public class AttributeGenerator {
             // Rarity-weighted selection
             return weightedSelect(pool, count, true, raritySpread, random);
         }
+    }
+
+    /**
+     * Ensure linked attribute pairs are complete.
+     * If an attribute with a linkedAttribute is selected but its partner is not,
+     * the partner is found from the pool and added automatically.
+     * This prevents useless attributes like ammo_recovery_chance without ammo_recovery_amount.
+     */
+    private static List<AttributeEntry> resolveLinkedAttributes(List<AttributeEntry> selected, List<AttributeEntry> pool) {
+        Set<String> selectedIds = new HashSet<>();
+        for (AttributeEntry e : selected) {
+            selectedIds.add(e.getAttributeId());
+        }
+
+        List<AttributeEntry> toAdd = new ArrayList<>();
+        for (AttributeEntry entry : selected) {
+            if (entry.hasLinkedAttribute() && !selectedIds.contains(entry.getLinkedAttribute())) {
+                // Find the linked entry from the pool
+                for (AttributeEntry poolEntry : pool) {
+                    if (poolEntry.getAttributeId().equals(entry.getLinkedAttribute())) {
+                        toAdd.add(poolEntry);
+                        selectedIds.add(poolEntry.getAttributeId());
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!toAdd.isEmpty()) {
+            List<AttributeEntry> result = new ArrayList<>(selected);
+            result.addAll(toAdd);
+            return result;
+        }
+        return selected;
     }
 
     /**

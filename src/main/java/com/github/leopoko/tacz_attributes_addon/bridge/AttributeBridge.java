@@ -23,15 +23,40 @@ import java.util.*;
  * When a player holds a gun with addon attributes, the modifiers are applied
  * to the player's TACZ Attributes as AttributeModifiers. When the player
  * switches to a different gun or unequips, the modifiers are removed.
+ *
+ * Also supports Apotheosis gem modifiers via a pluggable GemModifierSupplier.
  */
 @Mod.EventBusSubscriber(modid = TaczAttributesAddon.MODID)
 public class AttributeBridge {
+
+    /**
+     * Represents an attribute modifier pair extracted from an external source (e.g., Apotheosis gems).
+     */
+    public record AttributeModifierEntry(Attribute attribute, AttributeModifier modifier) {}
+
+    /**
+     * Supplier for gem-based attribute modifiers. Set by Apotheosis compat layer.
+     */
+    @FunctionalInterface
+    public interface GemModifierSupplier {
+        List<AttributeModifierEntry> getGemModifiers(ItemStack stack);
+    }
 
     // Track the last held gun's identity per player to detect changes
     private static final WeakHashMap<Player, GunIdentity> LAST_HELD = new WeakHashMap<>();
 
     // Set of all modifier UUIDs we've applied, per player
     private static final WeakHashMap<Player, Set<UUID>> APPLIED_UUIDS = new WeakHashMap<>();
+
+    // Optional gem modifier supplier (set by ApotheosisCompat when loaded)
+    private static GemModifierSupplier gemModifierSupplier = null;
+
+    /**
+     * Register a gem modifier supplier for Apotheosis integration.
+     */
+    public static void setGemModifierSupplier(GemModifierSupplier supplier) {
+        gemModifierSupplier = supplier;
+    }
 
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
@@ -52,6 +77,11 @@ public class AttributeBridge {
         if (currentIdentity != null && GunAttributeData.hasAddonData(held)) {
             List<GunModifier> modifiers = GunAttributeData.getAllModifiers(held);
             applyModifiers(player, modifiers);
+        }
+
+        // Apply gem modifiers if Apotheosis integration is active
+        if (currentIdentity != null && gemModifierSupplier != null) {
+            applyGemModifiers(player, held);
         }
 
         LAST_HELD.put(player, currentIdentity);
@@ -83,6 +113,24 @@ public class AttributeBridge {
         }
 
         APPLIED_UUIDS.put(player, uuids);
+    }
+
+    private static void applyGemModifiers(ServerPlayer player, ItemStack held) {
+        List<AttributeModifierEntry> gemMods = gemModifierSupplier.getGemModifiers(held);
+        if (gemMods.isEmpty()) return;
+
+        Set<UUID> uuids = APPLIED_UUIDS.computeIfAbsent(player, k -> new HashSet<>());
+
+        for (AttributeModifierEntry entry : gemMods) {
+            AttributeInstance instance = player.getAttribute(entry.attribute());
+            if (instance == null) continue;
+
+            UUID uuid = entry.modifier().getId();
+            // Remove existing first to prevent stacking
+            instance.removeModifier(uuid);
+            instance.addTransientModifier(entry.modifier());
+            uuids.add(uuid);
+        }
     }
 
     private static void removeAllModifiers(Player player) {

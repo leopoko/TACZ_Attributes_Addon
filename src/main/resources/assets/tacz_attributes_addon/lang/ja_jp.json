@@ -58,5 +58,35 @@
   "attribute.tacz_attributes.auto_bullet_amount": "フルオート弾数",
   "attribute.tacz_attributes.burst_bullet_amount": "バースト弾数",
   "attribute.tacz_attributes.draw_speed": "武器切替速度",
-  "attribute.tacz_attributes.burst_speed": "バースト速度"
+  "attribute.tacz_attributes.burst_speed": "バースト速度",
+
+  "tooltip.tacz_attributes_addon.sockets": "ソケット: %d/%d",
+  "tooltip.tacz_attributes_addon.empty_socket": "  [空きソケット]",
+
+  "item.apotheosis.gem.tacz_attributes_addon:marksman": "マークスマンの宝石",
+  "item.apotheosis.gem.tacz_attributes_addon:stabilizer": "安定の宝石",
+  "item.apotheosis.gem.tacz_attributes_addon:quickloader": "速装填の宝石",
+  "item.apotheosis.gem.tacz_attributes_addon:sharpshooter": "精密射撃の宝石",
+  "item.apotheosis.gem.tacz_attributes_addon:extended_mag": "拡張弾倉の宝石",
+  "item.apotheosis.gem.tacz_attributes_addon:rapid_fire": "速射の宝石",
+  "item.apotheosis.gem.tacz_attributes_addon:tactical": "戦術の宝石",
+  "item.apotheosis.gem.tacz_attributes_addon:conservation": "弾薬節約の宝石",
+  "item.apotheosis.gem.tacz_attributes_addon:ammo_recovery": "弾薬回復の宝石",
+  "item.apotheosis.gem.tacz_attributes_addon:bonus_ammo": "追加弾薬の宝石",
+  "item.apotheosis.gem.tacz_attributes_addon:knockback": "ノックバックの宝石",
+
+  "affix.tacz_attributes_addon:gun/deadly": "殺傷の",
+  "affix.tacz_attributes_addon:gun/steadfast": "安定の",
+  "affix.tacz_attributes_addon:gun/swift": "迅速の",
+  "affix.tacz_attributes_addon:gun/precise": "精密の",
+  "affix.tacz_attributes_addon:gun/capacious": "大容量の",
+  "affix.tacz_attributes_addon:gun/rapid": "速射の",
+  "affix.tacz_attributes_addon:gun/focused": "集中の",
+  "affix.tacz_attributes_addon:gun/economical": "節約の",
+  "affix.tacz_attributes_addon:gun/accurate": "命中の",
+  "affix.tacz_attributes_addon:gun/agile": "敏捷の",
+  "affix.tacz_attributes_addon:gun/forceful": "強打の",
+
+  "item.tacz_attributes_addon.barrage": "???",
+  "item.tacz_attributes_addon.barrage.desc": "バラージュ！"
 }

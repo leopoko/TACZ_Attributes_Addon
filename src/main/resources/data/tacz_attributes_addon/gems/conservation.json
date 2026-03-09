@@ -1,0 +1,20 @@
+{
+  "weight": 7,
+  "quality": 0,
+  "bonuses": [
+    {
+      "type": "apotheosis:attribute",
+      "gem_class": { "key": "gun", "types": ["gun"] },
+      "attribute": "tacz_attributes:ammo_save_chance",
+      "operation": "ADDITION",
+      "values": {
+        "common": 0.02,
+        "uncommon": 0.04,
+        "rare": 0.07,
+        "epic": 0.10,
+        "mythic": 0.13,
+        "ancient": 0.15
+      }
+    }
+  ]
+}

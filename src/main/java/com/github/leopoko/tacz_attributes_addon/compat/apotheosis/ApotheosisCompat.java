@@ -1,20 +1,19 @@
 package com.github.leopoko.tacz_attributes_addon.compat.apotheosis;
 
+import com.github.leopoko.tacz_attributes_addon.bridge.AttributeBridge;
 import com.github.leopoko.tacz_attributes_addon.config.CommonConfig;
 import com.mojang.logging.LogUtils;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModList;
 import org.slf4j.Logger;
 
 /**
  * Features 4 & 5: Apotheosis integration for gem/socket system on guns.
  *
- * This is a stub implementation. Full integration requires:
- * 1. Registering a custom LootCategory for TACZ guns
- * 2. Creating gun-specific Gem implementations
- * 3. Hooking into Apotheosis' socket system to make guns socketable
- *
- * Implementation depends on Apotheosis API which is loaded as compileOnly.
- * All Apotheosis-dependent code is guarded by isLoaded() check.
+ * Registers a GUN LootCategory, handles socket count events, and wires
+ * gem modifier extraction into AttributeBridge. All Apotheosis-dependent
+ * classes are loaded lazily to avoid ClassNotFoundException when Apotheosis
+ * is not installed.
  */
 public class ApotheosisCompat {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -33,11 +32,6 @@ public class ApotheosisCompat {
         }
 
         LOGGER.info("Apotheosis detected, initializing gun socket/gem integration");
-        // TODO: Implement full Apotheosis integration
-        // 1. Register GUN LootCategory
-        // 2. Hook into LootCategory.forItem() for TACZ gun items
-        // 3. Register gun-specific gems as datapack entries
-        // 4. Add socket slots to guns based on config
         initApotheosis();
     }
 
@@ -45,11 +39,22 @@ public class ApotheosisCompat {
         try {
             // Guard: only execute if Apotheosis classes are actually available
             Class.forName("dev.shadowsoffire.apotheosis.Apotheosis");
-            LOGGER.info("Apotheosis integration initialized (stub - full implementation pending)");
 
-            // Future implementation:
-            // GunLootCategory.register();
-            // GunGems.registerGems();
+            // 1. Register GUN LootCategory
+            GunLootCategory.register();
+            if (!GunLootCategory.isRegistered()) {
+                LOGGER.warn("Failed to register GUN LootCategory, Apotheosis integration partially disabled");
+            }
+
+            // 2. Register event handler for socket count
+            MinecraftForge.EVENT_BUS.register(GunSocketHandler.class);
+            LOGGER.info("Registered GunSocketHandler for GetItemSocketsEvent");
+
+            // 3. Wire gem modifier extraction into AttributeBridge
+            AttributeBridge.setGemModifierSupplier(GemBridgeHelper::extractGemModifiers);
+            LOGGER.info("Wired GemBridgeHelper into AttributeBridge");
+
+            LOGGER.info("Apotheosis integration fully initialized");
         } catch (ClassNotFoundException e) {
             LOGGER.warn("Apotheosis classes not found despite mod being loaded");
             apotheosisPresent = false;

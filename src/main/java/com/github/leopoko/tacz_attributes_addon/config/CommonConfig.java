@@ -43,6 +43,14 @@ public class CommonConfig {
     public static final ForgeConfigSpec.BooleanValue STATION_ALLOW_REROLL;
     public static final ForgeConfigSpec.IntValue STATION_MAX_REROLLS;
 
+    // Apotheosis socket settings
+    public static final ForgeConfigSpec.IntValue GUN_BASE_SOCKETS;
+    public static final ForgeConfigSpec.BooleanValue SOCKETS_SCALE_WITH_RARITY;
+    public static final ForgeConfigSpec.IntValue COMMON_SOCKETS;
+    public static final ForgeConfigSpec.IntValue UNCOMMON_SOCKETS;
+    public static final ForgeConfigSpec.IntValue RARE_SOCKETS;
+    public static final ForgeConfigSpec.IntValue EPIC_SOCKETS;
+
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
 
@@ -152,6 +160,34 @@ public class CommonConfig {
                 .comment("Maximum number of rerolls allowed per gun (0 = unlimited)",
                          "Once a gun reaches this limit, it cannot be rerolled at the station")
                 .defineInRange("maxRerolls", 0, 0, 1000);
+
+        builder.pop();
+
+        builder.comment("Apotheosis Integration (requires Apotheosis mod)").push("apotheosis");
+
+        GUN_BASE_SOCKETS = builder
+                .comment("Base number of sockets for guns (used when socketsScaleWithRarity is false)")
+                .defineInRange("gunBaseSockets", 2, 0, 6);
+
+        SOCKETS_SCALE_WITH_RARITY = builder
+                .comment("Whether socket count scales with the gun's rarity")
+                .define("socketsScaleWithRarity", true);
+
+        COMMON_SOCKETS = builder
+                .comment("Socket count for COMMON rarity guns")
+                .defineInRange("commonSockets", 1, 0, 6);
+
+        UNCOMMON_SOCKETS = builder
+                .comment("Socket count for UNCOMMON rarity guns")
+                .defineInRange("uncommonSockets", 2, 0, 6);
+
+        RARE_SOCKETS = builder
+                .comment("Socket count for RARE rarity guns")
+                .defineInRange("rareSockets", 3, 0, 6);
+
+        EPIC_SOCKETS = builder
+                .comment("Socket count for EPIC rarity guns")
+                .defineInRange("epicSockets", 4, 0, 6);
 
         builder.pop();
 

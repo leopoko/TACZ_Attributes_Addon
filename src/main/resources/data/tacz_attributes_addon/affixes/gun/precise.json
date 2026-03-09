@@ -1,0 +1,14 @@
+{
+  "type": "apotheosis:attribute",
+  "attribute": "tacz_attributes:headshot_multiplier",
+  "operation": "MULTIPLY_BASE",
+  "values": {
+    "common":   { "min": 0.02, "steps": 5, "step": 0.004 },
+    "uncommon": { "min": 0.04, "steps": 5, "step": 0.006 },
+    "rare":     { "min": 0.07, "steps": 5, "step": 0.008 },
+    "epic":     { "min": 0.12, "steps": 5, "step": 0.010 },
+    "mythic":   { "min": 0.18, "steps": 5, "step": 0.015 },
+    "ancient":  { "min": 0.25, "steps": 10, "step": 0.015 }
+  },
+  "types": ["gun"]
+}

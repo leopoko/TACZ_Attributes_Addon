@@ -5,7 +5,8 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "tacz_attributes_addon.refmap.json",
   "mixins": [
-    "GunRarityMixin"
+    "GunRarityMixin",
+    "LootControllerMixin"
   ],
   "client": [
   ],

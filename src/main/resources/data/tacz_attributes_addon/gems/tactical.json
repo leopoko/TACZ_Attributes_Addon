@@ -1,0 +1,37 @@
+{
+  "weight": 6,
+  "quality": 0.5,
+  "bonuses": [
+    {
+      "type": "apotheosis:multi_attribute",
+      "gem_class": { "key": "gun", "types": ["gun"] },
+      "desc": "bonus.apotheosis:multi_attr.desc.and",
+      "modifiers": [
+        {
+          "attribute": "tacz_attributes:ads_speed",
+          "operation": "MULTIPLY_BASE",
+          "values": {
+            "common": 0.02,
+            "uncommon": 0.04,
+            "rare": 0.07,
+            "epic": 0.10,
+            "mythic": 0.14,
+            "ancient": 0.18
+          }
+        },
+        {
+          "attribute": "tacz_attributes:ads_accuracy",
+          "operation": "MULTIPLY_BASE",
+          "values": {
+            "common": 0.02,
+            "uncommon": 0.04,
+            "rare": 0.07,
+            "epic": 0.10,
+            "mythic": 0.14,
+            "ancient": 0.18
+          }
+        }
+      ]
+    }
+  ]
+}

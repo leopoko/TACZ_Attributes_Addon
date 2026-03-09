@@ -10,6 +10,7 @@ import com.github.leopoko.tacz_attributes_addon.init.ModBlockEntities;
 import com.github.leopoko.tacz_attributes_addon.init.ModBlocks;
 import com.github.leopoko.tacz_attributes_addon.init.ModItems;
 import com.github.leopoko.tacz_attributes_addon.init.ModMenuTypes;
+import com.github.leopoko.tacz_attributes_addon.item.GunIngredient;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.core.registries.Registries;
@@ -47,6 +48,7 @@ public class TaczAttributesAddon {
                     .icon(() -> ModItems.ATTRIBUTE_STATION.get().getDefaultInstance())
                     .displayItems((params, output) -> {
                         output.accept(ModItems.ATTRIBUTE_STATION.get());
+                        output.accept(ModItems.BARRAGE.get());
                     })
                     .build());
 
@@ -68,6 +70,9 @@ public class TaczAttributesAddon {
 
         // Register config
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC);
+
+        // Register custom recipe ingredient types
+        GunIngredient.register();
 
         LOGGER.info("TACZ Attributes Addon initialized");
     }

@@ -1,0 +1,534 @@
+# TACZ Attributes Addon - Configuration Guide
+
+Config file: `config/tacz_attributes_addon-common.toml` (auto-generated on first launch)
+
+---
+
+## [general] Feature Toggles
+
+Enable or disable each feature independently.
+
+### `enableRandomOnObtain` (Default: `true`)
+Automatically assigns random attributes to a gun when it enters inventory.
+
+- `true`: Random attributes are automatically applied when a player obtains a gun
+- `false`: No automatic assignment (manual generation via Attribute Station only)
+
+> **Note:** Disabling this setting does not affect guns that already have attributes. It only applies to newly obtained guns.
+
+### `enableWeaponTypeAttributes` (Default: `true`)
+Enables fixed attributes per gun model, configured in `config/tacz_attributes_addon/weapon_attributes.json`.
+
+- `true`: Applies fixed attributes based on weapon_attributes.json
+- `false`: No fixed attributes are applied
+
+### `enableAttributeStation` (Default: `true`)
+Enables the Attribute Station block functionality.
+
+- `true`: Players can insert guns into the block to generate or reroll attributes
+- `false`: The block can still be placed but performs no processing
+
+### `enableApotheosis` (Default: `true`)
+Enables integration with the Apotheosis mod. When Apotheosis is installed, guns gain socket slots and gun-specific gems can be inserted.
+
+- `true`: When Apotheosis is present, socket/gem integration is enabled
+- `false`: Socket/gem features are disabled even if Apotheosis is present
+
+### `enableRarityScoring` (Default: `true`)
+Enables the rarity scoring system based on applied attributes.
+
+- `true`: Calculates a score from attribute values and scoreWeights, then determines rarity (COMMON/UNCOMMON/RARE/EPIC). The gun item's name color changes to match its rarity.
+- `false`: Skips rarity calculation. All guns display as COMMON.
+
+---
+
+## [random] Random Attribute Generation
+
+Fine-tune the random attribute generation algorithm.
+
+### `randomMode` (Default: `RARITY_ADAPTIVE`)
+
+The algorithm used to select random attributes.
+
+| Mode | Description | Recommended For |
+|------|-------------|-----------------|
+| `FULL_RANDOM` | Fully random from the entire attribute pool. Ignores gun type — SMGs may receive sniper-specific attributes. | Casual / Chaotic |
+| `ADAPTIVE` | Filters attributes by gun type and fire mode. Off-type attributes cannot be selected. | Balanced play |
+| `RARITY_ADAPTIVE` | ADAPTIVE + rarity weighting. Higher rarity attributes are less likely to appear + value skewing (lower values are more common). | **Recommended (Default)** |
+| `BALANCED` | RARITY_ADAPTIVE + automatic buff/debuff ratio balancing, controlled by `buffDebuffRatio`. | Fairness-focused |
+
+### `fixedAttributeMode` (Default: `BOTH_STACKING`)
+
+The relationship between fixed attributes (weapon_attributes.json) and random attributes.
+
+| Mode | Fixed Attrs | Random Attrs | Description |
+|------|-------------|--------------|-------------|
+| `FIXED_ONLY` | Applied | **Not generated** | Fixed attributes only. No randomness. |
+| `RANDOM_ONLY` | **Not applied** | Generated | Random only. Fixed config is ignored. |
+| `BOTH_STACKING` | Applied | Generated | Both applied independently (stored in separate NBT tags). **Recommended** |
+| `FIXED_INFLUENCES_RANDOM` | Applied | Generated (influenced) | Fixed attributes affect the weights of random generation. |
+
+### `minAttributes` (Default: `1`, Range: 0–20)
+Minimum number of random attributes assigned to one gun. Setting to 0 means some guns may receive no attributes.
+
+### `maxAttributes` (Default: `4`, Range: 0–20)
+Maximum number of random attributes assigned to one gun. The actual count is randomly determined between min and max.
+
+> **Example:** min=2, max=5 → Each gun receives 2–5 random attributes.
+
+### `valueDistribution` (Default: `EXPONENTIAL`)
+
+The distribution curve for attribute values. Controls how values are distributed within the min–max range.
+
+| Distribution | Characteristic | Description |
+|--------------|----------------|-------------|
+| `LINEAR` | Uniform | All values have equal probability |
+| `EXPONENTIAL` | Biased toward lower values | Small values are more common, large values are rare. Controlled by `distributionExponent`. **Recommended** |
+| `QUADRATIC` | Moderately biased low | Less extreme than EXPONENTIAL |
+
+### `distributionExponent` (Default: `2.0`, Range: 1.0–10.0)
+Exponent for EXPONENTIAL distribution. Higher values push results further toward the minimum.
+
+- `1.0`: Equivalent to LINEAR (no bias)
+- `2.0`: Moderately biased toward lower values (**Recommended**)
+- `5.0`: Strongly biased toward lower values (high values rarely appear)
+- `10.0`: Extremely biased toward lower values
+
+### `raritySpreadFactor` (Default: `2.0`, Range: 1.0–10.0)
+In RARITY_ADAPTIVE/BALANCED modes, controls the weight dispersion by rarity tier.
+
+- `1.0`: All rarity tiers have equal probability of being selected
+- `2.0`: Higher rarity attributes are less likely (**Recommended**)
+- `5.0`: Tier 4 rarity attributes are extremely rare
+
+> **Formula:** weight = baseWeight / (rarityTier ^ raritySpreadFactor)
+
+### `buffDebuffRatio` (Default: `1.0`, Range: 0.1–5.0)
+BALANCED mode only. Target ratio of buffs to debuffs.
+
+- `0.5`: Twice as many debuffs (hardcore)
+- `1.0`: Equal buffs and debuffs (**Recommended**)
+- `2.0`: Twice as many buffs (player-favored)
+
+---
+
+## [rarity] Rarity Score Thresholds
+
+Rarity is determined by the total attribute score.
+
+### Score Calculation
+
+```
+Score = Σ (attribute value × scoreWeight)
+```
+
+- **Normal attributes** (damage, etc., scoreWeight=+100): Higher buff values → higher score
+- **Inverted attributes** (recoil, etc., scoreWeight=-90): Recoil reduction (a buff) → higher score
+
+### `uncommonThreshold` (Default: `100`)
+Score at or above this value → UNCOMMON (yellow).
+
+### `rareThreshold` (Default: `300`)
+Score at or above this value → RARE (aqua).
+
+### `epicThreshold` (Default: `600`)
+Score at or above this value → EPIC (purple).
+
+| Score | Rarity | Item Name Color |
+|-------|--------|-----------------|
+| 0–99 | COMMON | White |
+| 100–299 | UNCOMMON | Yellow |
+| 300–599 | RARE | Aqua |
+| 600+ | EPIC | Purple |
+
+> **Tuning Tip:** Lowering thresholds makes EPIC easier to obtain.
+> Adjust these values alongside attribute count and value ranges.
+> Example: If maxAttributes=2, lower the thresholds; if maxAttributes=8, raise them.
+
+---
+
+## [station] Attribute Station Block
+
+### `processingTime` (Default: `200`, Range: 1–72000)
+Processing time in ticks. 20 ticks = 1 second.
+
+- `200`: 10 seconds (**Default**)
+- `100`: 5 seconds (fast)
+- `1200`: 1 minute (slow)
+- `72000`: 1 hour (maximum)
+
+### `consumeItem` (Default: `false`)
+Whether to consume an item during processing.
+
+- `false`: No item consumed. Processing occurs just by inserting the gun (**Default**)
+- `true`: Consumes the specified item to process
+
+### `consumeItemId` (Default: `"minecraft:diamond"`)
+Item ID to consume. Only effective when `consumeItem` is `true`.
+
+**Examples:**
+```toml
+consumeItemId = "minecraft:diamond"          # Diamond
+consumeItemId = "minecraft:netherite_ingot"  # Netherite Ingot
+consumeItemId = "minecraft:emerald"          # Emerald
+consumeItemId = "tacz:gunsmith_table"        # A TACZ mod item
+```
+
+### `consumeCount` (Default: `1`, Range: 1–64)
+Number of items consumed per processing operation.
+
+### `allowReroll` (Default: `true`)
+Whether to allow rerolling (regenerating attributes) for guns that already have attributes.
+
+- `true`: Can reroll any number of times (limited by `maxRerolls`)
+- `false`: Guns with existing attributes cannot be reprocessed
+
+### `maxRerolls` (Default: `0`, Range: 0–1000)
+Maximum number of rerolls allowed per gun.
+
+- `0`: **Unlimited** (reroll as many times as desired)
+- `3`: Up to 3 rerolls
+- `10`: Up to 10 rerolls
+
+> Reroll count is shown in the item tooltip.
+> Guns that have reached the limit cannot be processed in the Attribute Station.
+
+---
+
+## [apotheosis] Apotheosis Integration Settings
+
+Settings for the socket/gem features that are enabled when the Apotheosis mod is installed.
+
+### `gunBaseSockets` (Default: `2`, Range: 0–6)
+Fixed socket count used when `socketsScaleWithRarity` is `false`.
+
+### `socketsScaleWithRarity` (Default: `true`)
+Whether socket count scales with the gun's rarity.
+
+- `true`: Socket count varies by rarity (uses the per-rarity settings below)
+- `false`: All guns have the fixed number of sockets specified by `gunBaseSockets`
+
+### `commonSockets` (Default: `1`, Range: 0–6)
+Socket count for COMMON rarity guns.
+
+### `uncommonSockets` (Default: `2`, Range: 0–6)
+Socket count for UNCOMMON rarity guns.
+
+### `rareSockets` (Default: `3`, Range: 0–6)
+Socket count for RARE rarity guns.
+
+### `epicSockets` (Default: `4`, Range: 0–6)
+Socket count for EPIC rarity guns.
+
+---
+
+## Per-Weapon Fixed Attributes (weapon_attributes.json)
+
+File: `config/tacz_attributes_addon/weapon_attributes.json`
+
+An empty JSON file `{}` is generated on first launch. You can configure fixed attributes per gun ID.
+
+### Format
+
+```json
+{
+  "gun_id": [
+    {
+      "attribute": "attribute_id",
+      "value": number,
+      "operation": "operator"
+    }
+  ]
+}
+```
+
+### Operations
+
+| Operation | Description | Example |
+|-----------|-------------|---------|
+| `MULTIPLY_BASE` | Multiplied against the base value. 0.10 = +10% | Used for most attributes |
+| `ADDITION` | Added to the base value | knockback_base, ammo_recovery_amount, etc. |
+| `MULTIPLY_TOTAL` | Multiplied against the final value | Special cases only |
+
+### Example Configuration
+
+```json
+{
+  "tacz:ak47": [
+    {
+      "attribute": "tacz_attributes:gun_damage",
+      "value": 0.05,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "attribute": "tacz_attributes:recoil",
+      "value": 0.15,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "tacz:m4a1": [
+    {
+      "attribute": "tacz_attributes:ads_accuracy",
+      "value": 0.08,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "attribute": "tacz_attributes:reload_speed",
+      "value": 0.05,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "tacz:glock_17": [
+    {
+      "attribute": "tacz_attributes:draw_speed",
+      "value": 0.20,
+      "operation": "MULTIPLY_BASE"
+    }
+  ]
+}
+```
+
+> **Tip:** Gun IDs follow the format `tacz:gun_name`. Match the gun ID exactly as defined in the TACZ data pack.
+
+---
+
+## Hopper Support
+
+The Attribute Station supports hoppers.
+
+| Hopper Direction | Accessed Slots |
+|------------------|----------------|
+| From above | Gun slot (0), Material slot (1) |
+| From the side | Gun slot (0), Material slot (1) |
+| From below | Output slot (2) |
+
+### Example Automated Processing Line
+
+```
+[Hopper (top)] → Insert gun
+[Attribute Station] ← Auto-processes
+[Hopper (bottom)] → Collect output
+```
+
+If item consumption is enabled, you can feed materials via a hopper from the side.
+
+---
+
+## NBT Data Structure (For Developers)
+
+Attribute data is stored in the gun item's NBT with the following structure.
+
+```
+ItemStack NBT → TaczAddon: {
+  Modifiers: [                    // Random attributes
+    {Attr: "tacz_attributes:gun_damage", Val: 0.15, Op: 1},
+    {Attr: "tacz_attributes:recoil", Val: -0.10, Op: 1}
+  ],
+  FixedModifiers: [               // Fixed attributes
+    {Attr: "tacz_attributes:reload_speed", Val: 0.05, Op: 1}
+  ],
+  Score: 42,                      // Rarity score
+  Rarity: 2,                      // 0=COMMON, 1=UNCOMMON, 2=RARE, 3=EPIC
+  Sealed: 1,                      // Regeneration prevention flag (boolean)
+  RerollCount: 3                  // Number of rerolls performed
+}
+```
+
+### Op Values
+
+| Op | Name | Description |
+|----|------|-------------|
+| 0 | ADDITION | Additive |
+| 1 | MULTIPLY_BASE | Multiplied against base value |
+| 2 | MULTIPLY_TOTAL | Multiplied against total value |
+
+---
+
+## Attribute Pool Configuration (attribute_pool.json)
+
+File: `config/tacz_attributes_addon/attribute_pool.json`
+
+A JSON file with default attribute pool entries is auto-generated on first launch.
+You can freely customize each attribute's appearance rate, value range, rarity score, and more.
+
+### Format
+
+```json
+{
+  "attributes": [
+    {
+      "attributeId": "tacz_attributes:gun_damage",
+      "minValue": -0.20,
+      "maxValue": 0.30,
+      "operation": "MULTIPLY_BASE",
+      "weight": 20,
+      "rarityTier": 1,
+      "applicableGunTypes": [],
+      "buffThreshold": 0.0,
+      "scoreWeight": 100,
+      "linkedAttribute": "tacz_attributes:some_other_attribute"
+    }
+  ]
+}
+```
+
+### Field Descriptions
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| `attributeId` | Attribute ID from TACZ Attributes | `"tacz_attributes:gun_damage"` |
+| `minValue` | Minimum randomly generated value | `-0.20` (= -20%) |
+| `maxValue` | Maximum randomly generated value | `0.30` (= +30%) |
+| `operation` | Operator (`MULTIPLY_BASE`, `ADDITION`, `MULTIPLY_TOTAL`) | `"MULTIPLY_BASE"` |
+| `weight` | Selection frequency (higher = more common) | `20` |
+| `rarityTier` | Rarity tier (1=common, 2=uncommon, 3=rare, 4=very rare) | `1` |
+| `applicableGunTypes` | Target gun types (empty = all). `pistol`, `sniper`, `rifle`, `shotgun`, `smg`, `rpg`, `mg` | `["rifle", "smg"]` |
+| `buffThreshold` | Values at or above this are considered buffs (usually 0.0) | `0.0` |
+| `scoreWeight` | Contribution to rarity score (negative = inverted attributes like recoil) | `100` or `-90` |
+| `linkedAttribute` | (Optional) Attribute ID of a partner that must be selected together. When set, selecting this attribute automatically adds the partner. | `"tacz_attributes:ammo_recovery_amount"` |
+
+### Linked Attributes (Paired Generation)
+
+The `linkedAttribute` field enables paired attribute generation. For example, if `ammo_recovery_chance` is selected, `ammo_recovery_amount` is automatically added as well.
+
+Default linked pairs:
+
+| Attribute | Linked To | Description |
+|-----------|-----------|-------------|
+| `ammo_recovery_chance` | `ammo_recovery_amount` | Recovery chance → amount |
+| `ammo_recovery_amount` | `ammo_recovery_chance` | Recovery amount → chance |
+| `ammo_recovery_percent` | `ammo_recovery_chance` | Recovery percent → chance |
+| `bonus_ammo_chance` | `bonus_ammo_amount` | Bonus ammo chance → amount |
+| `bonus_ammo_amount` | `bonus_ammo_chance` | Bonus ammo amount → chance |
+
+### Customization Examples
+
+Add a new attribute:
+```json
+{
+  "attributeId": "tacz_attributes:my_custom_attr",
+  "minValue": -0.10,
+  "maxValue": 0.20,
+  "operation": "MULTIPLY_BASE",
+  "weight": 10,
+  "rarityTier": 2,
+  "applicableGunTypes": ["rifle", "sniper"],
+  "buffThreshold": 0.0,
+  "scoreWeight": 80
+}
+```
+
+Custom linked attributes:
+```json
+{
+  "attributeId": "tacz_attributes:custom_chance",
+  "minValue": 0.0,
+  "maxValue": 0.20,
+  "operation": "ADDITION",
+  "weight": 5,
+  "rarityTier": 3,
+  "applicableGunTypes": [],
+  "buffThreshold": 0.0,
+  "scoreWeight": 150,
+  "linkedAttribute": "tacz_attributes:custom_amount"
+}
+```
+
+> **Note:** `attributeId` must match an attribute ID registered in the TACZ Attributes mod.
+> After editing the file, reload in-game with `/taczaddon reload`.
+
+---
+
+## Commands
+
+Requires OP permission (level 2).
+
+### `/taczaddon clear`
+Removes all addon attributes (random, fixed, score, rarity) from the held gun.
+
+### `/taczaddon clear random`
+Removes random attributes only. Fixed attributes are preserved.
+
+### `/taczaddon clear fixed`
+Removes fixed attributes only. Random attributes are preserved.
+
+### `/taczaddon reroll`
+Regenerates the random attributes on the held gun. Ignores the reroll count limit.
+
+### `/taczaddon reload`
+Reloads `attribute_pool.json` and `weapon_attributes.json`.
+Config changes take effect without restarting the game.
+
+### `/taczaddon info`
+Displays detailed addon data for the held gun. When Apotheosis integration is enabled, socket/gem information is also shown.
+
+### `/taczaddon config get <key>`
+Retrieves a config value. Tab completion shows available keys.
+
+### `/taczaddon config set <key> <value>`
+Temporarily changes a config value. Resets on server restart.
+
+**Configurable keys:**
+- `enableRandomOnObtain`, `enableWeaponTypeAttributes`, `enableAttributeStation`
+- `enableApotheosis`, `enableRarityScoring`
+- `randomMode` (FULL_RANDOM / ADAPTIVE / RARITY_ADAPTIVE / BALANCED)
+- `fixedAttributeMode` (FIXED_ONLY / RANDOM_ONLY / BOTH_STACKING / FIXED_INFLUENCES_RANDOM)
+- `minAttributes`, `maxAttributes`
+- `valueDistribution` (LINEAR / EXPONENTIAL / QUADRATIC)
+- `distributionExponent`, `raritySpreadFactor`, `buffDebuffRatio`
+- `uncommonThreshold`, `rareThreshold`, `epicThreshold`
+- `processingTime`, `consumeItem`, `consumeItemId`, `consumeCount`
+- `allowReroll`, `maxRerolls`
+- `gunBaseSockets`, `socketsScaleWithRarity`
+- `commonSockets`, `uncommonSockets`, `rareSockets`, `epicSockets`
+
+---
+
+## Fixed Attribute Reroll Independence
+
+Fixed attributes (defined in weapon_attributes.json) are not regenerated on reroll.
+
+- Fixed attributes are applied only on first obtain
+- Rerolling regenerates random attributes only
+- Fixed attributes are preserved as-is
+
+**Example:** If an AK-47 has `gun_damage: 0.95` configured as a fixed attribute:
+1. On first obtain: Fixed `gun_damage: 0.95` + random attributes are applied
+2. After reroll: Fixed `gun_damage: 0.95` is kept, only random attributes change
+3. Even if random generates `gun_damage: 1.2`, the fixed `0.95` remains and both stack
+
+---
+
+## Apotheosis Gun-Specific Gems
+
+When Apotheosis integration is enabled, the following gun-specific gems are available.
+
+| Gem | Attribute | Type |
+|-----|-----------|------|
+| Marksman Gem | gun_damage | Single attribute |
+| Stabilizer Gem | recoil (reduction) | Single attribute |
+| Quickloader Gem | reload_speed | Single attribute |
+| Sharpshooter Gem | headshot_multiplier | Single attribute |
+| Extended Mag Gem | magazine_capacity | Single attribute |
+| Rapid Fire Gem | rpm_multiplier | Single attribute |
+| Tactical Gem | ads_speed + ads_accuracy | Multi-attribute |
+| Conservation Gem | ammo_save_chance | Single attribute |
+| Ammo Recovery Gem | ammo_recovery_chance + ammo_recovery_amount | Multi-attribute |
+| Bonus Ammo Gem | bonus_ammo_chance + bonus_ammo_amount | Multi-attribute |
+| Knockback Gem | knockback_base | Single attribute |
+
+## Apotheosis Gun-Specific Affixes
+
+| Affix | Attribute |
+|-------|-----------|
+| Deadly | gun_damage |
+| Steadfast | recoil (reduction) |
+| Swift | reload_speed |
+| Precise | headshot_multiplier |
+| Capacious | magazine_capacity |
+| Rapid | rpm_multiplier |
+| Focused | ads_speed |
+| Economical | ammo_save_chance |
+| Accurate | ads_accuracy |
+| Agile | draw_speed |
+| Forceful | knockback_base |
