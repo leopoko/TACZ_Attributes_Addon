@@ -27,6 +27,12 @@ public class BarrageItem extends Item {
 
     private static final UUID RPM_MODIFIER_UUID =
             UUID.nameUUIDFromBytes("tacz_addon_barrage_rpm".getBytes());
+    private static final UUID DRAW_MODIFIER_UUID =
+            UUID.nameUUIDFromBytes("tacz_addon_barrage_draw".getBytes());
+    private static final UUID ADS_MODIFIER_UUID =
+            UUID.nameUUIDFromBytes("tacz_addon_barrage_ads".getBytes());
+    private static final UUID reload_MODIFIER_UUID =
+            UUID.nameUUIDFromBytes("tacz_addon_barrage_reload".getBytes());
 
     // Lazily built modifier map (attribute may not be registered at class load time)
     private Multimap<Attribute, AttributeModifier> cachedModifiers;
@@ -54,6 +60,22 @@ public class BarrageItem extends Item {
                 new ResourceLocation("tacz_attributes", "rpm_multiplier"));
         if (rpmAttr == null) {
             return null; // TACZ Attributes not loaded yet
+
+        }
+        Attribute drawAttr = ForgeRegistries.ATTRIBUTES.getValue(
+                new ResourceLocation("tacz_attributes", "draw_speed"));
+        if (drawAttr == null) {
+            return null; // TACZ Attributes not loaded yet
+        }
+        Attribute adsAttr = ForgeRegistries.ATTRIBUTES.getValue(
+                new ResourceLocation("tacz_attributes", "ads_speed"));
+        if (adsAttr == null) {
+            return null; // TACZ Attributes not loaded yet
+        }
+        Attribute reloadAttr = ForgeRegistries.ATTRIBUTES.getValue(
+                new ResourceLocation("tacz_attributes", "reload_speed"));
+        if (reloadAttr == null) {
+            return null; // TACZ Attributes not loaded yet
         }
 
         ImmutableMultimap.Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
@@ -61,6 +83,24 @@ public class BarrageItem extends Item {
                 RPM_MODIFIER_UUID,
                 "Barrage RPM boost",
                 1.0, // +100% → doubles the RPM (base 1.0 × (1 + 1.0) = 2.0)
+                AttributeModifier.Operation.MULTIPLY_BASE
+        ));
+        builder.put(drawAttr, new AttributeModifier(
+                DRAW_MODIFIER_UUID,
+                "Barrage draw speed boost",
+                0.5, // +50% → 1.5× draw speed (base 1.0 × (1 + 0.5) = 1.5)
+                AttributeModifier.Operation.MULTIPLY_BASE
+        ));
+        builder.put(adsAttr, new AttributeModifier(
+                ADS_MODIFIER_UUID,
+                "Barrage ADS speed boost",
+                0.5, // +50% → 1.5× ADS speed (base 1.0 × (1 + 0.5) = 1.5)
+                AttributeModifier.Operation.MULTIPLY_BASE
+        ));
+        builder.put(reloadAttr, new AttributeModifier(
+                reload_MODIFIER_UUID,
+                "Barrage reload speed penalty",
+                1.0,
                 AttributeModifier.Operation.MULTIPLY_BASE
         ));
         return builder.build();

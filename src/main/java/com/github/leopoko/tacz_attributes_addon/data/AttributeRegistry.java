@@ -219,36 +219,37 @@ public class AttributeRegistry {
         add("tacz_attributes:ads_accuracy", -0.10, 0.30, MULT, 15, 1, all, 0.0, 80);
 
         // === Recoil attributes (lower is better, so inverted scoring) ===
-        add("tacz_attributes:recoil", -0.30, 0.20, MULT, 18, 1, all, 0.0, -90);
-        add("tacz_attributes:vertical_recoil", -0.25, 0.15, MULT, 12, 2, all, 0.0, -85);
-        add("tacz_attributes:horizontal_recoil", -0.25, 0.15, MULT, 12, 2, all, 0.0, -85);
+        add("tacz_attributes:recoil", -0.50, 0.50, MULT, 18, 1, all, 0.0, -90);
+        add("tacz_attributes:vertical_recoil", -0.40, 0.40, MULT, 12, 2, all, 0.0, -85);
+        add("tacz_attributes:horizontal_recoil", -0.20, 0.20, MULT, 12, 2, all, 0.0, -85);
 
         // === Speed attributes ===
         add("tacz_attributes:reload_speed", -0.15, 0.30, MULT, 18, 1, all, 0.0, 90);
         add("tacz_attributes:bolt_action_speed", -0.10, 0.25, MULT, 10, 2, Set.of("sniper", "shotgun"), 0.0, 80);
         add("tacz_attributes:draw_speed", -0.15, 0.30, MULT, 12, 1, all, 0.0, 60);
-        add("tacz_attributes:ads_speed", -0.10, 0.25, MULT, 12, 1, all, 0.0, 60);
+        add("tacz_attributes:ads_speed", -0.30, 0.40, MULT, 12, 1, all, 0.0, 60);
         add("tacz_attributes:rpm_multiplier", -0.10, 0.20, MULT, 8, 3, noRpg, 0.0, 150);
         add("tacz_attributes:gun_movement_speed", -0.10, 0.15, MULT, 10, 2, all, 0.0, 70);
 
         // === Magazine & ammo attributes ===
-        add("tacz_attributes:magazine_capacity", -0.15, 0.30, MULT, 15, 2, noRpg, 0.0, 80);
+        add("tacz_attributes:magazine_capacity", -0.30, 0.30, MULT, 15, 2, noRpg, 0.0, 80);
         add("tacz_attributes:ammo_save_chance", 0.0, 0.15, ADD, 8, 3, noRpg, 0.0, 200);
         add("tacz_attributes:reload_ammo_save_chance", 0.0, 0.10, ADD, 6, 3, noRpg, 0.0, 150);
 
         // === Kill recovery attributes (chance and amount/percent are linked pairs) ===
         addLinked("tacz_attributes:ammo_recovery_chance", 0.0, 0.20, ADD, 6, 3, noRpg, 0.0, 180, "tacz_attributes:ammo_recovery_amount");
         addLinked("tacz_attributes:ammo_recovery_amount", 0.0, 5.0, ADD, 5, 3, noRpg, 0.0, 30, "tacz_attributes:ammo_recovery_chance");
-        addLinked("tacz_attributes:ammo_recovery_percent", 0.0, 0.10, ADD, 4, 4, noRpg, 0.0, 200, "tacz_attributes:ammo_recovery_chance");
+        addLinked("tacz_attributes:ammo_recovery_percent", 0.0, 0.50, ADD, 4, 4, noRpg, 0.0, 200, "tacz_attributes:ammo_recovery_chance");
 
         // === Bonus ammo (chance and amount are linked pairs) ===
         addLinked("tacz_attributes:bonus_ammo_chance", 0.0, 0.15, ADD, 5, 3, noRpg, 0.0, 180, "tacz_attributes:bonus_ammo_amount");
-        addLinked("tacz_attributes:bonus_ammo_amount", 0.0, 3.0, ADD, 4, 3, noRpg, 0.0, 30, "tacz_attributes:bonus_ammo_chance");
+        addLinked("tacz_attributes:bonus_ammo_amount", 0.0, 5.0, ADD, 4, 3, noRpg, 0.0, 30, "tacz_attributes:bonus_ammo_chance");
+        addLinked("tacz_attributes:bonus_ammo_percent", 0.0, 0.50, ADD, 4, 3, noRpg, 0.0, 30, "tacz_attributes:bonus_ammo_chance");
 
         // === Combat modifiers ===
-        add("tacz_attributes:knockback_multiplier", -0.20, 0.40, MULT, 8, 2, all, 0.0, 40);
-        add("tacz_attributes:knockback_base", 0.0, 0.3, ADD, 6, 2, closeCombat, 0.0, 50);
-        add("tacz_attributes:pierce_multiplier", -0.10, 0.30, MULT, 6, 3, noRpg, 0.0, 100);
+        addLinked("tacz_attributes:knockback_multiplier", 0.0, 1.40, MULT, 8, 2, all, 0.0, 40, "tacz_attributes:knockback_base");
+        addLinked("tacz_attributes:knockback_base", 0.0, 1.2, ADD, 6, 2, closeCombat, 0.0, 50, "tacz_attributes:knockback_multiplier");
+        add("tacz_attributes:pierce_multiplier", -0.10, 1.30, MULT, 6, 3, noRpg, 0.0, 100);
 
         // === Fire mode specific (auto) ===
         add("tacz_attributes:auto_damage", -0.10, 0.20, MULT, 8, 2, autoCapable, 0.0, 90);

@@ -98,7 +98,7 @@ public class CommonConfig {
 
         MAX_ATTRIBUTES = builder
                 .comment("Maximum number of random attributes per gun")
-                .defineInRange("maxAttributes", 4, 0, 20);
+                .defineInRange("maxAttributes", 5, 0, 20);
 
         VALUE_DISTRIBUTION = builder
                 .comment("Value distribution curve: LINEAR, EXPONENTIAL, QUADRATIC")
@@ -122,15 +122,15 @@ public class CommonConfig {
 
         UNCOMMON_THRESHOLD = builder
                 .comment("Minimum score for UNCOMMON rarity")
-                .defineInRange("uncommonThreshold", 100, 0, Integer.MAX_VALUE);
+                .defineInRange("uncommonThreshold", 50, 0, Integer.MAX_VALUE);
 
         RARE_THRESHOLD = builder
                 .comment("Minimum score for RARE rarity")
-                .defineInRange("rareThreshold", 300, 0, Integer.MAX_VALUE);
+                .defineInRange("rareThreshold", 70, 0, Integer.MAX_VALUE);
 
         EPIC_THRESHOLD = builder
                 .comment("Minimum score for EPIC rarity")
-                .defineInRange("epicThreshold", 600, 0, Integer.MAX_VALUE);
+                .defineInRange("epicThreshold", 100, 0, Integer.MAX_VALUE);
 
         builder.pop();
 
