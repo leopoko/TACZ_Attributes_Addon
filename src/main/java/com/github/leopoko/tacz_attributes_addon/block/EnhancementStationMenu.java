@@ -5,6 +5,7 @@ import com.github.leopoko.tacz_attributes_addon.network.EnhancementChoicesPacket
 import com.tacz.guns.api.item.IGun;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -14,6 +15,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Container menu for the Enhancement Station.
@@ -136,6 +138,11 @@ public class EnhancementStationMenu extends AbstractContainerMenu {
      * Called every server tick. Detects gun slot changes and triggers
      * choice regeneration + sync so that placing a gun while the GUI
      * is open immediately shows enhancement choices.
+     *
+     * IMPORTANT: We compare by gun identity (GunId) rather than full
+     * ItemStack.matches() because enhancements modify the gun's NBT,
+     * and ItemStack.matches() would detect those NBT changes as a
+     * "new gun", causing choices to be regenerated unexpectedly.
      */
     @Override
     public void broadcastChanges() {
@@ -144,11 +151,42 @@ public class EnhancementStationMenu extends AbstractContainerMenu {
         if (!(player instanceof ServerPlayer serverPlayer)) return;
 
         ItemStack currentGun = getSlot(0).getItem();
-        if (!ItemStack.matches(currentGun, lastGunItem)) {
+        if (hasGunChanged(currentGun, lastGunItem)) {
             lastGunItem = currentGun.copy();
             blockEntity.generateChoices(currentGun, serverPlayer.getUUID());
             blockEntity.sendChoicesToPlayer(serverPlayer);
         }
+    }
+
+    /**
+     * Checks if the gun in the slot has actually changed identity
+     * (placed/removed/swapped), ignoring NBT modifications like
+     * enhancement application.
+     */
+    private boolean hasGunChanged(ItemStack current, ItemStack previous) {
+        boolean currentEmpty = current.isEmpty();
+        boolean previousEmpty = previous.isEmpty();
+
+        // One is empty and the other isn't -> gun was placed or removed
+        if (currentEmpty != previousEmpty) return true;
+
+        // Both empty -> no change
+        if (currentEmpty) return false;
+
+        // Compare gun identity by GunId
+        IGun currentIGun = IGun.getIGunOrNull(current);
+        IGun previousIGun = IGun.getIGunOrNull(previous);
+
+        // One is a gun and the other isn't -> changed
+        if ((currentIGun == null) != (previousIGun == null)) return true;
+
+        // Neither is a gun -> no change
+        if (currentIGun == null) return false;
+
+        // Both are guns, compare their GunId
+        ResourceLocation currentId = currentIGun.getGunId(current);
+        ResourceLocation previousId = previousIGun.getGunId(previous);
+        return !Objects.equals(currentId, previousId);
     }
 
     @Override
