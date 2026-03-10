@@ -5,6 +5,7 @@ import com.github.leopoko.tacz_attributes_addon.network.EnhancementChoicesPacket
 import com.tacz.guns.api.item.IGun;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -20,6 +21,10 @@ import java.util.List;
  */
 public class EnhancementStationMenu extends AbstractContainerMenu {
     private final EnhancementStationBlockEntity blockEntity;
+    private final Player player;
+
+    // Server-side: track gun slot changes to auto-generate choices
+    private ItemStack lastGunItem = ItemStack.EMPTY;
 
     // Client-side data synced via packets
     private List<EnhancementChoicesPacket.ChoiceEntry> clientChoices = new ArrayList<>();
@@ -30,14 +35,23 @@ public class EnhancementStationMenu extends AbstractContainerMenu {
 
     // Client constructor (from network)
     public EnhancementStationMenu(int containerId, Inventory playerInv, FriendlyByteBuf buf) {
-        this(containerId, playerInv, getBlockEntity(playerInv, buf));
+        super(ModMenuTypes.ENHANCEMENT_STATION.get(), containerId);
+        this.blockEntity = getBlockEntity(playerInv, buf);
+        this.player = playerInv.player;
+        this.lastGunItem = blockEntity.getItem(0).copy();
+        initSlots(playerInv);
     }
 
     // Server constructor
     public EnhancementStationMenu(int containerId, Inventory playerInv, EnhancementStationBlockEntity blockEntity) {
         super(ModMenuTypes.ENHANCEMENT_STATION.get(), containerId);
         this.blockEntity = blockEntity;
+        this.player = playerInv.player;
+        this.lastGunItem = blockEntity.getItem(0).copy();
+        initSlots(playerInv);
+    }
 
+    private void initSlots(Inventory playerInv) {
         // Slot 0: Gun input
         addSlot(new Slot(blockEntity, 0, 26, 35) {
             @Override
@@ -116,6 +130,25 @@ public class EnhancementStationMenu extends AbstractContainerMenu {
 
     public BlockPos getBlockPos() {
         return blockEntity.getBlockPos();
+    }
+
+    /**
+     * Called every server tick. Detects gun slot changes and triggers
+     * choice regeneration + sync so that placing a gun while the GUI
+     * is open immediately shows enhancement choices.
+     */
+    @Override
+    public void broadcastChanges() {
+        super.broadcastChanges();
+
+        if (!(player instanceof ServerPlayer serverPlayer)) return;
+
+        ItemStack currentGun = getSlot(0).getItem();
+        if (!ItemStack.matches(currentGun, lastGunItem)) {
+            lastGunItem = currentGun.copy();
+            blockEntity.generateChoices(currentGun, serverPlayer.getUUID());
+            blockEntity.sendChoicesToPlayer(serverPlayer);
+        }
     }
 
     @Override
