@@ -15,6 +15,9 @@ public class ModItems {
     public static final RegistryObject<Item> ATTRIBUTE_STATION = ITEMS.register("attribute_station",
             () -> new BlockItem(ModBlocks.ATTRIBUTE_STATION.get(), new Item.Properties()));
 
+    public static final RegistryObject<Item> ENHANCEMENT_STATION = ITEMS.register("enhancement_station",
+            () -> new BlockItem(ModBlocks.ENHANCEMENT_STATION.get(), new Item.Properties()));
+
     public static final RegistryObject<Item> BARRAGE = ITEMS.register("barrage",
             BarrageItem::new);
 }

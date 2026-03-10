@@ -51,6 +51,19 @@ public class CommonConfig {
     public static final ForgeConfigSpec.IntValue RARE_SOCKETS;
     public static final ForgeConfigSpec.IntValue EPIC_SOCKETS;
 
+    // Enhancement Station settings
+    public static final ForgeConfigSpec.BooleanValue ENABLE_ENHANCEMENT_STATION;
+    public static final ForgeConfigSpec.ConfigValue<String> ENHANCEMENT_MATERIAL_ID;
+    public static final ForgeConfigSpec.IntValue ENHANCEMENT_APPLY_COST;
+    public static final ForgeConfigSpec.IntValue ENHANCEMENT_REROLL_COST;
+    public static final ForgeConfigSpec.IntValue ENHANCEMENT_CHOICE_COUNT;
+    public static final ForgeConfigSpec.IntValue ENHANCEMENT_MAX_COUNT;
+    public static final ForgeConfigSpec.BooleanValue ENHANCEMENT_COST_SCALING;
+    public static final ForgeConfigSpec.IntValue ENHANCEMENT_COST_SCALING_AMOUNT;
+    public static final ForgeConfigSpec.DoubleValue ENHANCEMENT_MIN_VALUE;
+    public static final ForgeConfigSpec.DoubleValue ENHANCEMENT_MAX_VALUE;
+    public static final ForgeConfigSpec.BooleanValue ENHANCEMENT_ONLY_POSITIVE;
+
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
 
@@ -188,6 +201,54 @@ public class CommonConfig {
         EPIC_SOCKETS = builder
                 .comment("Socket count for EPIC rarity guns")
                 .defineInRange("epicSockets", 4, 0, 6);
+
+        builder.pop();
+
+        builder.comment("Enhancement Station Block").push("enhancement");
+
+        ENABLE_ENHANCEMENT_STATION = builder
+                .comment("Enable the Enhancement Station block for selectively enhancing gun attributes")
+                .define("enableEnhancementStation", true);
+
+        ENHANCEMENT_MATERIAL_ID = builder
+                .comment("Material item ID required for enhancements (e.g., 'minecraft:diamond')")
+                .define("materialId", "minecraft:diamond");
+
+        ENHANCEMENT_APPLY_COST = builder
+                .comment("Number of materials consumed when applying an enhancement")
+                .defineInRange("applyCost", 1, 1, 64);
+
+        ENHANCEMENT_REROLL_COST = builder
+                .comment("Number of materials consumed when rerolling choices")
+                .defineInRange("rerollCost", 1, 1, 64);
+
+        ENHANCEMENT_CHOICE_COUNT = builder
+                .comment("Number of enhancement choices shown to the player")
+                .defineInRange("choiceCount", 3, 1, 10);
+
+        ENHANCEMENT_MAX_COUNT = builder
+                .comment("Maximum number of enhancements per gun (0 = unlimited)")
+                .defineInRange("maxEnhancements", 10, 0, 100);
+
+        ENHANCEMENT_COST_SCALING = builder
+                .comment("Whether material cost increases with each enhancement level")
+                .define("costScaling", false);
+
+        ENHANCEMENT_COST_SCALING_AMOUNT = builder
+                .comment("Additional materials per enhancement level when cost scaling is enabled")
+                .defineInRange("costScalingAmount", 1, 1, 10);
+
+        ENHANCEMENT_MIN_VALUE = builder
+                .comment("Minimum enhancement value as a fraction of the attribute's range")
+                .defineInRange("minValueMultiplier", 0.01, 0.001, 1.0);
+
+        ENHANCEMENT_MAX_VALUE = builder
+                .comment("Maximum enhancement value as a fraction of the attribute's range")
+                .defineInRange("maxValueMultiplier", 0.10, 0.001, 1.0);
+
+        ENHANCEMENT_ONLY_POSITIVE = builder
+                .comment("If true, enhancements are always positive (buffs only)")
+                .define("onlyPositive", true);
 
         builder.pop();
 

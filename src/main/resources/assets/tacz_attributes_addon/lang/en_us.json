@@ -1,6 +1,7 @@
 {
   "itemGroup.tacz_attributes_addon": "TACZ Attributes Addon",
   "block.tacz_attributes_addon.attribute_station": "Attribute Station",
+  "block.tacz_attributes_addon.enhancement_station": "Enhancement Station",
 
   "tooltip.tacz_attributes_addon.rarity": "Rarity: %s",
   "tooltip.tacz_attributes_addon.rarity.common": "Common",
@@ -11,10 +12,21 @@
   "tooltip.tacz_attributes_addon.fixed_modifiers": "Fixed Modifiers:",
   "tooltip.tacz_attributes_addon.reroll_count": "Rerolls: %d/%d",
   "tooltip.tacz_attributes_addon.reroll_count_unlimited": "Rerolls: %d",
+  "tooltip.tacz_attributes_addon.enhanced_modifiers": "Enhanced Modifiers:",
+  "tooltip.tacz_attributes_addon.enhance_count": "Enhancements: %d/%d",
+  "tooltip.tacz_attributes_addon.enhance_count_unlimited": "Enhancements: %d",
 
   "gui.tacz_attributes_addon.slot_gun": "Gun",
   "gui.tacz_attributes_addon.slot_material": "Material",
   "gui.tacz_attributes_addon.slot_result": "Result",
+
+  "gui.tacz_attributes_addon.enhancement.slot_gun": "Gun",
+  "gui.tacz_attributes_addon.enhancement.slot_material": "Material",
+  "gui.tacz_attributes_addon.enhancement.reroll": "Reroll",
+  "gui.tacz_attributes_addon.enhancement.count": "Enhancements: %d/%d",
+  "gui.tacz_attributes_addon.enhancement.count_unlimited": "Enhancements: %d",
+  "gui.tacz_attributes_addon.enhancement.max_reached": "MAX ENHANCEMENTS",
+  "gui.tacz_attributes_addon.enhancement.no_gun": "Place a gun to begin",
 
   "attribute.tacz_attributes.gun_damage": "Gun Damage",
   "attribute.tacz_attributes.reload_speed": "Reload Speed",

@@ -91,6 +91,29 @@ public class TooltipHandler {
             }
         }
 
+        // Add enhanced modifiers
+        List<GunModifier> enhancedMods = GunAttributeData.getEnhancedModifiers(stack);
+        if (!enhancedMods.isEmpty()) {
+            tooltip.add(Component.translatable("tooltip.tacz_attributes_addon.enhanced_modifiers")
+                    .withStyle(ChatFormatting.LIGHT_PURPLE));
+            for (GunModifier mod : enhancedMods) {
+                addModifierTooltip(tooltip, mod, entryMap);
+            }
+        }
+
+        // Add enhancement count
+        int enhanceCount = GunAttributeData.getEnhanceCount(stack);
+        if (enhanceCount > 0) {
+            int maxEnhancements = CommonConfig.ENHANCEMENT_MAX_COUNT.get();
+            if (maxEnhancements > 0) {
+                tooltip.add(Component.translatable("tooltip.tacz_attributes_addon.enhance_count",
+                        enhanceCount, maxEnhancements).withStyle(ChatFormatting.DARK_GRAY));
+            } else {
+                tooltip.add(Component.translatable("tooltip.tacz_attributes_addon.enhance_count_unlimited",
+                        enhanceCount).withStyle(ChatFormatting.DARK_GRAY));
+            }
+        }
+
         // Add gem/socket info if Apotheosis is present
         addGemTooltipsIfPresent(stack, tooltip);
     }

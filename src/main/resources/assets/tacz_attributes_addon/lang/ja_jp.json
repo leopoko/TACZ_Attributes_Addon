@@ -1,6 +1,7 @@
 {
   "itemGroup.tacz_attributes_addon": "TACZ Attributes Addon",
   "block.tacz_attributes_addon.attribute_station": "属性ステーション",
+  "block.tacz_attributes_addon.enhancement_station": "強化ステーション",
 
   "tooltip.tacz_attributes_addon.rarity": "レアリティ: %s",
   "tooltip.tacz_attributes_addon.rarity.common": "コモン",
@@ -11,10 +12,21 @@
   "tooltip.tacz_attributes_addon.fixed_modifiers": "固定属性:",
   "tooltip.tacz_attributes_addon.reroll_count": "リロール回数: %d/%d",
   "tooltip.tacz_attributes_addon.reroll_count_unlimited": "リロール回数: %d",
+  "tooltip.tacz_attributes_addon.enhanced_modifiers": "強化属性:",
+  "tooltip.tacz_attributes_addon.enhance_count": "強化回数: %d/%d",
+  "tooltip.tacz_attributes_addon.enhance_count_unlimited": "強化回数: %d",
 
   "gui.tacz_attributes_addon.slot_gun": "銃",
   "gui.tacz_attributes_addon.slot_material": "素材",
   "gui.tacz_attributes_addon.slot_result": "結果",
+
+  "gui.tacz_attributes_addon.enhancement.slot_gun": "銃",
+  "gui.tacz_attributes_addon.enhancement.slot_material": "素材",
+  "gui.tacz_attributes_addon.enhancement.reroll": "リロール",
+  "gui.tacz_attributes_addon.enhancement.count": "強化回数: %d/%d",
+  "gui.tacz_attributes_addon.enhancement.count_unlimited": "強化回数: %d",
+  "gui.tacz_attributes_addon.enhancement.max_reached": "強化上限に達しました",
+  "gui.tacz_attributes_addon.enhancement.no_gun": "銃を配置してください",
 
   "attribute.tacz_attributes.gun_damage": "銃ダメージ",
   "attribute.tacz_attributes.reload_speed": "リロード速度",

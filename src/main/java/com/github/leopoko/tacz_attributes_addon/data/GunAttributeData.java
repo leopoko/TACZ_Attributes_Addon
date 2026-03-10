@@ -29,6 +29,8 @@ public class GunAttributeData {
     public static final String RARITY_TAG = "Rarity";
     public static final String SEALED_TAG = "Sealed";
     public static final String REROLL_COUNT_TAG = "RerollCount";
+    public static final String ENHANCED_MODIFIERS_TAG = "EnhancedModifiers";
+    public static final String ENHANCE_COUNT_TAG = "EnhanceCount";
 
     public static boolean hasAddonData(ItemStack stack) {
         CompoundTag tag = stack.getTag();
@@ -61,10 +63,31 @@ public class GunAttributeData {
         writeModifierList(stack, FIXED_MODIFIERS_TAG, modifiers);
     }
 
+    public static List<GunModifier> getEnhancedModifiers(ItemStack stack) {
+        return readModifierList(stack, ENHANCED_MODIFIERS_TAG);
+    }
+
+    public static void setEnhancedModifiers(ItemStack stack, List<GunModifier> modifiers) {
+        writeModifierList(stack, ENHANCED_MODIFIERS_TAG, modifiers);
+    }
+
+    public static int getEnhanceCount(ItemStack stack) {
+        return getOrCreateRoot(stack).getInt(ENHANCE_COUNT_TAG);
+    }
+
+    public static void setEnhanceCount(ItemStack stack, int count) {
+        getOrCreateRoot(stack).putInt(ENHANCE_COUNT_TAG, count);
+    }
+
+    public static void incrementEnhanceCount(ItemStack stack) {
+        setEnhanceCount(stack, getEnhanceCount(stack) + 1);
+    }
+
     public static List<GunModifier> getAllModifiers(ItemStack stack) {
         List<GunModifier> all = new ArrayList<>();
         all.addAll(getModifiers(stack));
         all.addAll(getFixedModifiers(stack));
+        all.addAll(getEnhancedModifiers(stack));
         return all;
     }
 

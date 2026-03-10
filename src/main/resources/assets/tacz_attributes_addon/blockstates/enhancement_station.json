@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "tacz_attributes_addon:block/enhancement_station"
+    }
+  }
+}

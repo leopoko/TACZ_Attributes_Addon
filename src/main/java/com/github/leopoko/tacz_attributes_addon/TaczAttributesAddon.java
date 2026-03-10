@@ -1,6 +1,8 @@
 package com.github.leopoko.tacz_attributes_addon;
 
 import com.github.leopoko.tacz_attributes_addon.block.AttributeStationScreen;
+import com.github.leopoko.tacz_attributes_addon.block.EnhancementStationScreen;
+import com.github.leopoko.tacz_attributes_addon.network.ModNetwork;
 import com.github.leopoko.tacz_attributes_addon.compat.apotheosis.ApotheosisCompat;
 import com.github.leopoko.tacz_attributes_addon.command.ModCommands;
 import com.github.leopoko.tacz_attributes_addon.config.CommonConfig;
@@ -48,6 +50,7 @@ public class TaczAttributesAddon {
                     .icon(() -> ModItems.ATTRIBUTE_STATION.get().getDefaultInstance())
                     .displayItems((params, output) -> {
                         output.accept(ModItems.ATTRIBUTE_STATION.get());
+                        output.accept(ModItems.ENHANCEMENT_STATION.get());
                         output.accept(ModItems.BARRAGE.get());
                     })
                     .build());
@@ -70,6 +73,9 @@ public class TaczAttributesAddon {
 
         // Register config
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC);
+
+        // Register network packets
+        ModNetwork.init();
 
         // Register custom recipe ingredient types
         GunIngredient.register();
@@ -103,6 +109,7 @@ public class TaczAttributesAddon {
         public static void onClientSetup(FMLClientSetupEvent event) {
             event.enqueueWork(() -> {
                 MenuScreens.register(ModMenuTypes.ATTRIBUTE_STATION.get(), AttributeStationScreen::new);
+                MenuScreens.register(ModMenuTypes.ENHANCEMENT_STATION.get(), EnhancementStationScreen::new);
             });
             LOGGER.info("TACZ Attributes Addon client setup complete");
         }

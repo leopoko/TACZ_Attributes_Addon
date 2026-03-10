@@ -2,6 +2,7 @@ package com.github.leopoko.tacz_attributes_addon.init;
 
 import com.github.leopoko.tacz_attributes_addon.TaczAttributesAddon;
 import com.github.leopoko.tacz_attributes_addon.block.AttributeStationBlock;
+import com.github.leopoko.tacz_attributes_addon.block.EnhancementStationBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -13,4 +14,7 @@ public class ModBlocks {
 
     public static final RegistryObject<Block> ATTRIBUTE_STATION = BLOCKS.register("attribute_station",
             AttributeStationBlock::new);
+
+    public static final RegistryObject<Block> ENHANCEMENT_STATION = BLOCKS.register("enhancement_station",
+            EnhancementStationBlock::new);
 }
