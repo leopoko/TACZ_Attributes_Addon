@@ -8,6 +8,7 @@ import com.github.leopoko.tacz_attributes_addon.data.GunAttributeData;
 import com.github.leopoko.tacz_attributes_addon.data.GunModifier;
 import com.tacz.guns.api.item.IGun;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -42,7 +43,7 @@ public class TooltipHandler {
         // Add separator
         tooltip.add(Component.empty());
 
-        // Add rarity info
+        // Always show rarity info (compact summary)
         if (CommonConfig.ENABLE_RARITY_SCORING.get()) {
             Rarity rarity = GunAttributeData.getRarity(stack);
             int score = GunAttributeData.getScore(stack);
@@ -52,6 +53,13 @@ public class TooltipHandler {
                             .withStyle(color))
                     .withStyle(ChatFormatting.GRAY)
                     .append(Component.literal(" (" + score + ")").withStyle(ChatFormatting.DARK_GRAY)));
+        }
+
+        // Show detailed modifiers only when Shift is held
+        if (!Screen.hasShiftDown()) {
+            tooltip.add(Component.translatable("tooltip.tacz_attributes_addon.hold_shift")
+                    .withStyle(ChatFormatting.DARK_GRAY));
+            return;
         }
 
         // Add reroll count
@@ -114,17 +122,8 @@ public class TooltipHandler {
             }
         }
 
-        // Add gem/socket info if Apotheosis is present
-        addGemTooltipsIfPresent(stack, tooltip);
-    }
-
-    private static void addGemTooltipsIfPresent(ItemStack stack, List<Component> tooltip) {
-        try {
-            if (!com.github.leopoko.tacz_attributes_addon.compat.apotheosis.ApotheosisCompat.isApotheosisPresent()) return;
-            com.github.leopoko.tacz_attributes_addon.compat.apotheosis.GemTooltipHelper.addGemTooltips(stack, tooltip);
-        } catch (NoClassDefFoundError ignored) {
-            // Apotheosis classes not available
-        }
+        // Note: Socket/gem info is NOT added here.
+        // Apotheosis natively adds its own socket tooltip via its event handler.
     }
 
     private static void addModifierTooltip(List<Component> tooltip, GunModifier mod,

@@ -15,6 +15,7 @@
   "tooltip.tacz_attributes_addon.enhanced_modifiers": "Enhanced Modifiers:",
   "tooltip.tacz_attributes_addon.enhance_count": "Enhancements: %d/%d",
   "tooltip.tacz_attributes_addon.enhance_count_unlimited": "Enhancements: %d",
+  "tooltip.tacz_attributes_addon.hold_shift": "Hold [Shift] for details",
 
   "gui.tacz_attributes_addon.slot_gun": "Gun",
   "gui.tacz_attributes_addon.slot_material": "Material",

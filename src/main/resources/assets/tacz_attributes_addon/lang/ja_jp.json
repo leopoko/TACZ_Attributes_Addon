@@ -15,6 +15,7 @@
   "tooltip.tacz_attributes_addon.enhanced_modifiers": "強化属性:",
   "tooltip.tacz_attributes_addon.enhance_count": "強化回数: %d/%d",
   "tooltip.tacz_attributes_addon.enhance_count_unlimited": "強化回数: %d",
+  "tooltip.tacz_attributes_addon.hold_shift": "[Shift] で詳細表示",
 
   "gui.tacz_attributes_addon.slot_gun": "銃",
   "gui.tacz_attributes_addon.slot_material": "素材",
