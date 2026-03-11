@@ -182,6 +182,8 @@ src/main/resources/
 | `/taczaddon clear` | 手持ちの銃から全アドオン属性を削除 | OP |
 | `/taczaddon clear random` | ランダム属性のみ削除 | OP |
 | `/taczaddon clear fixed` | 固定属性のみ削除 | OP |
+| `/taczaddon clear enhanced` | 強化属性のみ削除 | OP |
+| `/taczaddon add <attr> <value> [op]` | 手持ちの銃に属性を手動追加（強化属性に追加） | OP |
 | `/taczaddon reroll` | 手持ちの銃のランダム属性をリロール | OP |
 | `/taczaddon reload` | attribute_pool.json, weapon_attributes.json, gun_attribute_overrides.json をリロード | OP |
 | `/taczaddon info` | 手持ちの銃のアドオンデータを詳細表示 | OP |
@@ -208,6 +210,8 @@ src/main/resources/
 - `EnhancementChoicesPacket`（S→C）で選択肢送信、`EnhancementActionPacket`（C→S）で選択送信
 - 選択肢はプレイヤーごとにサーバー側の`playerChoices`マップで管理（transient）
 - 銃の同一性はGunId比較で判定（NBT全体ではなく）→ 選択肢のフラッシュ防止
+- **属性タイプ制限**: `maxTypes`（グローバル）または銃別 `maxEnhancement`（`gun_attribute_overrides.json`）で強化属性の種類数を制限。上限到達時は既存の強化属性のみが選択肢に表示
+- **既存属性限定モード**: `existingOnly` config で銃に既にある属性のみを選択肢に制限
 
 ## Barrage アイテム
 
@@ -260,6 +264,7 @@ src/main/resources/
   - `minAttributes`/`maxAttributes`: 銃ごとの属性個数制限（省略時はグローバル値を使用）
   - `minAttributesPos`/`maxAttributesPos`: 正の属性（バフ）個数を個別制御
   - `minAttributesNeg`/`maxAttributesNeg`: 負の属性（デバフ）個数を個別制御
+  - `maxEnhancement`: Enhancement Stationの強化属性タイプ数上限（省略時はグローバル `maxTypes` を使用。0=無制限）
   - `attributes`: 許可属性のホワイトリスト。各属性に以下のオプションフィールドを指定可能（全て省略時は `attribute_pool.json` の値を使用）:
     - `minValue`/`maxValue`: カスタム値範囲
     - `minValuePos`/`maxValuePos`: 正の値（バフ）専用の値範囲

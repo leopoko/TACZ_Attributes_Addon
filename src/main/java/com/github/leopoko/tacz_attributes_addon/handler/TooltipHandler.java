@@ -5,8 +5,11 @@ import com.github.leopoko.tacz_attributes_addon.config.CommonConfig;
 import com.github.leopoko.tacz_attributes_addon.data.AttributeEntry;
 import com.github.leopoko.tacz_attributes_addon.data.AttributeRegistry;
 import com.github.leopoko.tacz_attributes_addon.data.GunAttributeData;
+import com.github.leopoko.tacz_attributes_addon.data.GunAttributeOverrides;
 import com.github.leopoko.tacz_attributes_addon.data.GunModifier;
+import com.github.leopoko.tacz_attributes_addon.random.GunTypeFilter;
 import com.tacz.guns.api.item.IGun;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -86,6 +89,27 @@ public class TooltipHandler {
                     .withStyle(ChatFormatting.GOLD));
             for (GunModifier mod : randomMods) {
                 addModifierTooltip(tooltip, mod, entryMap);
+            }
+        }
+
+        // Show empty attribute slots if enabled
+        if (CommonConfig.SHOW_EMPTY_SLOTS.get()) {
+            int currentCount = randomMods.size();
+            int maxAttributes = CommonConfig.MAX_ATTRIBUTES.get();
+
+            // Check per-gun override
+            ResourceLocation gunId = GunTypeFilter.resolveGunId(stack);
+            if (gunId != null) {
+                GunAttributeOverrides.GunOverride override = GunAttributeOverrides.getOverride(gunId.toString());
+                if (override != null && override.hasMaxAttributes()) {
+                    maxAttributes = override.getMaxAttributes();
+                }
+            }
+
+            int emptySlots = maxAttributes - currentCount;
+            for (int i = 0; i < emptySlots; i++) {
+                tooltip.add(Component.translatable("tooltip.tacz_attributes_addon.empty_slot")
+                        .withStyle(ChatFormatting.DARK_GRAY));
             }
         }
 

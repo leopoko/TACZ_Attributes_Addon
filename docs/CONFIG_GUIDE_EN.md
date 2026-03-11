@@ -40,6 +40,12 @@ Enables the rarity scoring system based on applied attributes.
 - `true`: Calculates a score from attribute values and scoreWeights, then determines rarity (COMMON/UNCOMMON/RARE/EPIC). The gun item's name color changes to match its rarity.
 - `false`: Skips rarity calculation. All guns display as COMMON.
 
+### `showEmptySlots` (Default: `false`)
+Shows empty attribute slots in tooltips when the gun has fewer random attributes than `maxAttributes`.
+
+- `true`: Displays `[ ] Empty Attribute Slot` lines in the tooltip for unfilled slots. Uses per-gun `maxAttributes` override if set, otherwise the global value.
+- `false`: No empty slot indication
+
 ---
 
 ## [random] Random Attribute Generation
@@ -219,6 +225,26 @@ Socket count for RARE rarity guns.
 
 ### `epicSockets` (Default: `4`, Range: 0–6)
 Socket count for EPIC rarity guns.
+
+---
+
+## [enhancement] Enhancement Station Block
+
+### `maxTypes` (Default: `0`, Range: 0–100)
+Maximum number of distinct enhancement attribute types per gun. When the number of distinct enhanced attribute types reaches this limit, only already-enhanced attributes appear as choices (values increase but no new types are added).
+
+- `0`: Unlimited (no type restriction)
+- `>0`: When distinct types reach this number, choices are restricted to existing enhanced attributes
+
+> **Note:** This is independent from `maxEnhancements` which is a hard cap on total enhancement applications. `maxTypes` controls attribute variety, not total count.
+
+### `existingOnly` (Default: `false`)
+When enabled, the Enhancement Station only offers choices from attributes that are already present on the gun (random + fixed + enhanced modifiers).
+
+- `true`: Enhancement choices are restricted to attributes already on the gun
+- `false`: All applicable attributes from the pool can appear as choices
+
+> **Note:** Per-gun `maxEnhancement` override in `gun_attribute_overrides.json` can also trigger this restriction when the type limit is reached.
 
 ---
 
@@ -487,6 +513,7 @@ An empty JSON file is generated on first launch. You can override random attribu
     "maxAttributesPos": max_positive_count,
     "minAttributesNeg": min_negative_count,
     "maxAttributesNeg": max_negative_count,
+    "maxEnhancement": max_enhancement_types,
     "attributes": [
       {"attribute": "attribute_id", "minValue": min_val, "maxValue": max_val}
     ]
@@ -504,6 +531,7 @@ An empty JSON file is generated on first launch. You can override random attribu
 | `maxAttributesPos` | Optional | Maximum number of positive (buff) attributes. Enables split mode. |
 | `minAttributesNeg` | Optional | Minimum number of negative (debuff) attributes. Enables split mode. |
 | `maxAttributesNeg` | Optional | Maximum number of negative (debuff) attributes. Enables split mode. |
+| `maxEnhancement` | Optional | Maximum number of distinct enhancement attribute types for this gun. When reached, Enhancement Station only shows already-enhanced attributes. 0 = unlimited. Uses global `maxTypes` if omitted. |
 | `attributes` | Optional | Whitelist of allowed attributes. When specified, ONLY listed attributes can appear on this gun. Uses normal pool filtering if omitted. |
 
 Each entry in `attributes` (all fields except `attribute` are optional — omitted fields fall back to `attribute_pool.json`):
@@ -608,6 +636,18 @@ Removes random attributes only. Fixed attributes are preserved.
 ### `/taczaddon clear fixed`
 Removes fixed attributes only. Random attributes are preserved.
 
+### `/taczaddon clear enhanced`
+Removes enhanced attributes only. Random and fixed attributes are preserved.
+
+### `/taczaddon add <attribute> <value> [operation]`
+Manually adds an attribute to the held gun's enhanced modifiers. If the same attribute already exists in enhanced modifiers, values are merged (added together).
+
+- `attribute`: Full attribute ID (e.g. `tacz_attributes:gun_damage`). Tab completion available.
+- `value`: Numeric value (e.g. `0.15`, `-0.10`)
+- `operation`: Optional. Default: `MULTIPLY_BASE`. Options: `ADDITION`, `MULTIPLY_BASE`, `MULTIPLY_TOTAL`
+
+> **Tip:** This command is useful for KubeJS integration — modpack developers can create custom items that add specific attributes to guns via this command.
+
 ### `/taczaddon reroll`
 Regenerates the random attributes on the held gun. Ignores the reroll count limit.
 
@@ -626,7 +666,7 @@ Temporarily changes a config value. Resets on server restart.
 
 **Configurable keys:**
 - `enableRandomOnObtain`, `enableWeaponTypeAttributes`, `enableAttributeStation`
-- `enableApotheosis`, `enableRarityScoring`
+- `enableApotheosis`, `enableRarityScoring`, `showEmptySlots`
 - `randomMode` (FULL_RANDOM / ADAPTIVE / RARITY_ADAPTIVE / BALANCED)
 - `fixedAttributeMode` (FIXED_ONLY / RANDOM_ONLY / BOTH_STACKING / FIXED_INFLUENCES_RANDOM)
 - `minAttributes`, `maxAttributes`
@@ -637,6 +677,7 @@ Temporarily changes a config value. Resets on server restart.
 - `allowReroll`, `maxRerolls`
 - `gunBaseSockets`, `socketsScaleWithRarity`
 - `commonSockets`, `uncommonSockets`, `rareSockets`, `epicSockets`
+- `enhancementMaxTypes`, `enhancementExistingOnly`
 
 ---
 

@@ -102,16 +102,18 @@ public class GunAttributeOverrides {
         private final int maxAttributesPos;  // -1 = not set
         private final int minAttributesNeg;  // -1 = not set
         private final int maxAttributesNeg;  // -1 = not set
+        private final int maxEnhancement;    // -1 = not set (use global)
         private final Map<String, AttributeOverrideEntry> attributeOverrides;
 
         public GunOverride(int minAttributes, int maxAttributes,
                            Map<String, AttributeOverrideEntry> attributeOverrides) {
-            this(minAttributes, maxAttributes, -1, -1, -1, -1, attributeOverrides);
+            this(minAttributes, maxAttributes, -1, -1, -1, -1, -1, attributeOverrides);
         }
 
         public GunOverride(int minAttributes, int maxAttributes,
                            int minAttributesPos, int maxAttributesPos,
                            int minAttributesNeg, int maxAttributesNeg,
+                           int maxEnhancement,
                            Map<String, AttributeOverrideEntry> attributeOverrides) {
             this.minAttributes = minAttributes;
             this.maxAttributes = maxAttributes;
@@ -119,6 +121,7 @@ public class GunAttributeOverrides {
             this.maxAttributesPos = maxAttributesPos;
             this.minAttributesNeg = minAttributesNeg;
             this.maxAttributesNeg = maxAttributesNeg;
+            this.maxEnhancement = maxEnhancement;
             this.attributeOverrides = attributeOverrides;
         }
 
@@ -135,6 +138,9 @@ public class GunAttributeOverrides {
         public int getMaxAttributesPos() { return maxAttributesPos; }
         public int getMinAttributesNeg() { return minAttributesNeg; }
         public int getMaxAttributesNeg() { return maxAttributesNeg; }
+
+        public boolean hasMaxEnhancement() { return maxEnhancement >= 0; }
+        public int getMaxEnhancement() { return maxEnhancement; }
 
         /** Whether this override uses split positive/negative count mode. */
         public boolean hasSplitCounts() {
@@ -267,6 +273,7 @@ public class GunAttributeOverrides {
         int maxAttributesPos = obj.has("maxAttributesPos") ? obj.get("maxAttributesPos").getAsInt() : -1;
         int minAttributesNeg = obj.has("minAttributesNeg") ? obj.get("minAttributesNeg").getAsInt() : -1;
         int maxAttributesNeg = obj.has("maxAttributesNeg") ? obj.get("maxAttributesNeg").getAsInt() : -1;
+        int maxEnhancement = obj.has("maxEnhancement") ? obj.get("maxEnhancement").getAsInt() : -1;
 
         Map<String, AttributeOverrideEntry> attributeOverrides = new LinkedHashMap<>();
         if (obj.has("attributes") && obj.get("attributes").isJsonArray()) {
@@ -295,7 +302,7 @@ public class GunAttributeOverrides {
 
         return new GunOverride(minAttributes, maxAttributes,
                 minAttributesPos, maxAttributesPos, minAttributesNeg, maxAttributesNeg,
-                attributeOverrides);
+                maxEnhancement, attributeOverrides);
     }
 
     private static AttributeModifier.Operation parseOperation(String opStr) {

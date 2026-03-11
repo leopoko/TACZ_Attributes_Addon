@@ -20,9 +20,11 @@ import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fml.loading.FMLPaths;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -32,6 +34,8 @@ import java.util.List;
  *   /taczaddon clear              - Remove all addon attributes from held gun
  *   /taczaddon clear random       - Remove only random attributes from held gun
  *   /taczaddon clear fixed        - Remove only fixed attributes from held gun
+ *   /taczaddon clear enhanced     - Remove only enhanced attributes from held gun
+ *   /taczaddon add <attr> <value> [operation] - Add an attribute to held gun
  *   /taczaddon reroll             - Reroll random attributes on held gun
  *   /taczaddon reload             - Reload attribute_pool.json and weapon_attributes.json
  *   /taczaddon info               - Show addon attribute info for held gun
@@ -39,6 +43,8 @@ import java.util.List;
  *   /taczaddon config set <key> <value> - Set a config value (temporary, until restart)
  */
 public class ModCommands {
+
+    private static final String[] OPERATION_NAMES = {"MULTIPLY_BASE", "ADDITION", "MULTIPLY_TOTAL"};
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("taczaddon")
@@ -48,7 +54,33 @@ public class ModCommands {
                         .then(Commands.literal("random")
                                 .executes(ctx -> clearRandom(ctx.getSource())))
                         .then(Commands.literal("fixed")
-                                .executes(ctx -> clearFixed(ctx.getSource()))))
+                                .executes(ctx -> clearFixed(ctx.getSource())))
+                        .then(Commands.literal("enhanced")
+                                .executes(ctx -> clearEnhanced(ctx.getSource()))))
+                .then(Commands.literal("add")
+                        .then(Commands.argument("attribute", StringArgumentType.word())
+                                .suggests((ctx, builder) -> {
+                                    for (var entry : AttributeRegistry.getEntries()) {
+                                        builder.suggest(entry.getAttributeId());
+                                    }
+                                    return builder.buildFuture();
+                                })
+                                .then(Commands.argument("value", DoubleArgumentType.doubleArg())
+                                        .executes(ctx -> addAttribute(ctx.getSource(),
+                                                StringArgumentType.getString(ctx, "attribute"),
+                                                DoubleArgumentType.getDouble(ctx, "value"),
+                                                "MULTIPLY_BASE"))
+                                        .then(Commands.argument("operation", StringArgumentType.word())
+                                                .suggests((ctx, builder) -> {
+                                                    for (String op : OPERATION_NAMES) {
+                                                        builder.suggest(op);
+                                                    }
+                                                    return builder.buildFuture();
+                                                })
+                                                .executes(ctx -> addAttribute(ctx.getSource(),
+                                                        StringArgumentType.getString(ctx, "attribute"),
+                                                        DoubleArgumentType.getDouble(ctx, "value"),
+                                                        StringArgumentType.getString(ctx, "operation")))))))
                 .then(Commands.literal("reroll")
                         .executes(ctx -> reroll(ctx.getSource())))
                 .then(Commands.literal("reload")
@@ -85,14 +117,15 @@ public class ModCommands {
 
     private static final String[] CONFIG_KEYS = {
             "enableRandomOnObtain", "enableWeaponTypeAttributes", "enableAttributeStation",
-            "enableApotheosis", "enableRarityScoring",
+            "enableApotheosis", "enableRarityScoring", "showEmptySlots",
             "randomMode", "fixedAttributeMode", "minAttributes", "maxAttributes",
             "valueDistribution", "distributionExponent", "raritySpreadFactor", "buffDebuffRatio",
             "uncommonThreshold", "rareThreshold", "epicThreshold",
             "processingTime", "consumeItem", "consumeItemId", "consumeCount",
             "allowReroll", "maxRerolls",
             "gunBaseSockets", "socketsScaleWithRarity",
-            "commonSockets", "uncommonSockets", "rareSockets", "epicSockets"
+            "commonSockets", "uncommonSockets", "rareSockets", "epicSockets",
+            "enhancementMaxTypes", "enhancementExistingOnly"
     };
 
     // ========== Clear commands ==========
@@ -170,6 +203,93 @@ public class ModCommands {
 
         AttributeBridge.refreshPlayer(player);
         source.sendSuccess(() -> Component.literal("Removed fixed attributes from held gun")
+                .withStyle(ChatFormatting.GREEN), true);
+        return 1;
+    }
+
+    private static int clearEnhanced(CommandSourceStack source) {
+        ServerPlayer player = source.getPlayer();
+        if (player == null) {
+            source.sendFailure(Component.literal("This command must be run by a player"));
+            return 0;
+        }
+
+        ItemStack held = player.getMainHandItem();
+        if (held.isEmpty() || IGun.getIGunOrNull(held) == null) {
+            source.sendFailure(Component.literal("You must be holding a TACZ gun"));
+            return 0;
+        }
+
+        GunAttributeData.setEnhancedModifiers(held, List.of());
+        GunAttributeData.setEnhanceCount(held, 0);
+
+        if (CommonConfig.ENABLE_RARITY_SCORING.get()) {
+            RarityHandler.calculateAndApplyRarity(held);
+        }
+
+        AttributeBridge.refreshPlayer(player);
+        source.sendSuccess(() -> Component.literal("Removed enhanced attributes from held gun")
+                .withStyle(ChatFormatting.GREEN), true);
+        return 1;
+    }
+
+    // ========== Add command ==========
+
+    private static int addAttribute(CommandSourceStack source, String attributeId, double value, String operationStr) {
+        ServerPlayer player = source.getPlayer();
+        if (player == null) {
+            source.sendFailure(Component.literal("This command must be run by a player"));
+            return 0;
+        }
+
+        ItemStack held = player.getMainHandItem();
+        if (held.isEmpty() || IGun.getIGunOrNull(held) == null) {
+            source.sendFailure(Component.literal("You must be holding a TACZ gun"));
+            return 0;
+        }
+
+        AttributeModifier.Operation operation;
+        try {
+            operation = AttributeModifier.Operation.valueOf(operationStr.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            source.sendFailure(Component.literal("Invalid operation: " + operationStr
+                    + ". Use ADDITION, MULTIPLY_BASE, or MULTIPLY_TOTAL"));
+            return 0;
+        }
+
+        // Merge into enhanced modifiers (same behavior as Enhancement Station)
+        List<GunModifier> enhanced = GunAttributeData.getEnhancedModifiers(held);
+        List<GunModifier> updated = new ArrayList<>();
+        boolean merged = false;
+
+        for (GunModifier existing : enhanced) {
+            if (existing.getAttributeId().equals(attributeId) && existing.getOperation() == operation) {
+                double newValue = existing.getValue() + value;
+                newValue = Math.round(newValue * 10000.0) / 10000.0;
+                updated.add(new GunModifier(existing.getAttributeId(), newValue, existing.getOperation()));
+                merged = true;
+            } else {
+                updated.add(existing);
+            }
+        }
+
+        if (!merged) {
+            updated.add(new GunModifier(attributeId, value, operation));
+        }
+
+        GunAttributeData.setEnhancedModifiers(held, updated);
+        GunAttributeData.incrementEnhanceCount(held);
+
+        if (CommonConfig.ENABLE_RARITY_SCORING.get()) {
+            RarityHandler.calculateAndApplyRarity(held);
+        }
+
+        GunAttributeData.setSealed(held, true);
+        AttributeBridge.refreshPlayer(player);
+
+        String valueStr = String.format("%+.4f", value);
+        source.sendSuccess(() -> Component.literal("Added " + attributeId + " " + valueStr
+                + " (" + operation.name() + ") to held gun")
                 .withStyle(ChatFormatting.GREEN), true);
         return 1;
     }
@@ -282,6 +402,24 @@ public class ModCommands {
             }
         }
 
+        List<GunModifier> enhancedMods = GunAttributeData.getEnhancedModifiers(held);
+        if (!enhancedMods.isEmpty()) {
+            source.sendSuccess(() -> Component.literal("Enhanced Modifiers:")
+                    .withStyle(ChatFormatting.LIGHT_PURPLE), false);
+            for (GunModifier mod : enhancedMods) {
+                String val = String.format("%+.2f", mod.getValue());
+                source.sendSuccess(() -> Component.literal("  " + mod.getAttributeId() + ": " + val
+                        + " (" + mod.getOperation().name() + ")")
+                        .withStyle(ChatFormatting.GRAY), false);
+            }
+        }
+
+        int enhanceCount = GunAttributeData.getEnhanceCount(held);
+        if (enhanceCount > 0) {
+            source.sendSuccess(() -> Component.literal("Enhance Count: " + enhanceCount)
+                    .withStyle(ChatFormatting.GRAY), false);
+        }
+
         // Show gem/socket info if Apotheosis is present
         showGemInfo(source, held);
 
@@ -330,6 +468,7 @@ public class ModCommands {
             case "enableAttributeStation": return String.valueOf(CommonConfig.ENABLE_ATTRIBUTE_STATION.get());
             case "enableApotheosis": return String.valueOf(CommonConfig.ENABLE_APOTHEOSIS.get());
             case "enableRarityScoring": return String.valueOf(CommonConfig.ENABLE_RARITY_SCORING.get());
+            case "showEmptySlots": return String.valueOf(CommonConfig.SHOW_EMPTY_SLOTS.get());
             case "randomMode": return CommonConfig.RANDOM_MODE.get().name();
             case "fixedAttributeMode": return CommonConfig.FIXED_ATTRIBUTE_MODE.get().name();
             case "minAttributes": return String.valueOf(CommonConfig.MIN_ATTRIBUTES.get());
@@ -353,6 +492,8 @@ public class ModCommands {
             case "uncommonSockets": return String.valueOf(CommonConfig.UNCOMMON_SOCKETS.get());
             case "rareSockets": return String.valueOf(CommonConfig.RARE_SOCKETS.get());
             case "epicSockets": return String.valueOf(CommonConfig.EPIC_SOCKETS.get());
+            case "enhancementMaxTypes": return String.valueOf(CommonConfig.ENHANCEMENT_MAX_TYPES.get());
+            case "enhancementExistingOnly": return String.valueOf(CommonConfig.ENHANCEMENT_EXISTING_ONLY.get());
             default: return null;
         }
     }
@@ -365,6 +506,7 @@ public class ModCommands {
                 case "enableAttributeStation": CommonConfig.ENABLE_ATTRIBUTE_STATION.set(Boolean.parseBoolean(value)); return true;
                 case "enableApotheosis": CommonConfig.ENABLE_APOTHEOSIS.set(Boolean.parseBoolean(value)); return true;
                 case "enableRarityScoring": CommonConfig.ENABLE_RARITY_SCORING.set(Boolean.parseBoolean(value)); return true;
+                case "showEmptySlots": CommonConfig.SHOW_EMPTY_SLOTS.set(Boolean.parseBoolean(value)); return true;
                 case "randomMode": CommonConfig.RANDOM_MODE.set(CommonConfig.RandomMode.valueOf(value.toUpperCase())); return true;
                 case "fixedAttributeMode": CommonConfig.FIXED_ATTRIBUTE_MODE.set(CommonConfig.FixedAttributeMode.valueOf(value.toUpperCase())); return true;
                 case "minAttributes": CommonConfig.MIN_ATTRIBUTES.set(Integer.parseInt(value)); return true;
@@ -388,6 +530,8 @@ public class ModCommands {
                 case "uncommonSockets": CommonConfig.UNCOMMON_SOCKETS.set(Integer.parseInt(value)); return true;
                 case "rareSockets": CommonConfig.RARE_SOCKETS.set(Integer.parseInt(value)); return true;
                 case "epicSockets": CommonConfig.EPIC_SOCKETS.set(Integer.parseInt(value)); return true;
+                case "enhancementMaxTypes": CommonConfig.ENHANCEMENT_MAX_TYPES.set(Integer.parseInt(value)); return true;
+                case "enhancementExistingOnly": CommonConfig.ENHANCEMENT_EXISTING_ONLY.set(Boolean.parseBoolean(value)); return true;
                 default: return false;
             }
         } catch (Exception e) {
