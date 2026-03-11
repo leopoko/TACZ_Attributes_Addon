@@ -258,9 +258,14 @@ src/main/resources/
 - 設定のない銃はグローバル設定（CommonConfig + attribute_pool.json）に従う
 - オーバーライド可能な項目:
   - `minAttributes`/`maxAttributes`: 銃ごとの属性個数制限（省略時はグローバル値を使用）
-  - `attributes`: 許可属性のホワイトリスト + カスタム値範囲（省略時は通常のプールフィルタリング）
+  - `attributes`: 許可属性のホワイトリスト。各属性に以下のオプションフィールドを指定可能（全て省略時は `attribute_pool.json` の値を使用）:
+    - `minValue`/`maxValue`: カスタム値範囲
+    - `weight`: 選択確率（出現頻度）
+    - `rarityTier`: レアリティティア（RARITY_ADAPTIVE/BALANCEDモードでの重み付け）
+    - `scoreWeight`: レアリティスコアへの寄与度
+    - `operation`: 演算子（`MULTIPLY_BASE`/`ADDITION`/`MULTIPLY_TOTAL`）
 - `AttributeGenerator.generate()` でオーバーライドを参照し、プールフィルタリング後に追加フィルタとして適用
-- **`weight`/`rarityTier` はオーバーライドされない**: 各属性の選択確率（`weight`）とレアリティティア（`rarityTier`）は常に `attribute_pool.json` の値が使用される。オーバーライドはプール絞り込み（ホワイトリスト）と値範囲のみ制御する
+- `RarityHandler.calculateScore()` でオーバーライドの `scoreWeight` を参照
 - `/taczaddon reload` でホットリロード対応
 
 ## 属性プールの武器別フィルタリング（Per-Weapon Filtering）

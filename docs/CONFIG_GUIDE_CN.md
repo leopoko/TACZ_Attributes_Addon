@@ -498,13 +498,17 @@ ItemStack NBT → TaczAddon: {
 | `maxAttributes` | 可选 | 随机属性的最大数量。省略时使用全局设置 |
 | `attributes` | 可选 | 允许属性的白名单。指定后，仅列出的属性可出现在该枪上。省略时使用常规属性池过滤 |
 
-`attributes` 中的每个条目：
+`attributes` 中的每个条目（除 `attribute` 外所有字段均为可选，省略时使用 `attribute_pool.json` 的值）：
 
-| 字段 | 说明 |
-|------|------|
-| `attribute` | 属性 ID（带 `tacz_attributes:` 前缀） |
-| `minValue` | 该枪的自定义最小值（覆盖 attribute_pool.json 的值） |
-| `maxValue` | 该枪的自定义最大值（覆盖 attribute_pool.json 的值） |
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `attribute` | string | **必需**。属性 ID（带 `tacz_attributes:` 前缀） |
+| `minValue` | double | 该枪的自定义最小值 |
+| `maxValue` | double | 该枪的自定义最大值 |
+| `weight` | int | 该枪的选择频率（越大越容易出现） |
+| `rarityTier` | int | 该枪的稀有度等级（影响 RARITY_ADAPTIVE/BALANCED 模式的权重） |
+| `scoreWeight` | double | 该枪的稀有度评分贡献度 |
+| `operation` | string | 该枪的运算符（`MULTIPLY_BASE`、`ADDITION`、`MULTIPLY_TOTAL`） |
 
 ### 配置示例
 
@@ -514,9 +518,9 @@ ItemStack NBT → TaczAddon: {
     "minAttributes": 1,
     "maxAttributes": 3,
     "attributes": [
-      {"attribute": "tacz_attributes:reload_speed", "minValue": -0.20, "maxValue": 0.20},
-      {"attribute": "tacz_attributes:gun_damage", "minValue": -0.10, "maxValue": 0.15},
-      {"attribute": "tacz_attributes:recoil", "minValue": -0.30, "maxValue": 0.10}
+      {"attribute": "tacz_attributes:reload_speed", "minValue": -0.20, "maxValue": 0.20, "weight": 30},
+      {"attribute": "tacz_attributes:gun_damage", "minValue": -0.10, "maxValue": 0.15, "weight": 50, "rarityTier": 2},
+      {"attribute": "tacz_attributes:recoil", "minValue": -0.30, "maxValue": 0.10, "scoreWeight": -120}
     ]
   },
   "tacz:rpg7": {
@@ -527,7 +531,7 @@ ItemStack NBT → TaczAddon: {
 ```
 
 以上示例：
-- **HK416D**：1～3 个随机属性，仅限 reload_speed、gun_damage 和 recoil 三种属性，且数值范围为自定义
+- **HK416D**：1～3 个随机属性，仅限 reload_speed、gun_damage 和 recoil 三种属性，且自定义了数值范围、选择权重、稀有度等级和评分贡献度
 - **RPG-7**：0～1 个随机属性，属性类型按常规属性池过滤
 
 > **提示：** 省略 `attributes` 可以仅控制属性数量。
@@ -536,13 +540,11 @@ ItemStack NBT → TaczAddon: {
 
 ### 选择概率
 
-`gun_attribute_overrides.json` **不会**覆盖各属性的选择概率（`weight`）和稀有度等级（`rarityTier`），这些值始终使用 `attribute_pool.json` 中的定义。
+在各属性条目中指定 `weight` 和 `rarityTier` 可以**仅为该枪**自定义选择概率。省略时使用 `attribute_pool.json` 的值。
 
-覆盖仅控制以下两点：
-- **白名单**：限制哪些属性可以出现在该枪上
-- **数值范围**：为该枪自定义 `minValue`/`maxValue`
+例如，如果 `attribute_pool.json` 中 `gun_damage` 的 weight=20，`reload_speed` 的 weight=15，在 `gun_attribute_overrides.json` 中将 `gun_damage` 的 weight 覆盖为 50，则该枪的选择概率变为 50/(50+15)=77% 和 15/(50+15)=23%。
 
-例如，如果 `attribute_pool.json` 中 `gun_damage` 的 weight=20，`reload_speed` 的 weight=15，在 `gun_attribute_overrides.json` 中仅将这两个属性加入白名单，则选择概率分别为 20/(20+15)=57% 和 15/(20+15)=43%（在 RARITY_ADAPTIVE/BALANCED 模式下，`rarityTier` 也会影响最终概率）。
+覆盖 `scoreWeight` 可为该枪的稀有度评分计算应用自定义贡献度。
 
 ---
 
