@@ -452,6 +452,10 @@ ItemStack NBT → TaczAddon: {
   "銃ID": {
     "minAttributes": 最小属性数,
     "maxAttributes": 最大属性数,
+    "minAttributesPos": 正属性の最小数,
+    "maxAttributesPos": 正属性の最大数,
+    "minAttributesNeg": 負属性の最小数,
+    "maxAttributesNeg": 負属性の最大数,
     "attributes": [
       {"attribute": "属性ID", "minValue": 最小値, "maxValue": 最大値}
     ]
@@ -465,6 +469,10 @@ ItemStack NBT → TaczAddon: {
 |------------|------|------|
 | `minAttributes` | 任意 | ランダム属性の最小数。省略時はグローバル設定値を使用 |
 | `maxAttributes` | 任意 | ランダム属性の最大数。省略時はグローバル設定値を使用 |
+| `minAttributesPos` | 任意 | 正の属性（バフ）の最小数。スプリットモード用 |
+| `maxAttributesPos` | 任意 | 正の属性（バフ）の最大数。スプリットモード用 |
+| `minAttributesNeg` | 任意 | 負の属性（デバフ）の最小数。スプリットモード用 |
+| `maxAttributesNeg` | 任意 | 負の属性（デバフ）の最大数。スプリットモード用 |
 | `attributes` | 任意 | 許可属性のホワイトリスト。指定するとこのリストの属性のみが付与可能。省略時は通常のプールフィルタリング |
 
 `attributes` 内の各エントリ（全フィールドは任意。省略時は `attribute_pool.json` の値を使用）:
@@ -474,6 +482,10 @@ ItemStack NBT → TaczAddon: {
 | `attribute` | string | **必須**。属性ID（`tacz_attributes:` プレフィックス付き） |
 | `minValue` | double | この銃でのカスタム最小値 |
 | `maxValue` | double | この銃でのカスタム最大値 |
+| `minValuePos` | double | 正の値（バフ）用の最小値。スプリットモード用 |
+| `maxValuePos` | double | 正の値（バフ）用の最大値。スプリットモード用 |
+| `minValueNeg` | double | 負の値（デバフ）用の最小値。スプリットモード用 |
+| `maxValueNeg` | double | 負の値（デバフ）用の最大値。スプリットモード用 |
 | `weight` | int | この銃での選択確率（大きいほど出やすい） |
 | `rarityTier` | int | この銃でのレアリティティア（RARITY_ADAPTIVE/BALANCEDモードの重み付けに影響） |
 | `scoreWeight` | double | この銃でのレアリティスコアへの寄与度 |
@@ -514,6 +526,41 @@ ItemStack NBT → TaczAddon: {
 例えば、`attribute_pool.json` で `gun_damage` の weight=20、`reload_speed` の weight=15 と設定されている場合に、`gun_attribute_overrides.json` で `gun_damage` の weight を 50 にオーバーライドすると、この銃での選択確率は 50/(50+15)=77% と 15/(50+15)=23% になります。
 
 `scoreWeight` をオーバーライドすると、この銃でのレアリティスコア計算にカスタム寄与度が適用されます。
+
+### 正負属性の個別制御（スプリットモード）
+
+`minAttributesPos`/`maxAttributesPos` と `minAttributesNeg`/`maxAttributesNeg` を使うと、正の属性（バフ）と負の属性（デバフ）の個数を独立して制御できます。これにより「バフ3個 + デバフ1個」のような正確な構成を保証できます。
+
+```json
+{
+  "tacz:hk416d": {
+    "minAttributesPos": 2,
+    "maxAttributesPos": 3,
+    "minAttributesNeg": 1,
+    "maxAttributesNeg": 1,
+    "attributes": [
+      {
+        "attribute": "tacz_attributes:reload_speed",
+        "minValuePos": 0.10, "maxValuePos": 0.30,
+        "minValueNeg": -0.30, "maxValueNeg": -0.10
+      },
+      {
+        "attribute": "tacz_attributes:gun_damage",
+        "minValuePos": 0.05, "maxValuePos": 0.15,
+        "minValueNeg": -0.20, "maxValueNeg": -0.05
+      }
+    ]
+  }
+}
+```
+
+上記の例:
+- **HK416D**: 正の属性を2〜3個、負の属性を1個、合計3〜4個を保証
+- 正の属性が選ばれた場合は `minValuePos`〜`maxValuePos` の範囲で値を生成
+- 負の属性が選ばれた場合は `minValueNeg`〜`maxValueNeg` の範囲で値を生成
+- `minValuePos`/`maxValuePos`/`minValueNeg`/`maxValueNeg` は省略可能。省略時は属性の全体値範囲を `buffThreshold`（通常0.0）で分割した範囲を使用
+
+> **注意:** スプリットモードは `minAttributesPos`/`maxAttributesPos`/`minAttributesNeg`/`maxAttributesNeg` のいずれかが設定されると自動的に有効になります。`minAttributes`/`maxAttributes` と併用する場合は合計数の上限として機能します。全生成モード（FULL_RANDOM、ADAPTIVE、RARITY_ADAPTIVE、BALANCED）で動作します。
 
 ---
 

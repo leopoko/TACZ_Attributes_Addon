@@ -452,6 +452,10 @@ ItemStack NBT → TaczAddon: {
   "枪ID": {
     "minAttributes": 最小属性数,
     "maxAttributes": 最大属性数,
+    "minAttributesPos": 正属性最小数,
+    "maxAttributesPos": 正属性最大数,
+    "minAttributesNeg": 负属性最小数,
+    "maxAttributesNeg": 负属性最大数,
     "attributes": [
       {"attribute": "属性ID", "minValue": 最小值, "maxValue": 最大值}
     ]
@@ -465,6 +469,10 @@ ItemStack NBT → TaczAddon: {
 |------|----------|------|
 | `minAttributes` | 可选 | 随机属性的最小数量。省略时使用全局设置 |
 | `maxAttributes` | 可选 | 随机属性的最大数量。省略时使用全局设置 |
+| `minAttributesPos` | 可选 | 正属性（增益）的最小数量。启用分离模式 |
+| `maxAttributesPos` | 可选 | 正属性（增益）的最大数量。启用分离模式 |
+| `minAttributesNeg` | 可选 | 负属性（减益）的最小数量。启用分离模式 |
+| `maxAttributesNeg` | 可选 | 负属性（减益）的最大数量。启用分离模式 |
 | `attributes` | 可选 | 允许属性的白名单。指定后，仅列出的属性可出现在该枪上。省略时使用常规属性池过滤 |
 
 `attributes` 中的每个条目（除 `attribute` 外所有字段均为可选，省略时使用 `attribute_pool.json` 的值）：
@@ -474,6 +482,10 @@ ItemStack NBT → TaczAddon: {
 | `attribute` | string | **必需**。属性 ID（带 `tacz_attributes:` 前缀） |
 | `minValue` | double | 该枪的自定义最小值 |
 | `maxValue` | double | 该枪的自定义最大值 |
+| `minValuePos` | double | 正值（增益）的最小值。用于分离模式 |
+| `maxValuePos` | double | 正值（增益）的最大值。用于分离模式 |
+| `minValueNeg` | double | 负值（减益）的最小值。用于分离模式 |
+| `maxValueNeg` | double | 负值（减益）的最大值。用于分离模式 |
 | `weight` | int | 该枪的选择频率（越大越容易出现） |
 | `rarityTier` | int | 该枪的稀有度等级（影响 RARITY_ADAPTIVE/BALANCED 模式的权重） |
 | `scoreWeight` | double | 该枪的稀有度评分贡献度 |
@@ -514,6 +526,41 @@ ItemStack NBT → TaczAddon: {
 例如，如果 `attribute_pool.json` 中 `gun_damage` 的 weight=20，`reload_speed` 的 weight=15，在 `gun_attribute_overrides.json` 中将 `gun_damage` 的 weight 覆盖为 50，则该枪的选择概率变为 50/(50+15)=77% 和 15/(50+15)=23%。
 
 覆盖 `scoreWeight` 可为该枪的稀有度评分计算应用自定义贡献度。
+
+### 正负属性独立控制（分离模式）
+
+使用 `minAttributesPos`/`maxAttributesPos` 和 `minAttributesNeg`/`maxAttributesNeg` 可以独立控制正属性（增益）和负属性（减益）的数量。这样可以保证精确的属性组合，如「3个增益 + 1个减益」。
+
+```json
+{
+  "tacz:hk416d": {
+    "minAttributesPos": 2,
+    "maxAttributesPos": 3,
+    "minAttributesNeg": 1,
+    "maxAttributesNeg": 1,
+    "attributes": [
+      {
+        "attribute": "tacz_attributes:reload_speed",
+        "minValuePos": 0.10, "maxValuePos": 0.30,
+        "minValueNeg": -0.30, "maxValueNeg": -0.10
+      },
+      {
+        "attribute": "tacz_attributes:gun_damage",
+        "minValuePos": 0.05, "maxValuePos": 0.15,
+        "minValueNeg": -0.20, "maxValueNeg": -0.05
+      }
+    ]
+  }
+}
+```
+
+以上示例：
+- **HK416D**：保证 2～3 个正属性和 1 个负属性（总计 3～4 个）
+- 当属性被选为正属性时，在 `minValuePos`～`maxValuePos` 范围内生成数值
+- 当属性被选为负属性时，在 `minValueNeg`～`maxValueNeg` 范围内生成数值
+- `minValuePos`/`maxValuePos`/`minValueNeg`/`maxValueNeg` 均为可选。省略时使用属性完整值范围按 `buffThreshold`（通常为 0.0）分割
+
+> **注意：** 当设置了 `minAttributesPos`/`maxAttributesPos`/`minAttributesNeg`/`maxAttributesNeg` 中的任意一个时，分离模式自动启用。与 `minAttributes`/`maxAttributes` 同时使用时，总数作为上限。支持所有生成模式（FULL_RANDOM、ADAPTIVE、RARITY_ADAPTIVE、BALANCED）。
 
 ---
 

@@ -166,9 +166,11 @@ epicSockets = 4                   # EPICのソケット数
 ```
 
 - `minAttributes`/`maxAttributes` — 省略するとグローバル設定を使用
+- `minAttributesPos`/`maxAttributesPos`/`minAttributesNeg`/`maxAttributesNeg` — 正負属性の個数を独立制御（スプリットモード）
 - `attributes` — 省略すると通常のプールフィルタリングを使用。指定するとそのリストの属性のみがこの銃に付与可能
 - 設定のない銃は従来通りの動作
 - 各属性エントリに `weight`、`rarityTier`、`scoreWeight`、`operation` も指定可能（省略時は `attribute_pool.json` の値を使用）
+- 各属性エントリに `minValuePos`/`maxValuePos`/`minValueNeg`/`maxValueNeg` で正負それぞれの値範囲を個別指定可能
 
 ### 銃モデル別固定属性の設定
 
@@ -349,7 +351,7 @@ After first launch, a config file is generated at `config/tacz_attributes_addon-
 
 Per-weapon fixed attributes are configured in `config/tacz_attributes_addon/weapon_attributes.json`.
 
-Per-gun attribute overrides (attribute count limits, allowed attributes, custom value ranges, selection weights, rarity tiers, score weights, and operations per gun ID) are configured in `config/tacz_attributes_addon/gun_attribute_overrides.json`. This is ideal for looter-shooter modpacks where each gun needs distinct attribute builds.
+Per-gun attribute overrides (attribute count limits, allowed attributes, custom value ranges, selection weights, rarity tiers, score weights, and operations per gun ID) are configured in `config/tacz_attributes_addon/gun_attribute_overrides.json`. This is ideal for looter-shooter modpacks where each gun needs distinct attribute builds. Supports split positive/negative attribute count control (`minAttributesPos`/`maxAttributesPos`/`minAttributesNeg`/`maxAttributesNeg`) with separate value ranges for buff and debuff rolls.
 
 The random attribute pool is configured in `config/tacz_attributes_addon/attribute_pool.json`, including linked attribute pairs.
 
@@ -523,9 +525,11 @@ epicSockets = 4                   # EPIC 插槽数
 ```
 
 - `minAttributes`/`maxAttributes` — 省略时使用全局设置
+- `minAttributesPos`/`maxAttributesPos`/`minAttributesNeg`/`maxAttributesNeg` — 独立控制正负属性数量（分离模式）
 - `attributes` — 省略时使用常规属性池过滤。指定后，仅列出的属性可出现在该枪上
 - 未配置的枪继续使用原有行为
 - 各属性条目还可指定 `weight`、`rarityTier`、`scoreWeight`、`operation`（省略时使用 `attribute_pool.json` 的值）
+- 各属性条目还可指定 `minValuePos`/`maxValuePos`/`minValueNeg`/`maxValueNeg` 分别设置正负值范围
 
 ### 枪型号固定属性配置
 

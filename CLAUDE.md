@@ -188,12 +188,17 @@ src/main/java/com/github/leopoko/tacz_attributes_addon/
 - 設定のない銃はグローバル設定（CommonConfig + attribute_pool.json）に従う
 - オーバーライド可能な項目:
   - `minAttributes`/`maxAttributes`: 銃ごとの属性個数制限（省略時はグローバル値を使用）
+  - `minAttributesPos`/`maxAttributesPos`: 正の属性（バフ）個数を個別制御
+  - `minAttributesNeg`/`maxAttributesNeg`: 負の属性（デバフ）個数を個別制御
   - `attributes`: 許可属性のホワイトリスト。各属性に以下のオプションフィールドを指定可能（全て省略時は `attribute_pool.json` の値を使用）:
     - `minValue`/`maxValue`: カスタム値範囲
+    - `minValuePos`/`maxValuePos`: 正の値（バフ）専用の値範囲
+    - `minValueNeg`/`maxValueNeg`: 負の値（デバフ）専用の値範囲
     - `weight`: 選択確率（出現頻度）
     - `rarityTier`: レアリティティア（RARITY_ADAPTIVE/BALANCEDモードでの重み付け）
     - `scoreWeight`: レアリティスコアへの寄与度
     - `operation`: 演算子（`MULTIPLY_BASE`/`ADDITION`/`MULTIPLY_TOTAL`）
+- **スプリットモード**: `minAttributesPos`/`maxAttributesPos`/`minAttributesNeg`/`maxAttributesNeg` のいずれかを設定すると、正負の属性を独立して選択・生成する（`AttributeGenerator.generateSplit()`）。属性プールを `buffThreshold` で正・負対応に分割し、それぞれから独立して重み付き選択を行う
 - `AttributeGenerator.generate()` でオーバーライドを参照し、プールフィルタリング後に追加フィルタとして適用
 - `RarityHandler.calculateScore()` でオーバーライドの `scoreWeight` を参照
 - `/taczaddon reload` でホットリロード対応

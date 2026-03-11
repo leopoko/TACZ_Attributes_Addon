@@ -63,6 +63,11 @@ public class AttributeGenerator {
 
         if (pool.isEmpty()) return Collections.emptyList();
 
+        // Use split positive/negative generation if configured
+        if (override != null && override.hasSplitCounts()) {
+            return generateSplit(pool, override, mode, distType, exponent, raritySpread, random);
+        }
+
         // Determine count
         int count = effectiveMin + (effectiveMax > effectiveMin ? random.nextInt(effectiveMax - effectiveMin + 1) : 0);
         count = Math.min(count, pool.size());
@@ -137,6 +142,146 @@ public class AttributeGenerator {
                         ? override.getOperation(entry.getAttributeId(), entry.getOperation())
                         : entry.getOperation();
                 modifiers.add(new GunModifier(entry.getAttributeId(), value, op));
+            }
+        }
+
+        return modifiers;
+    }
+
+    /**
+     * Split generation mode: selects positive and negative attributes independently.
+     * Splits the pool into positive-capable and negative-capable sub-pools based on
+     * each attribute's buffThreshold, then selects from each pool with separate counts.
+     */
+    private static List<GunModifier> generateSplit(List<AttributeEntry> pool,
+                                                    GunAttributeOverrides.GunOverride override,
+                                                    CommonConfig.RandomMode mode,
+                                                    CommonConfig.DistributionType distType,
+                                                    double exponent,
+                                                    double raritySpread,
+                                                    RandomSource random) {
+        // Split pool into positive-capable and negative-capable sub-pools
+        List<AttributeEntry> positivePool = new ArrayList<>();
+        List<AttributeEntry> negativePool = new ArrayList<>();
+
+        for (AttributeEntry entry : pool) {
+            double effectiveMax = override.getMaxValue(entry.getAttributeId(), entry.getMaxValue());
+            double effectiveMin = override.getMinValue(entry.getAttributeId(), entry.getMinValue());
+            double threshold = entry.getBuffThreshold();
+
+            if (effectiveMax > threshold) {
+                positivePool.add(entry);
+            }
+            if (effectiveMin < threshold) {
+                negativePool.add(entry);
+            }
+        }
+
+        // Determine counts from override (default to 0 if not set)
+        int minPos = override.hasMinAttributesPos() ? override.getMinAttributesPos() : 0;
+        int maxPos = override.hasMaxAttributesPos() ? override.getMaxAttributesPos() : minPos;
+        int minNeg = override.hasMinAttributesNeg() ? override.getMinAttributesNeg() : 0;
+        int maxNeg = override.hasMaxAttributesNeg() ? override.getMaxAttributesNeg() : minNeg;
+
+        int posCount = minPos + (maxPos > minPos ? random.nextInt(maxPos - minPos + 1) : 0);
+        int negCount = minNeg + (maxNeg > minNeg ? random.nextInt(maxNeg - minNeg + 1) : 0);
+
+        // Cap to pool sizes
+        posCount = Math.min(posCount, positivePool.size());
+        negCount = Math.min(negCount, negativePool.size());
+
+        // Cap total if minAttributes/maxAttributes are also set
+        if (override.hasMaxAttributes()) {
+            int totalMax = override.getMaxAttributes();
+            if (posCount + negCount > totalMax) {
+                // Proportionally reduce, prioritizing the larger allocation
+                double ratio = (double) totalMax / (posCount + negCount);
+                posCount = (int) Math.round(posCount * ratio);
+                negCount = totalMax - posCount;
+            }
+        }
+
+        // Select positive attributes
+        List<AttributeEntry> posSelected = selectAttributes(positivePool, posCount, mode, raritySpread, override, random);
+
+        // Remove positive selections from negative pool to prevent duplicates
+        Set<String> posSelectedIds = new HashSet<>();
+        for (AttributeEntry e : posSelected) {
+            posSelectedIds.add(e.getAttributeId());
+        }
+        List<AttributeEntry> filteredNegPool = negativePool.stream()
+                .filter(e -> !posSelectedIds.contains(e.getAttributeId()))
+                .collect(Collectors.toList());
+        negCount = Math.min(negCount, filteredNegPool.size());
+
+        // Select negative attributes
+        List<AttributeEntry> negSelected = selectAttributes(filteredNegPool, negCount, mode, raritySpread, override, random);
+
+        // Merge and resolve linked attributes
+        List<AttributeEntry> allSelected = new ArrayList<>(posSelected);
+        allSelected.addAll(negSelected);
+        allSelected = resolveLinkedAttributes(allSelected, pool);
+
+        // Track which attributes were selected for positive vs negative
+        Set<String> negSelectedIds = new HashSet<>();
+        for (AttributeEntry e : negSelected) {
+            negSelectedIds.add(e.getAttributeId());
+        }
+
+        // Generate values and create modifiers
+        List<GunModifier> modifiers = new ArrayList<>();
+
+        for (AttributeEntry entry : allSelected) {
+            String attrId = entry.getAttributeId();
+            boolean isPositiveSelection = posSelectedIds.contains(attrId);
+            boolean isNegativeSelection = negSelectedIds.contains(attrId);
+            // Linked attributes that weren't in either set: use full range
+            boolean isLinkedAddition = !isPositiveSelection && !isNegativeSelection;
+
+            double valMin, valMax;
+
+            if (isPositiveSelection) {
+                // Positive roll: use positive value range
+                double threshold = entry.getBuffThreshold();
+                double effectiveMin = override.getMinValue(attrId, entry.getMinValue());
+                double effectiveMax = override.getMaxValue(attrId, entry.getMaxValue());
+                valMin = override.getMinValuePos(attrId, Math.max(effectiveMin, threshold));
+                valMax = override.getMaxValuePos(attrId, effectiveMax);
+                // Normalize (swap if inverted)
+                if (valMin > valMax) { double tmp = valMin; valMin = valMax; valMax = tmp; }
+                // Ensure positive range
+                valMin = Math.max(valMin, threshold);
+            } else if (isNegativeSelection) {
+                // Negative roll: use negative value range
+                double threshold = entry.getBuffThreshold();
+                double effectiveMin = override.getMinValue(attrId, entry.getMinValue());
+                double effectiveMax = override.getMaxValue(attrId, entry.getMaxValue());
+                valMin = override.getMinValueNeg(attrId, effectiveMin);
+                valMax = override.getMaxValueNeg(attrId, Math.min(effectiveMax, threshold));
+                // Normalize (swap if inverted)
+                if (valMin > valMax) { double tmp = valMin; valMin = valMax; valMax = tmp; }
+                // Ensure negative range
+                valMax = Math.min(valMax, threshold);
+            } else {
+                // Linked addition: use full range
+                valMin = override.getMinValue(attrId, entry.getMinValue());
+                valMax = override.getMaxValue(attrId, entry.getMaxValue());
+            }
+
+            if (valMin >= valMax) continue; // Skip if range is invalid
+
+            double value;
+            if (mode == CommonConfig.RandomMode.RARITY_ADAPTIVE || mode == CommonConfig.RandomMode.BALANCED) {
+                value = ValueDistribution.sampleAbsoluteSkewed(valMin, valMax, distType, exponent, random);
+            } else {
+                value = ValueDistribution.sample(valMin, valMax, CommonConfig.DistributionType.LINEAR, 1.0, random);
+            }
+
+            value = ValueDistribution.roundToPercent(value);
+
+            if (value != 0.0) {
+                net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation op = override.getOperation(attrId, entry.getOperation());
+                modifiers.add(new GunModifier(attrId, value, op));
             }
         }
 

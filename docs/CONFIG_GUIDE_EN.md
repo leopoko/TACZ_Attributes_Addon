@@ -452,6 +452,10 @@ An empty JSON file is generated on first launch. You can override random attribu
   "gun_id": {
     "minAttributes": min_count,
     "maxAttributes": max_count,
+    "minAttributesPos": min_positive_count,
+    "maxAttributesPos": max_positive_count,
+    "minAttributesNeg": min_negative_count,
+    "maxAttributesNeg": max_negative_count,
     "attributes": [
       {"attribute": "attribute_id", "minValue": min_val, "maxValue": max_val}
     ]
@@ -465,6 +469,10 @@ An empty JSON file is generated on first launch. You can override random attribu
 |-------|----------|-------------|
 | `minAttributes` | Optional | Minimum number of random attributes. Uses global config value if omitted. |
 | `maxAttributes` | Optional | Maximum number of random attributes. Uses global config value if omitted. |
+| `minAttributesPos` | Optional | Minimum number of positive (buff) attributes. Enables split mode. |
+| `maxAttributesPos` | Optional | Maximum number of positive (buff) attributes. Enables split mode. |
+| `minAttributesNeg` | Optional | Minimum number of negative (debuff) attributes. Enables split mode. |
+| `maxAttributesNeg` | Optional | Maximum number of negative (debuff) attributes. Enables split mode. |
 | `attributes` | Optional | Whitelist of allowed attributes. When specified, ONLY listed attributes can appear on this gun. Uses normal pool filtering if omitted. |
 
 Each entry in `attributes` (all fields except `attribute` are optional — omitted fields fall back to `attribute_pool.json`):
@@ -474,6 +482,10 @@ Each entry in `attributes` (all fields except `attribute` are optional — omitt
 | `attribute` | string | **Required.** Attribute ID (with `tacz_attributes:` prefix) |
 | `minValue` | double | Custom minimum value for this gun |
 | `maxValue` | double | Custom maximum value for this gun |
+| `minValuePos` | double | Minimum value for positive (buff) rolls. For split mode. |
+| `maxValuePos` | double | Maximum value for positive (buff) rolls. For split mode. |
+| `minValueNeg` | double | Minimum value for negative (debuff) rolls. For split mode. |
+| `maxValueNeg` | double | Maximum value for negative (debuff) rolls. For split mode. |
 | `weight` | int | Selection frequency for this gun (higher = more common) |
 | `rarityTier` | int | Rarity tier for this gun (affects weighting in RARITY_ADAPTIVE/BALANCED modes) |
 | `scoreWeight` | double | Rarity score contribution for this gun |
@@ -514,6 +526,41 @@ You can specify `weight` and `rarityTier` per attribute entry to customize selec
 For example, if `attribute_pool.json` defines `gun_damage` with weight=20 and `reload_speed` with weight=15, and you override `gun_damage`'s weight to 50 in `gun_attribute_overrides.json`, the selection probabilities for this gun become 50/(50+15)=77% and 15/(50+15)=23%.
 
 Overriding `scoreWeight` applies a custom rarity score contribution for this gun's scoring calculation.
+
+### Positive/Negative Attribute Split Mode
+
+Use `minAttributesPos`/`maxAttributesPos` and `minAttributesNeg`/`maxAttributesNeg` to independently control the number of positive (buff) and negative (debuff) attributes. This guarantees exact compositions like "3 buffs + 1 debuff".
+
+```json
+{
+  "tacz:hk416d": {
+    "minAttributesPos": 2,
+    "maxAttributesPos": 3,
+    "minAttributesNeg": 1,
+    "maxAttributesNeg": 1,
+    "attributes": [
+      {
+        "attribute": "tacz_attributes:reload_speed",
+        "minValuePos": 0.10, "maxValuePos": 0.30,
+        "minValueNeg": -0.30, "maxValueNeg": -0.10
+      },
+      {
+        "attribute": "tacz_attributes:gun_damage",
+        "minValuePos": 0.05, "maxValuePos": 0.15,
+        "minValueNeg": -0.20, "maxValueNeg": -0.05
+      }
+    ]
+  }
+}
+```
+
+In this example:
+- **HK416D**: Guarantees 2–3 positive attributes and exactly 1 negative attribute (3–4 total).
+- When an attribute is selected as positive, values are generated within `minValuePos`–`maxValuePos`.
+- When an attribute is selected as negative, values are generated within `minValueNeg`–`maxValueNeg`.
+- `minValuePos`/`maxValuePos`/`minValueNeg`/`maxValueNeg` are all optional. If omitted, the attribute's full value range is split at `buffThreshold` (usually 0.0).
+
+> **Note:** Split mode activates automatically when any of `minAttributesPos`/`maxAttributesPos`/`minAttributesNeg`/`maxAttributesNeg` is set. When combined with `minAttributes`/`maxAttributes`, the total count acts as an upper cap. Works with all generation modes (FULL_RANDOM, ADAPTIVE, RARITY_ADAPTIVE, BALANCED).
 
 ---
 
