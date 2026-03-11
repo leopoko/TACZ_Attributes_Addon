@@ -386,6 +386,37 @@ You can freely customize each attribute's appearance rate, value range, rarity s
 | `buffThreshold` | Values at or above this are considered buffs (usually 0.0) | `0.0` |
 | `scoreWeight` | Contribution to rarity score (negative = inverted attributes like recoil) | `100` or `-90` |
 | `linkedAttribute` | (Optional) Attribute ID of a partner that must be selected together. When set, selecting this attribute automatically adds the partner. | `"tacz_attributes:ammo_recovery_amount"` |
+| `weaponBlacklist` | (Optional) List of weapon IDs to always exclude from receiving this attribute. | `["tacz:rpg7"]` |
+| `weaponWhitelist` | (Optional) List of weapon IDs to additionally allow, regardless of `applicableGunTypes`. | `["tacz:desert_eagle"]` |
+
+### Per-Weapon Filtering (weaponBlacklist / weaponWhitelist)
+
+While `applicableGunTypes` filters by weapon **type** (pistol, rifle, etc.), `weaponBlacklist` and `weaponWhitelist` provide fine-grained control by individual weapon **ID** (e.g., tacz:ak47).
+
+**Filter priority:**
+1. `weaponBlacklist` contains the weapon → **always excluded** (highest priority)
+2. `weaponWhitelist` is non-empty and contains the weapon → **always allowed** (regardless of `applicableGunTypes`)
+3. `applicableGunTypes` → standard gun type check as before
+
+```json
+{
+  "attributeId": "tacz_attributes:headshot_multiplier",
+  "minValue": -0.15,
+  "maxValue": 0.50,
+  "applicableGunTypes": ["sniper", "rifle"],
+  "weaponBlacklist": ["tacz:rpg7"],
+  "weaponWhitelist": ["tacz:desert_eagle"]
+}
+```
+
+In this example:
+- `tacz:rpg7` → excluded by blacklist
+- `tacz:desert_eagle` → allowed by whitelist (despite being a pistol)
+- Any sniper or rifle → allowed by `applicableGunTypes`
+- Other types (shotgun, smg, etc.) → not allowed
+
+> **Note:** Both fields are optional. When omitted, no per-weapon filtering is applied (default behavior).
+> Blacklist/whitelist filtering is applied even in `FULL_RANDOM` mode.
 
 ### Linked Attributes (Paired Generation)
 

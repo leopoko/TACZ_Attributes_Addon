@@ -386,6 +386,37 @@ ItemStack NBT → TaczAddon: {
 | `buffThreshold` | この値以上がバフ（通常は0.0） | `0.0` |
 | `scoreWeight` | レアリティスコアへの寄与度（マイナス=リコイルのような反転属性） | `100` or `-90` |
 | `linkedAttribute` | （任意）ペアで生成すべきパートナー属性のID。設定するとこの属性が選ばれた際、パートナーも自動で追加される | `"tacz_attributes:ammo_recovery_amount"` |
+| `weaponBlacklist` | （任意）この属性を除外する武器IDリスト。指定された武器には絶対に付与されない | `["tacz:rpg7"]` |
+| `weaponWhitelist` | （任意）この属性を追加で許可する武器IDリスト。`applicableGunTypes` に関係なく許可される | `["tacz:desert_eagle"]` |
+
+### 武器別フィルタリング（weaponBlacklist / weaponWhitelist）
+
+`applicableGunTypes` が武器**種**（pistol, rifle等）でフィルタリングするのに対し、`weaponBlacklist` と `weaponWhitelist` は個別の武器**ID**（tacz:ak47等）で制御します。
+
+**フィルタ判定順序:**
+1. `weaponBlacklist` に含まれる → **常に除外**（最優先）
+2. `weaponWhitelist` が非空で含まれている → **常に許可**（`applicableGunTypes` に関係なく）
+3. `applicableGunTypes` → 従来通りの武器種チェック
+
+```json
+{
+  "attributeId": "tacz_attributes:headshot_multiplier",
+  "minValue": -0.15,
+  "maxValue": 0.50,
+  "applicableGunTypes": ["sniper", "rifle"],
+  "weaponBlacklist": ["tacz:rpg7"],
+  "weaponWhitelist": ["tacz:desert_eagle"]
+}
+```
+
+上記の例:
+- `tacz:rpg7` → ブラックリストで除外
+- `tacz:desert_eagle` → pistolだがホワイトリストで許可
+- sniperまたはrifle型の銃 → `applicableGunTypes` で許可
+- それ以外（shotgun, smg等） → 不可
+
+> **注意:** 両フィールドとも省略可能です。省略時はフィルタなし（従来通りの動作）。
+> `FULL_RANDOM` モードでもブラックリスト/ホワイトリストは適用されます。
 
 ### リンク属性（ペア生成）
 
