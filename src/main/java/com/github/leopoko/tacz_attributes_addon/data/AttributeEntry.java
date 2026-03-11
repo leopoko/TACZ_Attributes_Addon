@@ -2,6 +2,7 @@ package com.github.leopoko.tacz_attributes_addon.data;
 
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -19,18 +20,30 @@ public class AttributeEntry {
     private final double buffThreshold; // values above this are buffs
     private final double scoreWeight; // score contribution per unit
     private final String linkedAttribute; // attribute that must be paired (e.g., chance needs amount)
+    private final Set<String> weaponWhitelist; // specific weapon IDs to additionally allow (e.g., "tacz:ak47")
+    private final Set<String> weaponBlacklist; // specific weapon IDs to exclude (takes priority)
 
     public AttributeEntry(String attributeId, double minValue, double maxValue,
                           AttributeModifier.Operation operation, int weight, int rarityTier,
                           Set<String> applicableGunTypes, double buffThreshold, double scoreWeight) {
         this(attributeId, minValue, maxValue, operation, weight, rarityTier,
-                applicableGunTypes, buffThreshold, scoreWeight, null);
+                applicableGunTypes, buffThreshold, scoreWeight, null,
+                Collections.emptySet(), Collections.emptySet());
     }
 
     public AttributeEntry(String attributeId, double minValue, double maxValue,
                           AttributeModifier.Operation operation, int weight, int rarityTier,
                           Set<String> applicableGunTypes, double buffThreshold, double scoreWeight,
                           String linkedAttribute) {
+        this(attributeId, minValue, maxValue, operation, weight, rarityTier,
+                applicableGunTypes, buffThreshold, scoreWeight, linkedAttribute,
+                Collections.emptySet(), Collections.emptySet());
+    }
+
+    public AttributeEntry(String attributeId, double minValue, double maxValue,
+                          AttributeModifier.Operation operation, int weight, int rarityTier,
+                          Set<String> applicableGunTypes, double buffThreshold, double scoreWeight,
+                          String linkedAttribute, Set<String> weaponWhitelist, Set<String> weaponBlacklist) {
         this.attributeId = attributeId;
         this.minValue = minValue;
         this.maxValue = maxValue;
@@ -41,6 +54,8 @@ public class AttributeEntry {
         this.buffThreshold = buffThreshold;
         this.scoreWeight = scoreWeight;
         this.linkedAttribute = linkedAttribute;
+        this.weaponWhitelist = weaponWhitelist;
+        this.weaponBlacklist = weaponBlacklist;
     }
 
     public String getAttributeId() { return attributeId; }
@@ -54,9 +69,33 @@ public class AttributeEntry {
     public double getScoreWeight() { return scoreWeight; }
     public String getLinkedAttribute() { return linkedAttribute; }
     public boolean hasLinkedAttribute() { return linkedAttribute != null && !linkedAttribute.isEmpty(); }
+    public Set<String> getWeaponWhitelist() { return weaponWhitelist; }
+    public Set<String> getWeaponBlacklist() { return weaponBlacklist; }
 
     public boolean isApplicableTo(String gunType) {
         return applicableGunTypes.isEmpty() || applicableGunTypes.contains(gunType);
+    }
+
+    /**
+     * Check if this attribute is applicable to a specific weapon, considering
+     * blacklist, whitelist, and gun type filters.
+     *
+     * Priority order:
+     * 1. weaponBlacklist: if gunId is listed, always exclude
+     * 2. weaponWhitelist: if gunId is listed, always allow (regardless of gun type)
+     * 3. applicableGunTypes: standard gun type check (empty = all types)
+     */
+    public boolean isApplicable(String gunType, String gunId) {
+        if (gunId != null && !weaponBlacklist.isEmpty() && weaponBlacklist.contains(gunId)) {
+            return false;
+        }
+        if (gunId != null && !weaponWhitelist.isEmpty() && weaponWhitelist.contains(gunId)) {
+            return true;
+        }
+        if (gunType == null) {
+            return applicableGunTypes.isEmpty();
+        }
+        return isApplicableTo(gunType);
     }
 
     /**

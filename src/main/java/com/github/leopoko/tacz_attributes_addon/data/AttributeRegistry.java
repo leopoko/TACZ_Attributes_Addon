@@ -123,7 +123,24 @@ public class AttributeRegistry {
 
         String linkedAttribute = obj.has("linkedAttribute") ? obj.get("linkedAttribute").getAsString() : null;
 
-        return new AttributeEntry(id, min, max, op, weight, rarityTier, gunTypes, buffThreshold, scoreWeight, linkedAttribute);
+        Set<String> weaponWhitelist = new HashSet<>();
+        if (obj.has("weaponWhitelist")) {
+            JsonArray wlArr = obj.getAsJsonArray("weaponWhitelist");
+            for (JsonElement w : wlArr) {
+                weaponWhitelist.add(w.getAsString());
+            }
+        }
+
+        Set<String> weaponBlacklist = new HashSet<>();
+        if (obj.has("weaponBlacklist")) {
+            JsonArray blArr = obj.getAsJsonArray("weaponBlacklist");
+            for (JsonElement b : blArr) {
+                weaponBlacklist.add(b.getAsString());
+            }
+        }
+
+        return new AttributeEntry(id, min, max, op, weight, rarityTier, gunTypes, buffThreshold, scoreWeight,
+                linkedAttribute, weaponWhitelist, weaponBlacklist);
     }
 
     private static AttributeModifier.Operation parseOperation(String op) {
@@ -151,7 +168,9 @@ public class AttributeRegistry {
                     + "buffThreshold: values above this are considered buffs (usually 0.0) | "
                     + "scoreWeight: rarity score contribution per unit value (negative for inverted attributes like recoil) | "
                     + "linkedAttribute: (optional) attributeId of a partner that must be selected together "
-                    + "(e.g. ammo_recovery_chance needs ammo_recovery_amount to function)");
+                    + "(e.g. ammo_recovery_chance needs ammo_recovery_amount to function) | "
+                    + "weaponBlacklist: (optional) specific weapon IDs to always exclude (e.g. [\"tacz:rpg7\"]) | "
+                    + "weaponWhitelist: (optional) specific weapon IDs to additionally allow regardless of gun type (e.g. [\"tacz:ak47\"])");
 
             JsonArray attrs = new JsonArray();
             for (AttributeEntry entry : ENTRIES) {
@@ -185,6 +204,20 @@ public class AttributeRegistry {
         obj.addProperty("scoreWeight", entry.getScoreWeight());
         if (entry.hasLinkedAttribute()) {
             obj.addProperty("linkedAttribute", entry.getLinkedAttribute());
+        }
+        if (!entry.getWeaponWhitelist().isEmpty()) {
+            JsonArray wl = new JsonArray();
+            for (String w : entry.getWeaponWhitelist()) {
+                wl.add(w);
+            }
+            obj.add("weaponWhitelist", wl);
+        }
+        if (!entry.getWeaponBlacklist().isEmpty()) {
+            JsonArray bl = new JsonArray();
+            for (String b : entry.getWeaponBlacklist()) {
+                bl.add(b);
+            }
+            obj.add("weaponBlacklist", bl);
         }
         return obj;
     }
