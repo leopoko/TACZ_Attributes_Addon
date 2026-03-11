@@ -7,6 +7,8 @@ import com.github.leopoko.tacz_attributes_addon.data.GunModifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 
+import net.minecraft.resources.ResourceLocation;
+
 import java.util.*;
 
 /**
@@ -34,12 +36,13 @@ public class AttributeGenerator {
                                              CommonConfig.DistributionType distType, double exponent,
                                              double raritySpread, double buffRatio,
                                              RandomSource random) {
-        // Resolve gun type and fire modes
+        // Resolve gun type, gun ID, and fire modes
         String gunType = GunTypeFilter.resolveGunType(gun);
+        ResourceLocation gunId = GunTypeFilter.resolveGunId(gun);
         Set<String> fireModes = GunTypeFilter.getAvailableFireModes(gun);
 
         // Get filtered attribute pool
-        List<AttributeEntry> pool = getPool(mode, gunType, fireModes);
+        List<AttributeEntry> pool = getPool(mode, gunType, gunId, fireModes);
         if (pool.isEmpty()) return Collections.emptyList();
 
         // Determine count
@@ -112,16 +115,17 @@ public class AttributeGenerator {
         return modifiers;
     }
 
-    private static List<AttributeEntry> getPool(CommonConfig.RandomMode mode, String gunType, Set<String> fireModes) {
+    private static List<AttributeEntry> getPool(CommonConfig.RandomMode mode, String gunType,
+                                                ResourceLocation gunId, Set<String> fireModes) {
         List<AttributeEntry> all = AttributeRegistry.getEntries();
 
         switch (mode) {
             case FULL_RANDOM:
-                return new ArrayList<>(all);
+                return GunTypeFilter.filter(all, gunType, gunId, fireModes, false);
             case ADAPTIVE:
             case RARITY_ADAPTIVE:
             case BALANCED:
-                return GunTypeFilter.filter(all, gunType, fireModes, true);
+                return GunTypeFilter.filter(all, gunType, gunId, fireModes, true);
             default:
                 return new ArrayList<>(all);
         }

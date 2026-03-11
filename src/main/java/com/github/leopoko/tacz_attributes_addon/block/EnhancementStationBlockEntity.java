@@ -74,10 +74,11 @@ public class EnhancementStationBlockEntity extends BlockEntity implements Worldl
         }
 
         String gunType = GunTypeFilter.resolveGunType(gun);
+        ResourceLocation gunId = GunTypeFilter.resolveGunId(gun);
         Set<String> fireModes = GunTypeFilter.getAvailableFireModes(gun);
 
         List<AttributeEntry> pool = GunTypeFilter.filter(
-                AttributeRegistry.getEntries(), gunType, fireModes, true);
+                AttributeRegistry.getEntries(), gunType, gunId, fireModes, true);
         if (pool.isEmpty()) {
             playerChoices.put(playerUUID, choices);
             return;

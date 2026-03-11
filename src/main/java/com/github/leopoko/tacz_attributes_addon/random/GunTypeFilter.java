@@ -66,15 +66,18 @@ public class GunTypeFilter {
      *
      * @param entries   All available entries
      * @param gunType   Gun type string (pistol, rifle, etc.)
+     * @param gunId     Specific gun ID (e.g., tacz:ak47) for per-weapon filtering
      * @param fireModes Available fire modes for the specific gun
      * @param adaptive  If true, also filter out fire-mode-specific attributes for modes the gun doesn't have
      */
     public static List<AttributeEntry> filter(List<AttributeEntry> entries, @Nullable String gunType,
+                                              @Nullable ResourceLocation gunId,
                                               Set<String> fireModes, boolean adaptive) {
+        String gunIdStr = gunId != null ? gunId.toString() : null;
         return entries.stream()
                 .filter(entry -> {
-                    // Filter by gun type
-                    if (gunType != null && !entry.isApplicableTo(gunType)) {
+                    // Filter by weapon blacklist/whitelist and gun type
+                    if (!entry.isApplicable(gunType, gunIdStr)) {
                         return false;
                     }
 
