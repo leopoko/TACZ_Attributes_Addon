@@ -263,6 +263,39 @@ src/main/resources/
 - **`weight`/`rarityTier` はオーバーライドされない**: 各属性の選択確率（`weight`）とレアリティティア（`rarityTier`）は常に `attribute_pool.json` の値が使用される。オーバーライドはプール絞り込み（ホワイトリスト）と値範囲のみ制御する
 - `/taczaddon reload` でホットリロード対応
 
+## 属性プールの武器別フィルタリング（Per-Weapon Filtering）
+
+`attribute_pool.json` の各属性エントリに `weaponBlacklist` と `weaponWhitelist` を設定することで、個別の武器ID単位（例: `tacz:ak47`）で属性の付与可否を制御できる。既存の `applicableGunTypes`（武器種フィルタ）と併用可能。
+
+### フィルタ判定順序
+1. **`weaponBlacklist`**: 武器IDが含まれる → **常に除外**（最優先）
+2. **`weaponWhitelist`**: 武器IDが含まれる → **常に許可**（`applicableGunTypes` に関係なく）
+3. **`applicableGunTypes`**: 従来通りの武器種チェック（空 = 全種許可）
+
+### JSON設定例
+```json
+{
+  "attributeId": "tacz_attributes:headshot_multiplier",
+  "minValue": -0.15,
+  "maxValue": 0.50,
+  "applicableGunTypes": ["sniper", "rifle"],
+  "weaponBlacklist": ["tacz:rpg7"],
+  "weaponWhitelist": ["tacz:desert_eagle"]
+}
+```
+上記の例では:
+- `tacz:rpg7` → ブラックリストで除外（たとえ他条件を満たしても不可）
+- `tacz:desert_eagle` → ホワイトリストで許可（pistolだが `applicableGunTypes` を無視して許可）
+- sniperまたはrifle型の銃 → `applicableGunTypes` で許可
+- それ以外のpistol/shotgun/smg等 → 不可
+
+### 実装詳細
+- `AttributeEntry.isApplicable(gunType, gunId)`: 3段階判定メソッド
+- `GunTypeFilter.filter()`: `gunId`（`ResourceLocation`）パラメータでフィルタリング
+- `FULL_RANDOM` モードでもブラックリスト/ホワイトリストは適用される
+- 両フィールドともオプション（省略時 = 空リスト = フィルタなし）
+- `/taczaddon reload` でホットリロード対応
+
 ## 未実装・今後の課題
 
 - **ブロックテクスチャ**: 独自テクスチャ未作成（バニラ鍛冶台テクスチャを借用）
