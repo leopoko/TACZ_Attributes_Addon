@@ -483,6 +483,10 @@ ItemStack NBT → TaczAddon: {
   "총기ID": {
     "minAttributes": 최소_속성_수,
     "maxAttributes": 최대_속성_수,
+    "minAttributesPos": 양성_속성_최소_수,
+    "maxAttributesPos": 양성_속성_최대_수,
+    "minAttributesNeg": 음성_속성_최소_수,
+    "maxAttributesNeg": 음성_속성_최대_수,
     "attributes": [
       {"attribute": "속성ID", "minValue": 최솟값, "maxValue": 최댓값}
     ]
@@ -496,6 +500,10 @@ ItemStack NBT → TaczAddon: {
 |------|-----------|------|
 | `minAttributes` | 선택 | 랜덤 속성의 최소 수. 생략 시 글로벌 설정값을 사용 |
 | `maxAttributes` | 선택 | 랜덤 속성의 최대 수. 생략 시 글로벌 설정값을 사용 |
+| `minAttributesPos` | 선택 | 양성 속성(버프)의 최소 수. 분리 모드 활성화 |
+| `maxAttributesPos` | 선택 | 양성 속성(버프)의 최대 수. 분리 모드 활성화 |
+| `minAttributesNeg` | 선택 | 음성 속성(디버프)의 최소 수. 분리 모드 활성화 |
+| `maxAttributesNeg` | 선택 | 음성 속성(디버프)의 최대 수. 분리 모드 활성화 |
 | `attributes` | 선택 | 허용 속성의 화이트리스트. 지정하면 이 목록의 속성만 부여 가능. 생략 시 일반 풀 필터링 |
 
 `attributes` 내 각 항목 (`attribute` 외 모든 필드는 선택 사항. 생략 시 `attribute_pool.json`의 값을 사용):
@@ -505,6 +513,10 @@ ItemStack NBT → TaczAddon: {
 | `attribute` | string | **필수**. 속성 ID (`tacz_attributes:` 프리픽스 포함) |
 | `minValue` | double | 이 총기에서의 커스텀 최솟값 |
 | `maxValue` | double | 이 총기에서의 커스텀 최댓값 |
+| `minValuePos` | double | 양성 값(버프)의 최솟값. 분리 모드용 |
+| `maxValuePos` | double | 양성 값(버프)의 최댓값. 분리 모드용 |
+| `minValueNeg` | double | 음성 값(디버프)의 최솟값. 분리 모드용 |
+| `maxValueNeg` | double | 음성 값(디버프)의 최댓값. 분리 모드용 |
 | `weight` | int | 이 총기에서의 선택 확률 (클수록 나오기 쉬움) |
 | `rarityTier` | int | 이 총기에서의 희귀도 티어 (RARITY_ADAPTIVE/BALANCED 모드의 가중치에 영향) |
 | `scoreWeight` | double | 이 총기에서의 희귀도 점수 기여도 |
@@ -545,6 +557,41 @@ ItemStack NBT → TaczAddon: {
 예를 들어, `attribute_pool.json`에서 `gun_damage`의 weight=20, `reload_speed`의 weight=15로 설정되어 있을 때, `gun_attribute_overrides.json`에서 `gun_damage`의 weight를 50으로 오버라이드하면 이 총기에서의 선택 확률은 50/(50+15)=77%와 15/(50+15)=23%가 됩니다.
 
 `scoreWeight`를 오버라이드하면 이 총기의 희귀도 점수 계산에 커스텀 기여도가 적용됩니다.
+
+### 양성/음성 속성 개별 제어 (분리 모드)
+
+`minAttributesPos`/`maxAttributesPos`와 `minAttributesNeg`/`maxAttributesNeg`를 사용하면 양성 속성(버프)과 음성 속성(디버프)의 개수를 독립적으로 제어할 수 있습니다. 이를 통해 「버프 3개 + 디버프 1개」와 같은 정확한 구성을 보장할 수 있습니다.
+
+```json
+{
+  "tacz:hk416d": {
+    "minAttributesPos": 2,
+    "maxAttributesPos": 3,
+    "minAttributesNeg": 1,
+    "maxAttributesNeg": 1,
+    "attributes": [
+      {
+        "attribute": "tacz_attributes:reload_speed",
+        "minValuePos": 0.10, "maxValuePos": 0.30,
+        "minValueNeg": -0.30, "maxValueNeg": -0.10
+      },
+      {
+        "attribute": "tacz_attributes:gun_damage",
+        "minValuePos": 0.05, "maxValuePos": 0.15,
+        "minValueNeg": -0.20, "maxValueNeg": -0.05
+      }
+    ]
+  }
+}
+```
+
+위 예시:
+- **HK416D**: 양성 속성 2~3개와 음성 속성 1개를 보장 (합계 3~4개)
+- 속성이 양성으로 선택되면 `minValuePos`~`maxValuePos` 범위에서 값을 생성
+- 속성이 음성으로 선택되면 `minValueNeg`~`maxValueNeg` 범위에서 값을 생성
+- `minValuePos`/`maxValuePos`/`minValueNeg`/`maxValueNeg`는 모두 선택 사항. 생략 시 속성의 전체 값 범위를 `buffThreshold`(보통 0.0)로 분할하여 사용
+
+> **참고:** `minAttributesPos`/`maxAttributesPos`/`minAttributesNeg`/`maxAttributesNeg` 중 하나라도 설정하면 분리 모드가 자동으로 활성화됩니다. `minAttributes`/`maxAttributes`와 함께 사용하면 총 개수 상한으로 기능합니다. 모든 생성 모드(FULL_RANDOM, ADAPTIVE, RARITY_ADAPTIVE, BALANCED)에서 작동합니다.
 
 ---
 
