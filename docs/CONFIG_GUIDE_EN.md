@@ -503,6 +503,16 @@ In this example:
 > Guns without an override entry use global settings as before.
 > After editing, reload in-game with `/taczaddon reload`.
 
+### Selection Probability
+
+`gun_attribute_overrides.json` does **NOT** override the selection probability (`weight`) or rarity tier (`rarityTier`) of each attribute. These values always come from `attribute_pool.json`.
+
+Overrides control only the following:
+- **Whitelist**: Which attributes can appear on this gun
+- **Value ranges**: Custom `minValue`/`maxValue` for this gun
+
+For example, if `attribute_pool.json` defines `gun_damage` with weight=20 and `reload_speed` with weight=15, and you whitelist only these two in `gun_attribute_overrides.json`, the selection probabilities would be 20/(20+15)=57% and 15/(20+15)=43% respectively (in RARITY_ADAPTIVE/BALANCED modes, `rarityTier` also affects the final probability).
+
 ---
 
 ## Commands

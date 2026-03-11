@@ -503,6 +503,16 @@ ItemStack NBT → TaczAddon: {
 > 未配置的枪继续使用全局设置。
 > 编辑文件后，可在游戏内使用 `/taczaddon reload` 命令重新加载。
 
+### 选择概率
+
+`gun_attribute_overrides.json` **不会**覆盖各属性的选择概率（`weight`）和稀有度等级（`rarityTier`），这些值始终使用 `attribute_pool.json` 中的定义。
+
+覆盖仅控制以下两点：
+- **白名单**：限制哪些属性可以出现在该枪上
+- **数值范围**：为该枪自定义 `minValue`/`maxValue`
+
+例如，如果 `attribute_pool.json` 中 `gun_damage` 的 weight=20，`reload_speed` 的 weight=15，在 `gun_attribute_overrides.json` 中仅将这两个属性加入白名单，则选择概率分别为 20/(20+15)=57% 和 15/(20+15)=43%（在 RARITY_ADAPTIVE/BALANCED 模式下，`rarityTier` 也会影响最终概率）。
+
 ---
 
 ## 命令
