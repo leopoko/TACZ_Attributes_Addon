@@ -386,6 +386,37 @@ ItemStack NBT → TaczAddon: {
 | `buffThreshold` | 该值以上视为增益（通常为 0.0） | `0.0` |
 | `scoreWeight` | 对稀有度评分的贡献度（负数 = 后坐力等反转属性） | `100` 或 `-90` |
 | `linkedAttribute` | （可选）必须成对选择的伙伴属性 ID。设置后，选中此属性时会自动添加伙伴属性。 | `"tacz_attributes:ammo_recovery_amount"` |
+| `weaponBlacklist` | （可选）始终排除此属性的武器 ID 列表。列出的武器绝对不会获得此属性。 | `["tacz:rpg7"]` |
+| `weaponWhitelist` | （可选）额外允许此属性的武器 ID 列表。无论 `applicableGunTypes` 如何，列出的武器都会被允许。 | `["tacz:desert_eagle"]` |
+
+### 按武器过滤（weaponBlacklist / weaponWhitelist）
+
+`applicableGunTypes` 按武器**类型**（pistol、rifle 等）进行过滤，而 `weaponBlacklist` 和 `weaponWhitelist` 则按单个武器 **ID**（如 tacz:ak47）进行精细控制。
+
+**过滤优先级：**
+1. `weaponBlacklist` 中包含该武器 → **始终排除**（最高优先级）
+2. `weaponWhitelist` 非空且包含该武器 → **始终允许**（无论 `applicableGunTypes` 如何）
+3. `applicableGunTypes` → 与之前相同的武器类型检查
+
+```json
+{
+  "attributeId": "tacz_attributes:headshot_multiplier",
+  "minValue": -0.15,
+  "maxValue": 0.50,
+  "applicableGunTypes": ["sniper", "rifle"],
+  "weaponBlacklist": ["tacz:rpg7"],
+  "weaponWhitelist": ["tacz:desert_eagle"]
+}
+```
+
+以上示例：
+- `tacz:rpg7` → 被黑名单排除
+- `tacz:desert_eagle` → 虽然是手枪，但被白名单允许
+- 任何狙击枪或步枪 → 通过 `applicableGunTypes` 允许
+- 其他类型（霰弹枪、冲锋枪等） → 不允许
+
+> **注意：** 两个字段都是可选的。省略时不进行武器级过滤（保持默认行为）。
+> 即使在 `FULL_RANDOM` 模式下，黑名单/白名单过滤也会生效。
 
 ### 关联属性（成对生成）
 
