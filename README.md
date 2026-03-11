@@ -168,6 +168,7 @@ epicSockets = 4                   # EPICのソケット数
 - `minAttributes`/`maxAttributes` — 省略するとグローバル設定を使用
 - `attributes` — 省略すると通常のプールフィルタリングを使用。指定するとそのリストの属性のみがこの銃に付与可能
 - 設定のない銃は従来通りの動作
+- **注意:** 各属性の選択確率（`weight`）やレアリティティア（`rarityTier`）は `attribute_pool.json` の値がそのまま使用されます（オーバーライド不可）
 
 ### 銃モデル別固定属性の設定
 
@@ -348,7 +349,7 @@ After first launch, a config file is generated at `config/tacz_attributes_addon-
 
 Per-weapon fixed attributes are configured in `config/tacz_attributes_addon/weapon_attributes.json`.
 
-Per-gun attribute overrides (attribute count limits, allowed attributes, and custom value ranges per gun ID) are configured in `config/tacz_attributes_addon/gun_attribute_overrides.json`. This is ideal for looter-shooter modpacks where each gun needs distinct attribute builds.
+Per-gun attribute overrides (attribute count limits, allowed attributes, and custom value ranges per gun ID) are configured in `config/tacz_attributes_addon/gun_attribute_overrides.json`. This is ideal for looter-shooter modpacks where each gun needs distinct attribute builds. Note that selection probability (`weight`) and `rarityTier` always come from `attribute_pool.json` and cannot be overridden per gun.
 
 The random attribute pool is configured in `config/tacz_attributes_addon/attribute_pool.json`, including linked attribute pairs.
 
@@ -524,6 +525,7 @@ epicSockets = 4                   # EPIC 插槽数
 - `minAttributes`/`maxAttributes` — 省略时使用全局设置
 - `attributes` — 省略时使用常规属性池过滤。指定后，仅列出的属性可出现在该枪上
 - 未配置的枪继续使用原有行为
+- **注意：** 各属性的选择概率（`weight`）和稀有度等级（`rarityTier`）始终使用 `attribute_pool.json` 的值（不可覆盖）
 
 ### 枪型号固定属性配置
 

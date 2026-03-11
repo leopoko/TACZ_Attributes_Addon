@@ -503,6 +503,16 @@ ItemStack NBT → TaczAddon: {
 > 設定のない銃は従来通りグローバル設定に従います。
 > ファイルを編集後、ゲーム内で `/taczaddon reload` コマンドでリロードできます。
 
+### 選択確率について
+
+`gun_attribute_overrides.json` では各属性の**選択確率（`weight`）やレアリティティア（`rarityTier`）はオーバーライドされません**。これらの値は常に `attribute_pool.json` の定義が使用されます。
+
+オーバーライドが制御するのは以下の2点のみです：
+- **ホワイトリスト**: どの属性がこの銃に付与可能かを制限
+- **値範囲**: `minValue`/`maxValue` をこの銃専用にカスタマイズ
+
+例えば、`attribute_pool.json` で `gun_damage` の weight=20、`reload_speed` の weight=15 と設定されている場合、`gun_attribute_overrides.json` でこの2つだけをホワイトリストに入れると、選択確率はそれぞれ 20/(20+15)=57%、15/(20+15)=43% になります（RARITY_ADAPTIVE/BALANCEDモードでは `rarityTier` も影響します）。
+
 ---
 
 ## コマンド
