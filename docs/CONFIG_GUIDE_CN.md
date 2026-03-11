@@ -439,6 +439,72 @@ ItemStack NBT → TaczAddon: {
 
 ---
 
+## 枪械属性覆盖（gun_attribute_overrides.json）
+
+文件：`config/tacz_attributes_addon/gun_attribute_overrides.json`
+
+首次启动时会生成一个空的 JSON 文件。可为每个枪 ID 单独覆盖随机属性的生成规则。适用于类似 The Division 2 的 Looter-shooter 风格模组包，让每把枪拥有不同的属性构建。
+
+### 格式
+
+```json
+{
+  "枪ID": {
+    "minAttributes": 最小属性数,
+    "maxAttributes": 最大属性数,
+    "attributes": [
+      {"attribute": "属性ID", "minValue": 最小值, "maxValue": 最大值}
+    ]
+  }
+}
+```
+
+### 各字段说明
+
+| 字段 | 是否必需 | 说明 |
+|------|----------|------|
+| `minAttributes` | 可选 | 随机属性的最小数量。省略时使用全局设置 |
+| `maxAttributes` | 可选 | 随机属性的最大数量。省略时使用全局设置 |
+| `attributes` | 可选 | 允许属性的白名单。指定后，仅列出的属性可出现在该枪上。省略时使用常规属性池过滤 |
+
+`attributes` 中的每个条目：
+
+| 字段 | 说明 |
+|------|------|
+| `attribute` | 属性 ID（带 `tacz_attributes:` 前缀） |
+| `minValue` | 该枪的自定义最小值（覆盖 attribute_pool.json 的值） |
+| `maxValue` | 该枪的自定义最大值（覆盖 attribute_pool.json 的值） |
+
+### 配置示例
+
+```json
+{
+  "tacz:hk416d": {
+    "minAttributes": 1,
+    "maxAttributes": 3,
+    "attributes": [
+      {"attribute": "tacz_attributes:reload_speed", "minValue": -0.20, "maxValue": 0.20},
+      {"attribute": "tacz_attributes:gun_damage", "minValue": -0.10, "maxValue": 0.15},
+      {"attribute": "tacz_attributes:recoil", "minValue": -0.30, "maxValue": 0.10}
+    ]
+  },
+  "tacz:rpg7": {
+    "minAttributes": 0,
+    "maxAttributes": 1
+  }
+}
+```
+
+以上示例：
+- **HK416D**：1～3 个随机属性，仅限 reload_speed、gun_damage 和 recoil 三种属性，且数值范围为自定义
+- **RPG-7**：0～1 个随机属性，属性类型按常规属性池过滤
+
+> **提示：** 省略 `attributes` 可以仅控制属性数量。
+> 未配置的枪继续使用全局设置。
+> 编辑文件后，可在游戏内使用 `/taczaddon reload` 命令重新加载。
+
+---
+
 ## 命令
 
 需要 OP 权限（等级 2）。
@@ -456,7 +522,7 @@ ItemStack NBT → TaczAddon: {
 重新生成手持枪械的随机属性，忽略重掷次数限制。
 
 ### `/taczaddon reload`
-重新加载 `attribute_pool.json` 和 `weapon_attributes.json`。
+重新加载 `attribute_pool.json`、`weapon_attributes.json` 和 `gun_attribute_overrides.json`。
 无需重启游戏即可使配置更改生效。
 
 ### `/taczaddon info`

@@ -66,7 +66,8 @@ src/main/java/com/github/leopoko/tacz_attributes_addon/
 │   ├── GunModifier.java              # 単一修飾子レコード（属性ID, 値, 演算子）
 │   ├── GunAttributeData.java         # アイテムNBT読み書きユーティリティ
 │   ├── AttributeEntry.java           # 属性プールエントリ定義
-│   └── AttributeRegistry.java        # 全属性登録（デフォルト~40属性）
+│   ├── AttributeRegistry.java        # 全属性登録（デフォルト~40属性）
+│   └── GunAttributeOverrides.java    # 銃別属性オーバーライド（個数・種類・値範囲）
 ├── random/
 │   ├── AttributeGenerator.java       # ランダム生成コア（4モード対応）
 │   ├── GunTypeFilter.java            # 銃タイプ・射撃モードによるフィルタリング
@@ -126,6 +127,7 @@ src/main/java/com/github/leopoko/tacz_attributes_addon/
 - **Forge Config**: `config/tacz_attributes_addon-common.toml`（自動生成）
 - **属性プール**: `config/tacz_attributes_addon/attribute_pool.json`（初回起動時にデフォルト生成）
 - **銃別固定属性**: `config/tacz_attributes_addon/weapon_attributes.json`（初回起動時に空ファイル生成）
+- **銃別属性オーバーライド**: `config/tacz_attributes_addon/gun_attribute_overrides.json`（初回起動時に空ファイル生成）
 
 ## コマンド
 
@@ -135,7 +137,7 @@ src/main/java/com/github/leopoko/tacz_attributes_addon/
 | `/taczaddon clear random` | ランダム属性のみ削除 | OP |
 | `/taczaddon clear fixed` | 固定属性のみ削除 | OP |
 | `/taczaddon reroll` | 手持ちの銃のランダム属性をリロール | OP |
-| `/taczaddon reload` | attribute_pool.json と weapon_attributes.json をリロード | OP |
+| `/taczaddon reload` | attribute_pool.json, weapon_attributes.json, gun_attribute_overrides.json をリロード | OP |
 | `/taczaddon info` | 手持ちの銃のアドオンデータを詳細表示 | OP |
 | `/taczaddon config get <key>` | 設定値を取得 | OP |
 | `/taczaddon config set <key> <value>` | 設定値を一時変更（再起動でリセット） | OP |
@@ -179,6 +181,16 @@ src/main/java/com/github/leopoko/tacz_attributes_addon/
 - **Math.absは使わない**（以前のバグ）。符号が自然にバフ/デバフを処理する
 - 通常属性: value=+0.15, scoreWeight=+100 → +15（バフで正のスコア）
 - リコイル: value=-0.30, scoreWeight=-90 → +27（リコイル減少で正のスコア）
+
+## 銃別属性オーバーライド（Per-Gun Attribute Overrides）
+
+- `gun_attribute_overrides.json` で銃IDごとにランダム属性の生成ルールをオーバーライド可能
+- 設定のない銃はグローバル設定（CommonConfig + attribute_pool.json）に従う
+- オーバーライド可能な項目:
+  - `minAttributes`/`maxAttributes`: 銃ごとの属性個数制限（省略時はグローバル値を使用）
+  - `attributes`: 許可属性のホワイトリスト + カスタム値範囲（省略時は通常のプールフィルタリング）
+- `AttributeGenerator.generate()` でオーバーライドを参照し、プールフィルタリング後に追加フィルタとして適用
+- `/taczaddon reload` でホットリロード対応
 
 ## 未実装・今後の課題
 

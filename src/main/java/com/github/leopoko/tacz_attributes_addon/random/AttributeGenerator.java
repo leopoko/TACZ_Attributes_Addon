@@ -3,6 +3,7 @@ package com.github.leopoko.tacz_attributes_addon.random;
 import com.github.leopoko.tacz_attributes_addon.config.CommonConfig;
 import com.github.leopoko.tacz_attributes_addon.data.AttributeEntry;
 import com.github.leopoko.tacz_attributes_addon.data.AttributeRegistry;
+import com.github.leopoko.tacz_attributes_addon.data.GunAttributeOverrides;
 import com.github.leopoko.tacz_attributes_addon.data.GunModifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
@@ -10,6 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Core attribute generation logic supporting multiple random modes.
@@ -41,12 +43,28 @@ public class AttributeGenerator {
         ResourceLocation gunId = GunTypeFilter.resolveGunId(gun);
         Set<String> fireModes = GunTypeFilter.getAvailableFireModes(gun);
 
+        // Check for per-gun overrides
+        GunAttributeOverrides.GunOverride override = gunId != null
+                ? GunAttributeOverrides.getOverride(gunId.toString()) : null;
+
+        // Use override counts if present, otherwise global config
+        int effectiveMin = override != null && override.hasMinAttributes() ? override.getMinAttributes() : minCount;
+        int effectiveMax = override != null && override.hasMaxAttributes() ? override.getMaxAttributes() : maxCount;
+
         // Get filtered attribute pool
         List<AttributeEntry> pool = getPool(mode, gunType, gunId, fireModes);
+
+        // Apply per-gun attribute whitelist filter
+        if (override != null && override.hasAttributeList()) {
+            pool = pool.stream()
+                    .filter(e -> override.hasAttribute(e.getAttributeId()))
+                    .collect(Collectors.toList());
+        }
+
         if (pool.isEmpty()) return Collections.emptyList();
 
         // Determine count
-        int count = minCount + (maxCount > minCount ? random.nextInt(maxCount - minCount + 1) : 0);
+        int count = effectiveMin + (effectiveMax > effectiveMin ? random.nextInt(effectiveMax - effectiveMin + 1) : 0);
         count = Math.min(count, pool.size());
 
         // Select attributes
@@ -63,16 +81,22 @@ public class AttributeGenerator {
         int debuffCount = 0;
 
         for (AttributeEntry entry : selected) {
+            // Use override value ranges if available
+            double entryMin = override != null
+                    ? override.getMinValue(entry.getAttributeId(), entry.getMinValue()) : entry.getMinValue();
+            double entryMax = override != null
+                    ? override.getMaxValue(entry.getAttributeId(), entry.getMaxValue()) : entry.getMaxValue();
+
             double value;
 
             if (mode == CommonConfig.RandomMode.RARITY_ADAPTIVE || mode == CommonConfig.RandomMode.BALANCED) {
                 // Skewed distribution favoring lower absolute values
                 value = ValueDistribution.sampleAbsoluteSkewed(
-                        entry.getMinValue(), entry.getMaxValue(), distType, exponent, random);
+                        entryMin, entryMax, distType, exponent, random);
             } else {
                 // Uniform distribution
                 value = ValueDistribution.sample(
-                        entry.getMinValue(), entry.getMaxValue(),
+                        entryMin, entryMax,
                         CommonConfig.DistributionType.LINEAR, 1.0, random);
             }
 
@@ -87,18 +111,18 @@ public class AttributeGenerator {
                 // If ratio is off, try to flip the sign
                 if (buffCount > 0 && debuffCount > 0) {
                     double currentRatio = (double) buffCount / debuffCount;
-                    if (currentRatio > buffRatio * 1.5 && isBuff && entry.getMinValue() < entry.getBuffThreshold()) {
+                    if (currentRatio > buffRatio * 1.5 && isBuff && entryMin < entry.getBuffThreshold()) {
                         // Too many buffs, flip to debuff
                         value = ValueDistribution.sample(
-                                entry.getMinValue(), entry.getBuffThreshold(),
+                                entryMin, entry.getBuffThreshold(),
                                 distType, exponent, random);
                         value = ValueDistribution.roundToPercent(value);
                         buffCount--;
                         debuffCount++;
-                    } else if (currentRatio < buffRatio * 0.5 && !isBuff && entry.getMaxValue() > entry.getBuffThreshold()) {
+                    } else if (currentRatio < buffRatio * 0.5 && !isBuff && entryMax > entry.getBuffThreshold()) {
                         // Too many debuffs, flip to buff
                         value = ValueDistribution.sample(
-                                entry.getBuffThreshold(), entry.getMaxValue(),
+                                entry.getBuffThreshold(), entryMax,
                                 distType, exponent, random);
                         value = ValueDistribution.roundToPercent(value);
                         debuffCount--;

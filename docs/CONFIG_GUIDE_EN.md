@@ -439,6 +439,72 @@ Custom linked attributes:
 
 ---
 
+## Per-Gun Attribute Overrides (gun_attribute_overrides.json)
+
+File: `config/tacz_attributes_addon/gun_attribute_overrides.json`
+
+An empty JSON file is generated on first launch. You can override random attribute generation rules per gun ID. This is ideal for looter-shooter modpacks (like The Division 2) where each gun needs distinct attribute builds.
+
+### Format
+
+```json
+{
+  "gun_id": {
+    "minAttributes": min_count,
+    "maxAttributes": max_count,
+    "attributes": [
+      {"attribute": "attribute_id", "minValue": min_val, "maxValue": max_val}
+    ]
+  }
+}
+```
+
+### Field Descriptions
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `minAttributes` | Optional | Minimum number of random attributes. Uses global config value if omitted. |
+| `maxAttributes` | Optional | Maximum number of random attributes. Uses global config value if omitted. |
+| `attributes` | Optional | Whitelist of allowed attributes. When specified, ONLY listed attributes can appear on this gun. Uses normal pool filtering if omitted. |
+
+Each entry in `attributes`:
+
+| Field | Description |
+|-------|-------------|
+| `attribute` | Attribute ID (with `tacz_attributes:` prefix) |
+| `minValue` | Custom minimum value for this gun (overrides attribute_pool.json) |
+| `maxValue` | Custom maximum value for this gun (overrides attribute_pool.json) |
+
+### Example Configuration
+
+```json
+{
+  "tacz:hk416d": {
+    "minAttributes": 1,
+    "maxAttributes": 3,
+    "attributes": [
+      {"attribute": "tacz_attributes:reload_speed", "minValue": -0.20, "maxValue": 0.20},
+      {"attribute": "tacz_attributes:gun_damage", "minValue": -0.10, "maxValue": 0.15},
+      {"attribute": "tacz_attributes:recoil", "minValue": -0.30, "maxValue": 0.10}
+    ]
+  },
+  "tacz:rpg7": {
+    "minAttributes": 0,
+    "maxAttributes": 1
+  }
+}
+```
+
+In this example:
+- **HK416D**: 1–3 random attributes, restricted to reload_speed, gun_damage, and recoil with custom value ranges.
+- **RPG-7**: 0–1 random attributes, attribute types follow normal pool filtering.
+
+> **Tip:** Omit `attributes` to control only the attribute count.
+> Guns without an override entry use global settings as before.
+> After editing, reload in-game with `/taczaddon reload`.
+
+---
+
 ## Commands
 
 Requires OP permission (level 2).
@@ -456,7 +522,7 @@ Removes fixed attributes only. Random attributes are preserved.
 Regenerates the random attributes on the held gun. Ignores the reroll count limit.
 
 ### `/taczaddon reload`
-Reloads `attribute_pool.json` and `weapon_attributes.json`.
+Reloads `attribute_pool.json`, `weapon_attributes.json`, and `gun_attribute_overrides.json`.
 Config changes take effect without restarting the game.
 
 ### `/taczaddon info`

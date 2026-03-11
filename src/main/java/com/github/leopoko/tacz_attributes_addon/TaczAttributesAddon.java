@@ -7,6 +7,7 @@ import com.github.leopoko.tacz_attributes_addon.compat.apotheosis.ApotheosisComp
 import com.github.leopoko.tacz_attributes_addon.command.ModCommands;
 import com.github.leopoko.tacz_attributes_addon.config.CommonConfig;
 import com.github.leopoko.tacz_attributes_addon.data.AttributeRegistry;
+import com.github.leopoko.tacz_attributes_addon.data.GunAttributeOverrides;
 import com.github.leopoko.tacz_attributes_addon.handler.WeaponTypeHandler;
 import com.github.leopoko.tacz_attributes_addon.init.ModBlockEntities;
 import com.github.leopoko.tacz_attributes_addon.init.ModBlocks;
@@ -90,6 +91,9 @@ public class TaczAttributesAddon {
 
             // Load weapon type config
             WeaponTypeHandler.loadConfig(FMLPaths.CONFIGDIR.get());
+
+            // Load per-gun attribute overrides
+            GunAttributeOverrides.loadConfig(FMLPaths.CONFIGDIR.get());
 
             // Initialize Apotheosis compat
             ApotheosisCompat.init();

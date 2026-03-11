@@ -148,6 +148,27 @@ epicSockets = 4                   # EPICのソケット数
 
 </details>
 
+### 銃別属性オーバーライド（Per-Gun Attribute Overrides）
+
+`config/tacz_attributes_addon/gun_attribute_overrides.json` を編集して、銃IDごとにランダム属性の個数制限・許可属性・値範囲をオーバーライドできます（初回起動で空ファイルが生成されます）。Looter-shooter系モッドパックで銃ごとに異なるビルドを作る際に便利です。
+
+```json
+{
+  "tacz:hk416d": {
+    "minAttributes": 1,
+    "maxAttributes": 3,
+    "attributes": [
+      {"attribute": "tacz_attributes:reload_speed", "minValue": -0.20, "maxValue": 0.20},
+      {"attribute": "tacz_attributes:gun_damage", "minValue": -0.10, "maxValue": 0.15}
+    ]
+  }
+}
+```
+
+- `minAttributes`/`maxAttributes` — 省略するとグローバル設定を使用
+- `attributes` — 省略すると通常のプールフィルタリングを使用。指定するとそのリストの属性のみがこの銃に付与可能
+- 設定のない銃は従来通りの動作
+
 ### 銃モデル別固定属性の設定
 
 `config/tacz_attributes_addon/weapon_attributes.json` を編集して銃IDごとの固定属性を設定します（初回起動で空ファイルが生成されます）。
@@ -327,6 +348,8 @@ After first launch, a config file is generated at `config/tacz_attributes_addon-
 
 Per-weapon fixed attributes are configured in `config/tacz_attributes_addon/weapon_attributes.json`.
 
+Per-gun attribute overrides (attribute count limits, allowed attributes, and custom value ranges per gun ID) are configured in `config/tacz_attributes_addon/gun_attribute_overrides.json`. This is ideal for looter-shooter modpacks where each gun needs distinct attribute builds.
+
 The random attribute pool is configured in `config/tacz_attributes_addon/attribute_pool.json`, including linked attribute pairs.
 
 See [CONFIG_GUIDE_EN.md](docs/CONFIG_GUIDE_EN.md) for the full configuration reference.
@@ -480,6 +503,27 @@ epicSockets = 4                   # EPIC 插槽数
 </details>
 
 详细配置说明请参阅 [CONFIG_GUIDE_CN.md](docs/CONFIG_GUIDE_CN.md)。
+
+### 枪械属性覆盖（Per-Gun Attribute Overrides）
+
+编辑 `config/tacz_attributes_addon/gun_attribute_overrides.json` 可为每个枪 ID 单独设置随机属性的数量限制、允许的属性类型和自定义数值范围（首次启动时自动生成空文件）。适用于类似 The Division 2 的 Looter-shooter 风格模组包。
+
+```json
+{
+  "tacz:hk416d": {
+    "minAttributes": 1,
+    "maxAttributes": 3,
+    "attributes": [
+      {"attribute": "tacz_attributes:reload_speed", "minValue": -0.20, "maxValue": 0.20},
+      {"attribute": "tacz_attributes:gun_damage", "minValue": -0.10, "maxValue": 0.15}
+    ]
+  }
+}
+```
+
+- `minAttributes`/`maxAttributes` — 省略时使用全局设置
+- `attributes` — 省略时使用常规属性池过滤。指定后，仅列出的属性可出现在该枪上
+- 未配置的枪继续使用原有行为
 
 ### 枪型号固定属性配置
 

@@ -439,6 +439,72 @@ ItemStack NBT → TaczAddon: {
 
 ---
 
+## 銃別属性オーバーライド（gun_attribute_overrides.json）
+
+ファイル: `config/tacz_attributes_addon/gun_attribute_overrides.json`
+
+初回起動時に空のJSONファイルが生成されます。銃IDごとにランダム属性の生成ルールをオーバーライドできます。Looter-shooter系モッドパックで銃ごとに異なるビルドを作る際に便利です。
+
+### 書式
+
+```json
+{
+  "銃ID": {
+    "minAttributes": 最小属性数,
+    "maxAttributes": 最大属性数,
+    "attributes": [
+      {"attribute": "属性ID", "minValue": 最小値, "maxValue": 最大値}
+    ]
+  }
+}
+```
+
+### 各フィールドの説明
+
+| フィールド | 必須 | 説明 |
+|------------|------|------|
+| `minAttributes` | 任意 | ランダム属性の最小数。省略時はグローバル設定値を使用 |
+| `maxAttributes` | 任意 | ランダム属性の最大数。省略時はグローバル設定値を使用 |
+| `attributes` | 任意 | 許可属性のホワイトリスト。指定するとこのリストの属性のみが付与可能。省略時は通常のプールフィルタリング |
+
+`attributes` 内の各エントリ:
+
+| フィールド | 説明 |
+|------------|------|
+| `attribute` | 属性ID（`tacz_attributes:` プレフィックス付き） |
+| `minValue` | この銃でのカスタム最小値（attribute_pool.json の値をオーバーライド） |
+| `maxValue` | この銃でのカスタム最大値（attribute_pool.json の値をオーバーライド） |
+
+### 設定例
+
+```json
+{
+  "tacz:hk416d": {
+    "minAttributes": 1,
+    "maxAttributes": 3,
+    "attributes": [
+      {"attribute": "tacz_attributes:reload_speed", "minValue": -0.20, "maxValue": 0.20},
+      {"attribute": "tacz_attributes:gun_damage", "minValue": -0.10, "maxValue": 0.15},
+      {"attribute": "tacz_attributes:recoil", "minValue": -0.30, "maxValue": 0.10}
+    ]
+  },
+  "tacz:rpg7": {
+    "minAttributes": 0,
+    "maxAttributes": 1
+  }
+}
+```
+
+上記の例:
+- **HK416D**: 1〜3個のランダム属性。reload_speed、gun_damage、recoilの3種類のみ付与可能で、値範囲もカスタム
+- **RPG-7**: 0〜1個のランダム属性。属性の種類は通常のプールフィルタリングに従う
+
+> **ヒント:** `attributes` を省略すると属性の個数のみを制御できます。
+> 設定のない銃は従来通りグローバル設定に従います。
+> ファイルを編集後、ゲーム内で `/taczaddon reload` コマンドでリロードできます。
+
+---
+
 ## コマンド
 
 OP権限（レベル2）が必要です。
@@ -456,7 +522,7 @@ OP権限（レベル2）が必要です。
 手持ちの銃のランダム属性を再生成します。リロール回数制限を無視します。
 
 ### `/taczaddon reload`
-`attribute_pool.json` と `weapon_attributes.json` をリロードします。
+`attribute_pool.json`、`weapon_attributes.json`、`gun_attribute_overrides.json` をリロードします。
 ゲームを再起動せずに設定変更を反映できます。
 
 ### `/taczaddon info`
