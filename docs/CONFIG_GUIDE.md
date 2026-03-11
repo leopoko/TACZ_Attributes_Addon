@@ -40,6 +40,12 @@ Apotheosis MOD との連携機能を有効にします。Apotheosisがインス�
 - `true`: 付与された属性の値とscoreWeightからスコアを計算し、レアリティ（COMMON/UNCOMMON/RARE/EPIC）を決定。銃アイテムの名前色がレアリティに応じて変化する
 - `false`: レアリティ計算をスキップ。全ての銃がCOMMON表示
 
+### `showEmptySlots` (デフォルト: `false`)
+ツールチップに空き属性スロットを表示します。銃のランダム属性数が `maxAttributes` より少ない場合に表示されます。
+
+- `true`: 未使用スロットを `[ ] 空き属性スロット` として表示。銃別の `maxAttributes` オーバーライドがあればそれを使用、なければグローバル値
+- `false`: 空きスロット表示なし
+
 ---
 
 ## [random] ランダム属性生成
@@ -219,6 +225,26 @@ RAREレアリティ銃のソケット数。
 
 ### `epicSockets` (デフォルト: `4`, 範囲: 0〜6)
 EPICレアリティ銃のソケット数。
+
+---
+
+## [enhancement] Enhancement Station ブロック
+
+### `maxTypes` (デフォルト: `0`, 範囲: 0〜100)
+銃ごとの強化属性タイプ数の上限。異なる強化属性の種類がこの上限に達すると、既に強化済みの属性のみが選択肢として表示されます（値は増加するが新しいタイプは追加されない）。
+
+- `0`: 無制限（タイプ制限なし）
+- `>0`: 異なるタイプ数がこの値に達すると、選択肢は既存の強化属性のみに制限される
+
+> **注意:** これは `maxEnhancements`（強化適用回数の上限）とは独立した設定です。`maxTypes` は属性の種類を制御し、合計回数は制御しません。
+
+### `existingOnly` (デフォルト: `false`)
+有効にすると、Enhancement Stationの選択肢が銃に既に存在する属性のみに制限されます（ランダム+固定+強化属性）。
+
+- `true`: 銃に既にある属性のみが選択肢に表示される
+- `false`: プールの全対象属性が選択肢に表示される
+
+> **注意:** `gun_attribute_overrides.json` の銃別 `maxEnhancement` オーバーライドでも、タイプ上限に達した時にこの制限が自動的に適用されます。
 
 ---
 
@@ -487,6 +513,7 @@ ItemStack NBT → TaczAddon: {
     "maxAttributesPos": 正属性の最大数,
     "minAttributesNeg": 負属性の最小数,
     "maxAttributesNeg": 負属性の最大数,
+    "maxEnhancement": 強化タイプ上限,
     "attributes": [
       {"attribute": "属性ID", "minValue": 最小値, "maxValue": 最大値}
     ]
@@ -504,6 +531,7 @@ ItemStack NBT → TaczAddon: {
 | `maxAttributesPos` | 任意 | 正の属性（バフ）の最大数。スプリットモード用 |
 | `minAttributesNeg` | 任意 | 負の属性（デバフ）の最小数。スプリットモード用 |
 | `maxAttributesNeg` | 任意 | 負の属性（デバフ）の最大数。スプリットモード用 |
+| `maxEnhancement` | 任意 | 強化属性タイプ数の上限。上限に達するとEnhancement Stationは既に強化済みの属性のみ表示。0=無制限。省略時はグローバル `maxTypes` を使用 |
 | `attributes` | 任意 | 許可属性のホワイトリスト。指定するとこのリストの属性のみが付与可能。省略時は通常のプールフィルタリング |
 
 `attributes` 内の各エントリ（全フィールドは任意。省略時は `attribute_pool.json` の値を使用）:
@@ -608,6 +636,18 @@ OP権限（レベル2）が必要です。
 ### `/taczaddon clear fixed`
 固定属性のみを削除します。ランダム属性は残ります。
 
+### `/taczaddon clear enhanced`
+強化属性のみを削除します。ランダム属性と固定属性は残ります。
+
+### `/taczaddon add <attribute> <value> [operation]`
+手持ちの銃の強化属性に属性を手動追加します。同じ属性が既に強化属性に存在する場合、値がマージ（加算）されます。
+
+- `attribute`: 完全な属性ID（例: `tacz_attributes:gun_damage`）。タブ補完対応
+- `value`: 数値（例: `0.15`, `-0.10`）
+- `operation`: 任意。デフォルト: `MULTIPLY_BASE`。選択肢: `ADDITION`, `MULTIPLY_BASE`, `MULTIPLY_TOTAL`
+
+> **ヒント:** KubeJS連携に便利です。Modpack開発者はこのコマンドを使って、特定の属性を銃に追加するカスタムアイテムを作成できます。
+
 ### `/taczaddon reroll`
 手持ちの銃のランダム属性を再生成します。リロール回数制限を無視します。
 
@@ -626,7 +666,7 @@ OP権限（レベル2）が必要です。
 
 **設定可能なキー:**
 - `enableRandomOnObtain`, `enableWeaponTypeAttributes`, `enableAttributeStation`
-- `enableApotheosis`, `enableRarityScoring`
+- `enableApotheosis`, `enableRarityScoring`, `showEmptySlots`
 - `randomMode` (FULL_RANDOM / ADAPTIVE / RARITY_ADAPTIVE / BALANCED)
 - `fixedAttributeMode` (FIXED_ONLY / RANDOM_ONLY / BOTH_STACKING / FIXED_INFLUENCES_RANDOM)
 - `minAttributes`, `maxAttributes`
@@ -637,6 +677,7 @@ OP権限（レベル2）が必要です。
 - `allowReroll`, `maxRerolls`
 - `gunBaseSockets`, `socketsScaleWithRarity`
 - `commonSockets`, `uncommonSockets`, `rareSockets`, `epicSockets`
+- `enhancementMaxTypes`, `enhancementExistingOnly`
 
 ---
 

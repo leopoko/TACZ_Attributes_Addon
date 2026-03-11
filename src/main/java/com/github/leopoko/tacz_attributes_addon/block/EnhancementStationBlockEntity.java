@@ -5,6 +5,7 @@ import com.github.leopoko.tacz_attributes_addon.config.CommonConfig;
 import com.github.leopoko.tacz_attributes_addon.data.AttributeEntry;
 import com.github.leopoko.tacz_attributes_addon.data.AttributeRegistry;
 import com.github.leopoko.tacz_attributes_addon.data.GunAttributeData;
+import com.github.leopoko.tacz_attributes_addon.data.GunAttributeOverrides;
 import com.github.leopoko.tacz_attributes_addon.data.GunModifier;
 import com.github.leopoko.tacz_attributes_addon.handler.RarityHandler;
 import com.github.leopoko.tacz_attributes_addon.init.ModBlockEntities;
@@ -84,6 +85,16 @@ public class EnhancementStationBlockEntity extends BlockEntity implements Worldl
             return;
         }
 
+        // Check if choices should be restricted to existing attributes
+        boolean restrictToExisting = shouldRestrictToExisting(gun, gunId);
+        if (restrictToExisting) {
+            pool = filterToExistingAttributes(pool, gun);
+            if (pool.isEmpty()) {
+                playerChoices.put(playerUUID, choices);
+                return;
+            }
+        }
+
         int choiceCount = CommonConfig.ENHANCEMENT_CHOICE_COUNT.get();
         double minMult = CommonConfig.ENHANCEMENT_MIN_VALUE.get();
         double maxMult = CommonConfig.ENHANCEMENT_MAX_VALUE.get();
@@ -119,6 +130,73 @@ public class EnhancementStationBlockEntity extends BlockEntity implements Worldl
         }
 
         playerChoices.put(playerUUID, choices);
+    }
+
+    /**
+     * Determines whether enhancement choices should be restricted to existing attributes.
+     * True if:
+     * 1. ENHANCEMENT_EXISTING_ONLY config is true, OR
+     * 2. maxEnhancement type limit is reached (per-gun override or global config)
+     */
+    private boolean shouldRestrictToExisting(ItemStack gun, ResourceLocation gunId) {
+        // Check global existing-only config
+        if (CommonConfig.ENHANCEMENT_EXISTING_ONLY.get()) {
+            return true;
+        }
+
+        // Check type limit
+        int maxTypes = resolveMaxTypes(gunId);
+        if (maxTypes > 0) {
+            List<GunModifier> enhanced = GunAttributeData.getEnhancedModifiers(gun);
+            long distinctTypes = enhanced.stream()
+                    .map(GunModifier::getAttributeId)
+                    .distinct()
+                    .count();
+            if (distinctTypes >= maxTypes) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Resolves effective maxEnhancement types limit.
+     * Per-gun override takes priority over global config.
+     */
+    private int resolveMaxTypes(ResourceLocation gunId) {
+        if (gunId != null) {
+            GunAttributeOverrides.GunOverride override = GunAttributeOverrides.getOverride(gunId.toString());
+            if (override != null && override.hasMaxEnhancement()) {
+                return override.getMaxEnhancement();
+            }
+        }
+        return CommonConfig.ENHANCEMENT_MAX_TYPES.get();
+    }
+
+    /**
+     * Filters attribute pool to only include attributes already present on the gun
+     * (from random, fixed, or enhanced modifiers).
+     */
+    private List<AttributeEntry> filterToExistingAttributes(List<AttributeEntry> pool, ItemStack gun) {
+        Set<String> existingAttrIds = new HashSet<>();
+        for (GunModifier mod : GunAttributeData.getModifiers(gun)) {
+            existingAttrIds.add(mod.getAttributeId());
+        }
+        for (GunModifier mod : GunAttributeData.getFixedModifiers(gun)) {
+            existingAttrIds.add(mod.getAttributeId());
+        }
+        for (GunModifier mod : GunAttributeData.getEnhancedModifiers(gun)) {
+            existingAttrIds.add(mod.getAttributeId());
+        }
+
+        List<AttributeEntry> filtered = new ArrayList<>();
+        for (AttributeEntry entry : pool) {
+            if (existingAttrIds.contains(entry.getAttributeId())) {
+                filtered.add(entry);
+            }
+        }
+        return filtered;
     }
 
     private AttributeEntry weightedRandomSelect(List<AttributeEntry> entries, RandomSource random) {
@@ -240,6 +318,9 @@ public class EnhancementStationBlockEntity extends BlockEntity implements Worldl
         ItemStack material = getItem(1);
         material.shrink(count);
     }
+
+    // Note: maxEnhancement in per-gun overrides controls the type limit (distinct attribute types),
+    // handled in shouldRestrictToExisting(). ENHANCEMENT_MAX_COUNT is the hard cap on total applications.
 
     public void sendChoicesToPlayer(ServerPlayer player) {
         List<EnhancementChoice> choices = playerChoices.getOrDefault(player.getUUID(), List.of());

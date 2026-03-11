@@ -40,6 +40,12 @@
 - `true`：根据附加属性的数值和 scoreWeight 计算评分，并决定稀有度（COMMON/UNCOMMON/RARE/EPIC）。枪械物品的名称颜色随稀有度变化。
 - `false`：跳过稀有度计算，所有枪械均显示为 COMMON。
 
+### `showEmptySlots`（默认：`false`）
+当枪械的随机属性数量少于 `maxAttributes` 时，在工具提示中显示空属性槽位。
+
+- `true`：将未使用的槽位显示为 `[ ] Empty Attribute Slot`。优先使用每枪 `maxAttributes` 覆盖值，否则使用全局值。
+- `false`：不显示空槽位
+
 ---
 
 ## [random] 随机属性生成
@@ -219,6 +225,26 @@ RARE 稀有度枪械的插槽数量。
 
 ### `epicSockets`（默认：`4`，范围：0～6）
 EPIC 稀有度枪械的插槽数量。
+
+---
+
+## [enhancement] Enhancement Station 方块
+
+### `maxTypes`（默认：`0`，范围：0～100）
+每把枪的强化属性类型最大数量。当不同的强化属性类型数达到此上限时，仅显示已强化的属性作为选项（数值增加但不添加新类型）。
+
+- `0`：无限制（无类型限制）
+- `>0`：当不同类型数达到此值时，选项限制为已有的强化属性
+
+> **注意：** 这与 `maxEnhancements`（强化应用总次数上限）是独立的设置。`maxTypes` 控制属性种类，而非总次数。
+
+### `existingOnly`（默认：`false`）
+启用后，Enhancement Station 的选项仅限于枪上已有的属性（随机 + 固定 + 强化属性）。
+
+- `true`：仅显示枪上已有的属性作为选项
+- `false`：属性池中所有适用属性都可作为选项
+
+> **注意：** `gun_attribute_overrides.json` 中每枪的 `maxEnhancement` 覆盖也会在类型上限达到时自动触发此限制。
 
 ---
 
@@ -487,6 +513,7 @@ ItemStack NBT → TaczAddon: {
     "maxAttributesPos": 正属性最大数,
     "minAttributesNeg": 负属性最小数,
     "maxAttributesNeg": 负属性最大数,
+    "maxEnhancement": 强化类型上限,
     "attributes": [
       {"attribute": "属性ID", "minValue": 最小值, "maxValue": 最大值}
     ]
@@ -504,6 +531,7 @@ ItemStack NBT → TaczAddon: {
 | `maxAttributesPos` | 可选 | 正属性（增益）的最大数量。启用分离模式 |
 | `minAttributesNeg` | 可选 | 负属性（减益）的最小数量。启用分离模式 |
 | `maxAttributesNeg` | 可选 | 负属性（减益）的最大数量。启用分离模式 |
+| `maxEnhancement` | 可选 | 强化属性类型数的上限。达到上限时 Enhancement Station 仅显示已强化的属性。0=无限制。省略时使用全局 `maxTypes` |
 | `attributes` | 可选 | 允许属性的白名单。指定后，仅列出的属性可出现在该枪上。省略时使用常规属性池过滤 |
 
 `attributes` 中的每个条目（除 `attribute` 外所有字段均为可选，省略时使用 `attribute_pool.json` 的值）：
@@ -608,6 +636,18 @@ ItemStack NBT → TaczAddon: {
 ### `/taczaddon clear fixed`
 仅删除固定属性，随机属性保留。
 
+### `/taczaddon clear enhanced`
+仅删除强化属性。随机和固定属性保留。
+
+### `/taczaddon add <attribute> <value> [operation]`
+手动向持有枪械的强化属性中添加属性。如果同一属性已存在于强化属性中，值将合并（相加）。
+
+- `attribute`：完整属性 ID（例如 `tacz_attributes:gun_damage`）。支持 Tab 自动补全
+- `value`：数值（例如 `0.15`、`-0.10`）
+- `operation`：可选。默认：`MULTIPLY_BASE`。选项：`ADDITION`、`MULTIPLY_BASE`、`MULTIPLY_TOTAL`
+
+> **提示：** 适用于 KubeJS 集成。模组包开发者可以使用此命令创建为枪械添加特定属性的自定义物品。
+
 ### `/taczaddon reroll`
 重新生成手持枪械的随机属性，忽略重掷次数限制。
 
@@ -626,7 +666,7 @@ ItemStack NBT → TaczAddon: {
 
 **可配置的键：**
 - `enableRandomOnObtain`、`enableWeaponTypeAttributes`、`enableAttributeStation`
-- `enableApotheosis`、`enableRarityScoring`
+- `enableApotheosis`、`enableRarityScoring`、`showEmptySlots`
 - `randomMode`（FULL_RANDOM / ADAPTIVE / RARITY_ADAPTIVE / BALANCED）
 - `fixedAttributeMode`（FIXED_ONLY / RANDOM_ONLY / BOTH_STACKING / FIXED_INFLUENCES_RANDOM）
 - `minAttributes`、`maxAttributes`
@@ -637,6 +677,7 @@ ItemStack NBT → TaczAddon: {
 - `allowReroll`、`maxRerolls`
 - `gunBaseSockets`、`socketsScaleWithRarity`
 - `commonSockets`、`uncommonSockets`、`rareSockets`、`epicSockets`
+- `enhancementMaxTypes`、`enhancementExistingOnly`
 
 ---
 

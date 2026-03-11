@@ -40,6 +40,12 @@ Apotheosis MOD와의 연동 기능을 활성화합니다. Apotheosis가 설치�
 - `true`: 부여된 속성의 값과 scoreWeight로 점수를 계산하여 희귀도(COMMON/UNCOMMON/RARE/EPIC)를 결정. 총기 아이템의 이름 색상이 희귀도에 따라 변경됨
 - `false`: 희귀도 계산을 건너뜀. 모든 총기가 COMMON으로 표시
 
+### `showEmptySlots` (기본값: `false`)
+총기의 랜덤 속성 수가 `maxAttributes`보다 적을 때 툴팁에 빈 속성 슬롯을 표시합니다.
+
+- `true`: 미사용 슬롯을 `[ ] Empty Attribute Slot`으로 표시. 총기별 `maxAttributes` 오버라이드가 있으면 해당 값 사용, 없으면 글로벌 값 사용
+- `false`: 빈 슬롯 표시 없음
+
 ---
 
 ## [random] 랜덤 속성 생성
@@ -219,6 +225,26 @@ RARE 희귀도 총기의 소켓 수.
 
 ### `epicSockets` (기본값: `4`, 범위: 0~6)
 EPIC 희귀도 총기의 소켓 수.
+
+---
+
+## [enhancement] Enhancement Station 블록
+
+### `maxTypes` (기본값: `0`, 범위: 0~100)
+총기당 강화 속성 유형의 최대 수. 서로 다른 강화 속성 유형 수가 이 한도에 도달하면, 이미 강화된 속성만 선택지로 표시됩니다(값은 증가하지만 새 유형은 추가되지 않음).
+
+- `0`: 무제한(유형 제한 없음)
+- `>0`: 서로 다른 유형 수가 이 값에 도달하면, 선택지가 기존 강화 속성으로 제한됨
+
+> **참고:** 이것은 `maxEnhancements`(총 강화 적용 횟수의 상한)와는 독립적인 설정입니다. `maxTypes`는 속성의 종류를 제어하며, 총 횟수는 제어하지 않습니다.
+
+### `existingOnly` (기본값: `false`)
+활성화하면 Enhancement Station의 선택지가 이미 총기에 존재하는 속성으로만 제한됩니다(랜덤 + 고정 + 강화 속성).
+
+- `true`: 총기에 이미 있는 속성만 선택지로 표시됨
+- `false`: 풀의 모든 대상 속성이 선택지로 표시됨
+
+> **참고:** `gun_attribute_overrides.json`의 총기별 `maxEnhancement` 오버라이드도 유형 한도에 도달했을 때 이 제한이 자동으로 적용됩니다.
 
 ---
 
@@ -486,7 +512,8 @@ ItemStack NBT → TaczAddon: {
     "minAttributesPos": 양성_속성_최소_수,
     "maxAttributesPos": 양성_속성_최대_수,
     "minAttributesNeg": 음성_속성_최소_수,
-    "maxAttributesNeg": 음성_속성_최대_수,
+    "maxAttributesNeg": 음의_속성_최대_수,
+    "maxEnhancement": 강화_유형_상한,
     "attributes": [
       {"attribute": "속성ID", "minValue": 최솟값, "maxValue": 최댓값}
     ]
@@ -504,6 +531,7 @@ ItemStack NBT → TaczAddon: {
 | `maxAttributesPos` | 선택 | 양성 속성(버프)의 최대 수. 분리 모드 활성화 |
 | `minAttributesNeg` | 선택 | 음성 속성(디버프)의 최소 수. 분리 모드 활성화 |
 | `maxAttributesNeg` | 선택 | 음성 속성(디버프)의 최대 수. 분리 모드 활성화 |
+| `maxEnhancement` | 선택 | 강화 속성 유형 수의 상한. 상한 도달 시 Enhancement Station은 이미 강화된 속성만 표시. 0=무제한. 생략 시 글로벌 `maxTypes` 사용 |
 | `attributes` | 선택 | 허용 속성의 화이트리스트. 지정하면 이 목록의 속성만 부여 가능. 생략 시 일반 풀 필터링 |
 
 `attributes` 내 각 항목 (`attribute` 외 모든 필드는 선택 사항. 생략 시 `attribute_pool.json`의 값을 사용):
@@ -608,6 +636,18 @@ OP 권한 (레벨 2)이 필요합니다.
 ### `/taczaddon clear fixed`
 고정 속성만 삭제합니다. 랜덤 속성은 유지됩니다.
 
+### `/taczaddon clear enhanced`
+강화 속성만 삭제합니다. 랜덤 및 고정 속성은 유지됩니다.
+
+### `/taczaddon add <attribute> <value> [operation]`
+보유 중인 총기의 강화 속성에 속성을 수동으로 추가합니다. 동일한 속성이 이미 강화 속성에 존재하면 값이 병합(합산)됩니다.
+
+- `attribute`: 전체 속성 ID (예: `tacz_attributes:gun_damage`). 탭 자동완성 지원
+- `value`: 수치 (예: `0.15`, `-0.10`)
+- `operation`: 선택사항. 기본값: `MULTIPLY_BASE`. 옵션: `ADDITION`, `MULTIPLY_BASE`, `MULTIPLY_TOTAL`
+
+> **팁:** KubeJS 연동에 유용합니다. 모드팩 개발자가 이 명령어를 사용하여 특정 속성을 총기에 추가하는 커스텀 아이템을 만들 수 있습니다.
+
 ### `/taczaddon reroll`
 들고 있는 총기의 랜덤 속성을 재생성합니다. 리롤 횟수 제한을 무시합니다.
 
@@ -626,7 +666,7 @@ OP 권한 (레벨 2)이 필요합니다.
 
 **설정 가능한 키:**
 - `enableRandomOnObtain`, `enableWeaponTypeAttributes`, `enableAttributeStation`
-- `enableApotheosis`, `enableRarityScoring`
+- `enableApotheosis`, `enableRarityScoring`, `showEmptySlots`
 - `randomMode` (FULL_RANDOM / ADAPTIVE / RARITY_ADAPTIVE / BALANCED)
 - `fixedAttributeMode` (FIXED_ONLY / RANDOM_ONLY / BOTH_STACKING / FIXED_INFLUENCES_RANDOM)
 - `minAttributes`, `maxAttributes`
@@ -637,6 +677,7 @@ OP 권한 (레벨 2)이 필요합니다.
 - `allowReroll`, `maxRerolls`
 - `gunBaseSockets`, `socketsScaleWithRarity`
 - `commonSockets`, `uncommonSockets`, `rareSockets`, `epicSockets`
+- `enhancementMaxTypes`, `enhancementExistingOnly`
 
 ---
 

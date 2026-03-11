@@ -11,6 +11,7 @@ public class CommonConfig {
     public static final ForgeConfigSpec.BooleanValue ENABLE_ATTRIBUTE_STATION;
     public static final ForgeConfigSpec.BooleanValue ENABLE_APOTHEOSIS;
     public static final ForgeConfigSpec.BooleanValue ENABLE_RARITY_SCORING;
+    public static final ForgeConfigSpec.BooleanValue SHOW_EMPTY_SLOTS;
 
     // Random mode
     public static final ForgeConfigSpec.EnumValue<RandomMode> RANDOM_MODE;
@@ -63,6 +64,8 @@ public class CommonConfig {
     public static final ForgeConfigSpec.DoubleValue ENHANCEMENT_MIN_VALUE;
     public static final ForgeConfigSpec.DoubleValue ENHANCEMENT_MAX_VALUE;
     public static final ForgeConfigSpec.BooleanValue ENHANCEMENT_ONLY_POSITIVE;
+    public static final ForgeConfigSpec.IntValue ENHANCEMENT_MAX_TYPES;
+    public static final ForgeConfigSpec.BooleanValue ENHANCEMENT_EXISTING_ONLY;
 
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
@@ -88,6 +91,10 @@ public class CommonConfig {
         ENABLE_RARITY_SCORING = builder
                 .comment("Enable attribute scoring and rarity display")
                 .define("enableRarityScoring", true);
+
+        SHOW_EMPTY_SLOTS = builder
+                .comment("Show empty attribute slots in tooltip when current attributes < maxAttributes")
+                .define("showEmptySlots", false);
 
         builder.pop();
 
@@ -249,6 +256,16 @@ public class CommonConfig {
         ENHANCEMENT_ONLY_POSITIVE = builder
                 .comment("If true, enhancements are always positive (buffs only)")
                 .define("onlyPositive", true);
+
+        ENHANCEMENT_MAX_TYPES = builder
+                .comment("Maximum number of distinct enhancement attribute types per gun (0 = unlimited)",
+                         "When reached, only already-enhanced attributes appear as choices")
+                .defineInRange("maxTypes", 0, 0, 100);
+
+        ENHANCEMENT_EXISTING_ONLY = builder
+                .comment("If true, enhancement choices are restricted to attributes already on the gun",
+                         "(random + fixed + enhanced modifiers)")
+                .define("existingOnly", false);
 
         builder.pop();
 
