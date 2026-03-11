@@ -4,7 +4,7 @@
 
 Minecraft 1.20.1 Forge MODアドオン。TACZ（銃MOD）とTACZ Attributes（属性MOD）を統合し、銃アイテムにランダム属性・レアリティシステムを追加する。
 
-## ビルド・実行
+## ビルド・実行・公開
 
 ```bash
 # ビルド
@@ -15,9 +15,19 @@ Minecraft 1.20.1 Forge MODアドオン。TACZ（銃MOD）とTACZ Attributes（�
 
 # サーバー起動
 ./gradlew runServer
+
+# CurseForgeへ公開（ビルド→アップロード）
+./gradlew publishMods
+# 環境変数 CURSEFORGE_TOKEN が必要
 ```
 
 成果物: `build/libs/` 配下の `.jar`ファイル（`-sources`なし）
+
+### CurseForge公開設定
+- **プラグイン**: `me.modmuss50.mod-publish-plugin` v0.8.4
+- **プロジェクトID**: `1482794`（`gradle.properties` の `curseforge_project_id`）
+- **GitHub Actions**: `.github/workflows/publish.yml`（Release作成 or 手動トリガーで自動公開）
+- **チェンジログ**: `CHANGELOG.md` の最新 `## [x.xx]` セクションを自動抽出
 
 ## 技術スタック
 
@@ -74,26 +84,61 @@ src/main/java/com/github/leopoko/tacz_attributes_addon/
 ├── bridge/
 │   └── AttributeBridge.java          # アイテムNBT → プレイヤーAttributeModifier同期
 ├── handler/
-│   ├── GunObtainHandler.java         # Feature 1: 取得時自動付与
-│   ├── WeaponTypeHandler.java        # Feature 2: 銃モデル別固定属性
-│   ├── RarityHandler.java            # Feature 6: スコア計算→レアリティ変換
+│   ├── GunObtainHandler.java         # 取得時自動付与
+│   ├── WeaponTypeHandler.java        # 銃モデル別固定属性
+│   ├── RarityHandler.java            # スコア計算→レアリティ変換
 │   └── TooltipHandler.java           # ツールチップ表示
 ├── block/
-│   ├── AttributeStationBlock.java    # Feature 3: ブロック実装
-│   ├── AttributeStationBlockEntity.java  # BlockEntity・加工処理ロジック
-│   ├── AttributeStationMenu.java     # コンテナメニュー
-│   └── AttributeStationScreen.java   # クライアントGUI
+│   ├── AttributeStationBlock.java    # Attribute Station ブロック
+│   ├── AttributeStationBlockEntity.java
+│   ├── AttributeStationMenu.java
+│   ├── AttributeStationScreen.java
+│   ├── EnhancementStationBlock.java  # Enhancement Station ブロック
+│   ├── EnhancementStationBlockEntity.java
+│   ├── EnhancementStationMenu.java
+│   └── EnhancementStationScreen.java
+├── item/
+│   ├── BarrageItem.java              # オフハンドRPM倍増アイテム
+│   └── GunIngredient.java            # 銃アイテム用カスタムレシピ材料
 ├── init/
 │   ├── ModBlocks.java                # ブロック登録
 │   ├── ModItems.java                 # アイテム登録
 │   ├── ModBlockEntities.java         # BlockEntity登録
 │   └── ModMenuTypes.java             # メニュー登録
+├── network/
+│   ├── ModNetwork.java               # パケット登録・送信
+│   ├── EnhancementChoicesPacket.java  # サーバー→クライアント: 選択肢送信
+│   └── EnhancementActionPacket.java   # クライアント→サーバー: 選択結果送信
 ├── command/
-│   └── ModCommands.java              # /taczaddon コマンド（clear/reroll/reload/info/config）
+│   └── ModCommands.java              # /taczaddon コマンド
 ├── mixin/
-│   └── GunRarityMixin.java           # Item.getRarity()をインジェクト（IGunチェック付き）
+│   ├── GunRarityMixin.java           # Item.getRarity()インジェクト（レアリティ色分け）
+│   └── LootControllerMixin.java      # 銃ルートシステムフック
 └── compat/apotheosis/
-    └── ApotheosisCompat.java         # Apotheosis統合（現在スタブ）
+    ├── ApotheosisCompat.java         # Apotheosis統合メイン
+    ├── GunLootCategory.java          # 銃をApotheosisルートカテゴリに登録
+    ├── GunSocketHandler.java         # ソケット/ジェム装着処理
+    ├── GemBridgeHelper.java          # ジェム→銃属性ブリッジ
+    ├── GemInfoHelper.java            # ジェムステータス解析
+    └── GemTooltipHelper.java         # ジェム情報ツールチップ表示
+```
+
+### リソース構造
+```
+src/main/resources/
+├── META-INF/mods.toml
+├── tacz_attributes_addon.mixins.json
+├── assets/tacz_attributes_addon/
+│   ├── lang/{en_us,ja_jp}.json
+│   ├── blockstates/{attribute_station,enhancement_station}.json
+│   ├── models/block/{attribute_station,enhancement_station}.json
+│   ├── models/item/{attribute_station,enhancement_station,barrage}.json
+│   └── textures/items/gems/*.png     # ジェムテクスチャ（11種）
+├── assets/apotheosis/models/item/gems/*.json  # ジェムモデル
+└── data/tacz_attributes_addon/
+    ├── recipes/{attribute_station,enhancement_station,barrage}.json
+    ├── affixes/gun/*.json             # アフィックス（11種）
+    └── gems/*.json                    # ジェム定義（11種）
 ```
 
 ## ランダム生成の4モード
@@ -105,7 +150,7 @@ src/main/java/com/github/leopoko/tacz_attributes_addon/
 | `RARITY_ADAPTIVE` | フィルタ + 重み付き選択 + レアリティによるスキュー |
 | `BALANCED` | フィルタ + 重み + バフ/デバフ比率バランス調整 |
 
-## 固定属性モード（Feature 2 + Feature 1 の関係）
+## 固定属性モード（WeaponTypeHandler + GunObtainHandler の関係）
 
 | モード | 説明 |
 |--------|------|
@@ -120,6 +165,7 @@ src/main/java/com/github/leopoko/tacz_attributes_addon/
 - `IGun.getIGunOrNull(stack)` でTACZ銃アイテムのみに制限
 - `remap = true`（デフォルト）。`getRarity`はバニラメソッドなのでSRGリマッピングが必要
 - `defaultRequire: 0`（コンパイル時の検証警告を抑制）
+- `LootControllerMixin`: 銃ルートシステムにフック
 
 ## 設定ファイルの場所
 
@@ -153,6 +199,30 @@ src/main/java/com/github/leopoko/tacz_attributes_addon/
 - リロール回数をNBT `RerollCount` で追跡。`maxRerolls` 設定で上限制御（0=無制限）
 - 素材スロット（slot 1）は銃アイテムを拒否する（`mayPlace` + `canPlaceItemThroughFace`）
 
+## Enhancement Station の実装詳細
+
+- 銃を入れると3つのランダム属性強化選択肢を生成
+- プレイヤーが1つ選択すると銃に適用
+- `EnhancementChoicesPacket`（S→C）で選択肢送信、`EnhancementActionPacket`（C→S）で選択送信
+- 選択肢はプレイヤーごとにサーバー側の`playerChoices`マップで管理（transient）
+- 銃の同一性はGunId比較で判定（NBT全体ではなく）→ 選択肢のフラッシュ防止
+
+## Barrage アイテム
+
+- Epic レアリティのオフハンドアイテム
+- 保持中、銃のRPM倍増 + ADS速度・リロード速度向上
+- エンチャントグリント常時表示、耐火、スタック上限1
+- `tacz_attributes:rpm_multiplier` 等の属性を `addTransientModifier` で適用
+
+## Apotheosis統合
+
+- **ジェム11種**: ammo_recovery, bonus_ammo, conservation, extended_mag, knockback, marksman, quickloader, rapid_fire, sharpshooter, stabilizer, tactical
+- **アフィックス11種**: accurate, agile, capacious, deadly, economical, focused, forceful, precise, rapid, steadfast, swift
+- `GunLootCategory` で銃をApotheosisのルートカテゴリに登録
+- `GunSocketHandler` でジェムの装着処理
+- `GemBridgeHelper` でジェムステータスを銃属性に変換
+- `GemTooltipHelper` でツールチップにジェム情報表示
+
 ## 固定属性とランダム属性の両立（Coexistence）
 
 - 固定属性（FixedModifiers）とランダム属性（Modifiers）は**独立して両立**する
@@ -182,6 +252,4 @@ src/main/java/com/github/leopoko/tacz_attributes_addon/
 
 ## 未実装・今後の課題
 
-- **Feature 4**: Apotheosisソケット統合（`ApotheosisCompat.java`がスタブ）
-- **Feature 5**: Apotheosis銃専用ジェム（未実装）
 - **ブロックテクスチャ**: 独自テクスチャ未作成（バニラ鍛冶台テクスチャを借用）

@@ -5,6 +5,10 @@ pluginManagement {
             name = 'MinecraftForge'
             url = 'https://maven.minecraftforge.net/'
         }
+        maven {
+            name = 'Modmuss50'
+            url = 'https://maven.modmuss50.me/'
+        }
     }
 }
 
