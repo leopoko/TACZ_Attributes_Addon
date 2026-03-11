@@ -68,7 +68,7 @@ public class AttributeGenerator {
         count = Math.min(count, pool.size());
 
         // Select attributes
-        List<AttributeEntry> selected = selectAttributes(pool, count, mode, raritySpread, random);
+        List<AttributeEntry> selected = selectAttributes(pool, count, mode, raritySpread, override, random);
 
         // Resolve linked attributes: if a selected entry has a linkedAttribute,
         // ensure the linked partner is also in the selection.
@@ -132,7 +132,11 @@ public class AttributeGenerator {
             }
 
             if (value != 0.0) {
-                modifiers.add(new GunModifier(entry.getAttributeId(), value, entry.getOperation()));
+                // Use override operation if available
+                net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation op = override != null
+                        ? override.getOperation(entry.getAttributeId(), entry.getOperation())
+                        : entry.getOperation();
+                modifiers.add(new GunModifier(entry.getAttributeId(), value, op));
             }
         }
 
@@ -157,13 +161,14 @@ public class AttributeGenerator {
 
     private static List<AttributeEntry> selectAttributes(List<AttributeEntry> pool, int count,
                                                          CommonConfig.RandomMode mode, double raritySpread,
+                                                         GunAttributeOverrides.GunOverride override,
                                                          RandomSource random) {
         if (mode == CommonConfig.RandomMode.FULL_RANDOM || mode == CommonConfig.RandomMode.ADAPTIVE) {
             // Uniform selection by weight
-            return weightedSelect(pool, count, false, 1.0, random);
+            return weightedSelect(pool, count, false, 1.0, override, random);
         } else {
             // Rarity-weighted selection
-            return weightedSelect(pool, count, true, raritySpread, random);
+            return weightedSelect(pool, count, true, raritySpread, override, random);
         }
     }
 
@@ -206,6 +211,7 @@ public class AttributeGenerator {
      */
     private static List<AttributeEntry> weightedSelect(List<AttributeEntry> pool, int count,
                                                        boolean useRarityWeight, double raritySpread,
+                                                       GunAttributeOverrides.GunOverride override,
                                                        RandomSource random) {
         List<AttributeEntry> available = new ArrayList<>(pool);
         List<AttributeEntry> selected = new ArrayList<>();
@@ -216,10 +222,17 @@ public class AttributeGenerator {
 
             for (int j = 0; j < available.size(); j++) {
                 AttributeEntry entry = available.get(j);
-                double w = entry.getWeight();
+                // Use override weight if available, otherwise pool weight
+                double w = override != null
+                        ? override.getWeight(entry.getAttributeId(), entry.getWeight())
+                        : entry.getWeight();
                 if (useRarityWeight) {
+                    // Use override rarityTier if available, otherwise pool rarityTier
+                    int tier = override != null
+                            ? override.getRarityTier(entry.getAttributeId(), entry.getRarityTier())
+                            : entry.getRarityTier();
                     // Higher rarity tier = lower weight (rarer)
-                    w /= Math.pow(entry.getRarityTier(), raritySpread);
+                    w /= Math.pow(tier, raritySpread);
                 }
                 weights[j] = w;
                 totalWeight += w;

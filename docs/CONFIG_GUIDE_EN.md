@@ -467,13 +467,17 @@ An empty JSON file is generated on first launch. You can override random attribu
 | `maxAttributes` | Optional | Maximum number of random attributes. Uses global config value if omitted. |
 | `attributes` | Optional | Whitelist of allowed attributes. When specified, ONLY listed attributes can appear on this gun. Uses normal pool filtering if omitted. |
 
-Each entry in `attributes`:
+Each entry in `attributes` (all fields except `attribute` are optional — omitted fields fall back to `attribute_pool.json`):
 
-| Field | Description |
-|-------|-------------|
-| `attribute` | Attribute ID (with `tacz_attributes:` prefix) |
-| `minValue` | Custom minimum value for this gun (overrides attribute_pool.json) |
-| `maxValue` | Custom maximum value for this gun (overrides attribute_pool.json) |
+| Field | Type | Description |
+|-------|------|-------------|
+| `attribute` | string | **Required.** Attribute ID (with `tacz_attributes:` prefix) |
+| `minValue` | double | Custom minimum value for this gun |
+| `maxValue` | double | Custom maximum value for this gun |
+| `weight` | int | Selection frequency for this gun (higher = more common) |
+| `rarityTier` | int | Rarity tier for this gun (affects weighting in RARITY_ADAPTIVE/BALANCED modes) |
+| `scoreWeight` | double | Rarity score contribution for this gun |
+| `operation` | string | Operation for this gun (`MULTIPLY_BASE`, `ADDITION`, `MULTIPLY_TOTAL`) |
 
 ### Example Configuration
 
@@ -483,9 +487,9 @@ Each entry in `attributes`:
     "minAttributes": 1,
     "maxAttributes": 3,
     "attributes": [
-      {"attribute": "tacz_attributes:reload_speed", "minValue": -0.20, "maxValue": 0.20},
-      {"attribute": "tacz_attributes:gun_damage", "minValue": -0.10, "maxValue": 0.15},
-      {"attribute": "tacz_attributes:recoil", "minValue": -0.30, "maxValue": 0.10}
+      {"attribute": "tacz_attributes:reload_speed", "minValue": -0.20, "maxValue": 0.20, "weight": 30},
+      {"attribute": "tacz_attributes:gun_damage", "minValue": -0.10, "maxValue": 0.15, "weight": 50, "rarityTier": 2},
+      {"attribute": "tacz_attributes:recoil", "minValue": -0.30, "maxValue": 0.10, "scoreWeight": -120}
     ]
   },
   "tacz:rpg7": {
@@ -496,7 +500,7 @@ Each entry in `attributes`:
 ```
 
 In this example:
-- **HK416D**: 1–3 random attributes, restricted to reload_speed, gun_damage, and recoil with custom value ranges.
+- **HK416D**: 1–3 random attributes, restricted to reload_speed, gun_damage, and recoil with custom value ranges and per-gun weight/rarityTier/scoreWeight overrides.
 - **RPG-7**: 0–1 random attributes, attribute types follow normal pool filtering.
 
 > **Tip:** Omit `attributes` to control only the attribute count.
@@ -505,13 +509,11 @@ In this example:
 
 ### Selection Probability
 
-`gun_attribute_overrides.json` does **NOT** override the selection probability (`weight`) or rarity tier (`rarityTier`) of each attribute. These values always come from `attribute_pool.json`.
+You can specify `weight` and `rarityTier` per attribute entry to customize selection probability **for this gun only**. If omitted, the values from `attribute_pool.json` are used.
 
-Overrides control only the following:
-- **Whitelist**: Which attributes can appear on this gun
-- **Value ranges**: Custom `minValue`/`maxValue` for this gun
+For example, if `attribute_pool.json` defines `gun_damage` with weight=20 and `reload_speed` with weight=15, and you override `gun_damage`'s weight to 50 in `gun_attribute_overrides.json`, the selection probabilities for this gun become 50/(50+15)=77% and 15/(50+15)=23%.
 
-For example, if `attribute_pool.json` defines `gun_damage` with weight=20 and `reload_speed` with weight=15, and you whitelist only these two in `gun_attribute_overrides.json`, the selection probabilities would be 20/(20+15)=57% and 15/(20+15)=43% respectively (in RARITY_ADAPTIVE/BALANCED modes, `rarityTier` also affects the final probability).
+Overriding `scoreWeight` applies a custom rarity score contribution for this gun's scoring calculation.
 
 ---
 

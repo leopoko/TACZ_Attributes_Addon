@@ -467,13 +467,17 @@ ItemStack NBT → TaczAddon: {
 | `maxAttributes` | 任意 | ランダム属性の最大数。省略時はグローバル設定値を使用 |
 | `attributes` | 任意 | 許可属性のホワイトリスト。指定するとこのリストの属性のみが付与可能。省略時は通常のプールフィルタリング |
 
-`attributes` 内の各エントリ:
+`attributes` 内の各エントリ（全フィールドは任意。省略時は `attribute_pool.json` の値を使用）:
 
-| フィールド | 説明 |
-|------------|------|
-| `attribute` | 属性ID（`tacz_attributes:` プレフィックス付き） |
-| `minValue` | この銃でのカスタム最小値（attribute_pool.json の値をオーバーライド） |
-| `maxValue` | この銃でのカスタム最大値（attribute_pool.json の値をオーバーライド） |
+| フィールド | 型 | 説明 |
+|------------|-----|------|
+| `attribute` | string | **必須**。属性ID（`tacz_attributes:` プレフィックス付き） |
+| `minValue` | double | この銃でのカスタム最小値 |
+| `maxValue` | double | この銃でのカスタム最大値 |
+| `weight` | int | この銃での選択確率（大きいほど出やすい） |
+| `rarityTier` | int | この銃でのレアリティティア（RARITY_ADAPTIVE/BALANCEDモードの重み付けに影響） |
+| `scoreWeight` | double | この銃でのレアリティスコアへの寄与度 |
+| `operation` | string | この銃での演算子（`MULTIPLY_BASE`、`ADDITION`、`MULTIPLY_TOTAL`） |
 
 ### 設定例
 
@@ -483,9 +487,9 @@ ItemStack NBT → TaczAddon: {
     "minAttributes": 1,
     "maxAttributes": 3,
     "attributes": [
-      {"attribute": "tacz_attributes:reload_speed", "minValue": -0.20, "maxValue": 0.20},
-      {"attribute": "tacz_attributes:gun_damage", "minValue": -0.10, "maxValue": 0.15},
-      {"attribute": "tacz_attributes:recoil", "minValue": -0.30, "maxValue": 0.10}
+      {"attribute": "tacz_attributes:reload_speed", "minValue": -0.20, "maxValue": 0.20, "weight": 30},
+      {"attribute": "tacz_attributes:gun_damage", "minValue": -0.10, "maxValue": 0.15, "weight": 50, "rarityTier": 2},
+      {"attribute": "tacz_attributes:recoil", "minValue": -0.30, "maxValue": 0.10, "scoreWeight": -120}
     ]
   },
   "tacz:rpg7": {
@@ -505,13 +509,11 @@ ItemStack NBT → TaczAddon: {
 
 ### 選択確率について
 
-`gun_attribute_overrides.json` では各属性の**選択確率（`weight`）やレアリティティア（`rarityTier`）はオーバーライドされません**。これらの値は常に `attribute_pool.json` の定義が使用されます。
+各属性エントリで `weight` や `rarityTier` を指定すると、**この銃に限り**選択確率をカスタマイズできます。省略した場合は `attribute_pool.json` の値がそのまま使用されます。
 
-オーバーライドが制御するのは以下の2点のみです：
-- **ホワイトリスト**: どの属性がこの銃に付与可能かを制限
-- **値範囲**: `minValue`/`maxValue` をこの銃専用にカスタマイズ
+例えば、`attribute_pool.json` で `gun_damage` の weight=20、`reload_speed` の weight=15 と設定されている場合に、`gun_attribute_overrides.json` で `gun_damage` の weight を 50 にオーバーライドすると、この銃での選択確率は 50/(50+15)=77% と 15/(50+15)=23% になります。
 
-例えば、`attribute_pool.json` で `gun_damage` の weight=20、`reload_speed` の weight=15 と設定されている場合、`gun_attribute_overrides.json` でこの2つだけをホワイトリストに入れると、選択確率はそれぞれ 20/(20+15)=57%、15/(20+15)=43% になります（RARITY_ADAPTIVE/BALANCEDモードでは `rarityTier` も影響します）。
+`scoreWeight` をオーバーライドすると、この銃でのレアリティスコア計算にカスタム寄与度が適用されます。
 
 ---
 

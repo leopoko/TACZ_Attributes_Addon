@@ -4,7 +4,10 @@ import com.github.leopoko.tacz_attributes_addon.config.CommonConfig;
 import com.github.leopoko.tacz_attributes_addon.data.AttributeEntry;
 import com.github.leopoko.tacz_attributes_addon.data.AttributeRegistry;
 import com.github.leopoko.tacz_attributes_addon.data.GunAttributeData;
+import com.github.leopoko.tacz_attributes_addon.data.GunAttributeOverrides;
 import com.github.leopoko.tacz_attributes_addon.data.GunModifier;
+import com.github.leopoko.tacz_attributes_addon.random.GunTypeFilter;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 
@@ -19,12 +22,18 @@ public class RarityHandler {
 
     /**
      * Calculate score from all modifiers and set rarity on the item.
+     * Resolves per-gun scoreWeight overrides from gun_attribute_overrides.json.
      */
     public static void calculateAndApplyRarity(ItemStack stack) {
         if (!CommonConfig.ENABLE_RARITY_SCORING.get()) return;
 
+        // Resolve per-gun override for scoreWeight
+        ResourceLocation gunId = GunTypeFilter.resolveGunId(stack);
+        GunAttributeOverrides.GunOverride override = gunId != null
+                ? GunAttributeOverrides.getOverride(gunId.toString()) : null;
+
         List<GunModifier> allMods = GunAttributeData.getAllModifiers(stack);
-        int score = calculateScore(allMods);
+        int score = calculateScore(allMods, override);
         Rarity rarity = scoreToRarity(score);
 
         GunAttributeData.setScore(stack, score);
@@ -47,6 +56,10 @@ public class RarityHandler {
      * This correctly rewards buffs and penalizes debuffs for all attribute types.
      */
     public static int calculateScore(List<GunModifier> modifiers) {
+        return calculateScore(modifiers, null);
+    }
+
+    public static int calculateScore(List<GunModifier> modifiers, GunAttributeOverrides.GunOverride override) {
         Map<String, AttributeEntry> entryMap = AttributeRegistry.getEntries().stream()
                 .collect(Collectors.toMap(AttributeEntry::getAttributeId, e -> e, (a, b) -> a));
 
@@ -56,7 +69,10 @@ public class RarityHandler {
             AttributeEntry entry = entryMap.get(mod.getAttributeId());
             if (entry == null) continue;
 
-            double scoreWeight = entry.getScoreWeight();
+            // Use override scoreWeight if available, otherwise pool scoreWeight
+            double scoreWeight = override != null
+                    ? override.getScoreWeight(mod.getAttributeId(), entry.getScoreWeight())
+                    : entry.getScoreWeight();
             double value = mod.getValue();
 
             // value * scoreWeight — sign naturally handles buff/debuff for both
