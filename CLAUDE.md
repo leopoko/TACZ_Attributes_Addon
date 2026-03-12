@@ -147,6 +147,17 @@ src/main/resources/
     └── gems/*.json                    # ジェム定義（11種）
 ```
 
+### ドキュメント
+```
+docs/
+├── CONFIG_GUIDE.md      # 設定ガイド（日本語）
+├── CONFIG_GUIDE_EN.md   # 設定ガイド（英語）
+├── CONFIG_GUIDE_CN.md   # 設定ガイド（中国語）
+└── CONFIG_GUIDE_KR.md   # 設定ガイド（韓国語）
+```
+- 4言語すべて同一構成・同一内容。新機能追加時は**4ファイルすべてに追記**すること
+- 構成: [general] → [random] → [rarity] → [station] → [apotheosis] → [enhancement] → weapon_attributes.json → ホッパー対応 → NBT構造 → attribute_pool.json → gun_attribute_overrides.json → コマンド → 固定属性リロール独立性 → Apotheosisジェム/アフィックス一覧
+
 ## ランダム生成の4モード
 
 | モード | 説明 |
