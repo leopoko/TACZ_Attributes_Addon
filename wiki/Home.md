@@ -2,6 +2,15 @@
 
 Welcome to the TACZ Attributes Addon wiki! This addon integrates TACZ (gun mod) with TACZ Attributes to add random attributes and a rarity system to guns.
 
+## Full Configuration Guide
+
+The complete configuration guide is also available as a single document in the repository's `docs/` directory. If you are not logged in to GitHub, the wiki may be rate-limited. In that case, please use these links instead:
+
+- [English](https://github.com/leopoko/TACZ_Attributes_Addon/blob/main/docs/CONFIG_GUIDE_EN.md)
+- [日本語](https://github.com/leopoko/TACZ_Attributes_Addon/blob/main/docs/CONFIG_GUIDE.md)
+- [中文](https://github.com/leopoko/TACZ_Attributes_Addon/blob/main/docs/CONFIG_GUIDE_CN.md)
+- [한국어](https://github.com/leopoko/TACZ_Attributes_Addon/blob/main/docs/CONFIG_GUIDE_KR.md)
+
 ## Language / 言語 / 语言 / 언어
 
 - **[English](Feature-Toggles)** - Configuration Guide
@@ -28,12 +37,3 @@ Welcome to the TACZ Attributes Addon wiki! This addon integrates TACZ (gun mod) 
 ## Config File Location
 
 `config/tacz_attributes_addon-common.toml` (auto-generated on first launch)
-
-## Full Configuration Guide
-
-The complete configuration guide is also available as a single document in the repository's `docs/` directory:
-
-- [English](https://github.com/leopoko/TACZ_Attributes_Addon/blob/main/docs/CONFIG_GUIDE_EN.md)
-- [日本語](https://github.com/leopoko/TACZ_Attributes_Addon/blob/main/docs/CONFIG_GUIDE.md)
-- [中文](https://github.com/leopoko/TACZ_Attributes_Addon/blob/main/docs/CONFIG_GUIDE_CN.md)
-- [한국어](https://github.com/leopoko/TACZ_Attributes_Addon/blob/main/docs/CONFIG_GUIDE_KR.md)
