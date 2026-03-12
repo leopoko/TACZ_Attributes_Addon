@@ -74,6 +74,4 @@ BALANCED mode only. Target ratio of buffs to debuffs.
 
 ---
 
-| | |
-|:---|---:|
-| [Previous: Feature Toggles](Feature-Toggles) | [Next: Rarity Scoring](Rarity-Scoring) |
+[< Previous: Feature Toggles](Feature-Toggles) | [Next >: Rarity Scoring](Rarity-Scoring)

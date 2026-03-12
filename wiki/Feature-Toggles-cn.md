@@ -48,6 +48,4 @@
 
 ---
 
-| | |
-|:---|---:|
-| | [下一页: 随机属性生成](Random-Attribute-Generation-cn) |
+ | [下一页 >: 随机属性生成](Random-Attribute-Generation-cn)

@@ -67,6 +67,4 @@ Apotheosis 연동이 활성화된 경우 다음 총기 전용 보석을 사용�
 
 ---
 
-| | |
-|:---|---:|
-| [이전: 명령어](Commands-kr) | [다음: NBT 구조](NBT-Structure-kr) |
+[< 이전: 명령어](Commands-kr) | [다음 >: NBT 구조](NBT-Structure-kr)

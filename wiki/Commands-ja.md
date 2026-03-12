@@ -77,6 +77,4 @@ OP権限（レベル2）が必要です。
 
 ---
 
-| | |
-|:---|---:|
-| [前へ: 銃別オーバーライド](Gun-Attribute-Overrides-ja) | [次へ: Apotheosis](Apotheosis-ja) |
+[< 前へ: 銃別オーバーライド](Gun-Attribute-Overrides-ja) | [次へ >: Apotheosis](Apotheosis-ja)

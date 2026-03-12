@@ -74,6 +74,4 @@ consumeItemId = "tacz:gunsmith_table"        # TACZ MOD 的物品
 
 ---
 
-| | |
-|:---|---:|
-| [上一页: 稀有度评分](Rarity-Scoring-cn) | [下一页: Enhancement Station](Enhancement-Station-cn) |
+[< 上一页: 稀有度评分](Rarity-Scoring-cn) | [下一页 >: Enhancement Station](Enhancement-Station-cn)

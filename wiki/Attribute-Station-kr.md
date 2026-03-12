@@ -74,6 +74,4 @@ consumeItemId = "tacz:gunsmith_table"        # TACZ MOD의 아이템
 
 ---
 
-| | |
-|:---|---:|
-| [이전: 희귀도 점수](Rarity-Scoring-kr) | [다음: Enhancement Station](Enhancement-Station-kr) |
+[< 이전: 희귀도 점수](Rarity-Scoring-kr) | [다음 >: Enhancement Station](Enhancement-Station-kr)
