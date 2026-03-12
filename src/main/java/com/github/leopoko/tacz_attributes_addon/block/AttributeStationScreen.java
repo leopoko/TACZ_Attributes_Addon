@@ -144,7 +144,6 @@ public class AttributeStationScreen extends AbstractContainerScreen<AttributeSta
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);
     }

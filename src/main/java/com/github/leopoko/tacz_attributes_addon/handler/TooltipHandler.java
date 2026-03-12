@@ -17,10 +17,10 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.event.entity.player.ItemTooltipEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 
 import java.util.List;
 import java.util.Map;
@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 /**
  * Adds attribute information to gun tooltips.
  */
-@Mod.EventBusSubscriber(modid = TaczAttributesAddon.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = TaczAttributesAddon.MODID, value = Dist.CLIENT)
 public class TooltipHandler {
 
     @SubscribeEvent
@@ -174,8 +174,8 @@ public class TooltipHandler {
 
         // Format value
         String valueStr;
-        if (mod.getOperation() == AttributeModifier.Operation.MULTIPLY_BASE ||
-            mod.getOperation() == AttributeModifier.Operation.MULTIPLY_TOTAL) {
+        if (mod.getOperation() == AttributeModifier.Operation.ADD_MULTIPLIED_BASE ||
+            mod.getOperation() == AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL) {
             valueStr = String.format("%+.0f%%", value * 100);
         } else {
             if (value == Math.floor(value)) {

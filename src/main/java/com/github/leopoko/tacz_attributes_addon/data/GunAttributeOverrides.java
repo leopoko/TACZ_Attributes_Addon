@@ -337,9 +337,9 @@ public class GunAttributeOverrides {
 
     private static AttributeModifier.Operation parseOperation(String opStr) {
         return switch (opStr.toUpperCase()) {
-            case "ADDITION" -> AttributeModifier.Operation.ADDITION;
-            case "MULTIPLY_BASE" -> AttributeModifier.Operation.MULTIPLY_BASE;
-            case "MULTIPLY_TOTAL" -> AttributeModifier.Operation.MULTIPLY_TOTAL;
+            case "ADDITION", "ADD_VALUE" -> AttributeModifier.Operation.ADD_VALUE;
+            case "MULTIPLY_BASE", "ADD_MULTIPLIED_BASE" -> AttributeModifier.Operation.ADD_MULTIPLIED_BASE;
+            case "MULTIPLY_TOTAL", "ADD_MULTIPLIED_TOTAL" -> AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL;
             default -> {
                 LOGGER.warn("Unknown operation '{}', ignoring", opStr);
                 yield null;

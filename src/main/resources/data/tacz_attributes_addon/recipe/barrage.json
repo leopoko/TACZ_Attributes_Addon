@@ -15,7 +15,6 @@
     }
   },
   "result": {
-    "item": "tacz_attributes_addon:barrage",
-    "count": 1
+    "id": "tacz_attributes_addon:barrage"
   }
 }

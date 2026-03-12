@@ -3,10 +3,10 @@ package com.github.leopoko.tacz_attributes_addon.compat.apotheosis;
 import com.github.leopoko.tacz_attributes_addon.config.CommonConfig;
 import com.github.leopoko.tacz_attributes_addon.data.GunAttributeData;
 import com.tacz.guns.api.item.IGun;
-import dev.shadowsoffire.apotheosis.adventure.event.GetItemSocketsEvent;
+import dev.shadowsoffire.apotheosis.event.GetItemSocketsEvent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 
 /**
  * Handles Apotheosis GetItemSocketsEvent to provide socket counts for TACZ guns.

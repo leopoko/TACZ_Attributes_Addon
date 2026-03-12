@@ -4,8 +4,8 @@ import com.github.leopoko.tacz_attributes_addon.data.AttributeEntry;
 import com.github.leopoko.tacz_attributes_addon.data.AttributeRegistry;
 import com.github.leopoko.tacz_attributes_addon.network.EnhancementActionPacket;
 import com.github.leopoko.tacz_attributes_addon.network.EnhancementChoicesPacket;
-import com.github.leopoko.tacz_attributes_addon.network.ModNetwork;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
@@ -210,9 +210,11 @@ public class EnhancementStationScreen extends AbstractContainerScreen<Enhancemen
     }
 
     private String formatValue(double value, int operationOrdinal) {
-        AttributeModifier.Operation op = AttributeModifier.Operation.fromValue(operationOrdinal);
-        if (op == AttributeModifier.Operation.MULTIPLY_BASE ||
-                op == AttributeModifier.Operation.MULTIPLY_TOTAL) {
+        AttributeModifier.Operation[] ops = AttributeModifier.Operation.values();
+        AttributeModifier.Operation op = (operationOrdinal >= 0 && operationOrdinal < ops.length)
+                ? ops[operationOrdinal] : AttributeModifier.Operation.ADD_MULTIPLIED_BASE;
+        if (op == AttributeModifier.Operation.ADD_MULTIPLIED_BASE ||
+                op == AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL) {
             return String.format("%+.0f%%", value * 100);
         } else {
             if (value == Math.floor(value)) {
@@ -257,7 +259,7 @@ public class EnhancementStationScreen extends AbstractContainerScreen<Enhancemen
                         int btnX = x + CHOICE_BTN_X;
                         int btnY = y + CHOICE_START_Y + i * CHOICE_SPACING;
                         if (isMouseOver(mouseX, mouseY, btnX, btnY, CHOICE_BTN_W, CHOICE_BTN_H)) {
-                            ModNetwork.CHANNEL.sendToServer(
+                            PacketDistributor.sendToServer(
                                     new EnhancementActionPacket(menu.getBlockPos(),
                                             EnhancementActionPacket.ACTION_SELECT, i));
                             return true;
@@ -270,7 +272,7 @@ public class EnhancementStationScreen extends AbstractContainerScreen<Enhancemen
                 int rerollBtnX = x + CHOICE_BTN_X + CHOICE_BTN_W - REROLL_BTN_W;
                 int rerollBtnY = y + CHOICE_START_Y + choiceCount * CHOICE_SPACING + 4;
                 if (isMouseOver(mouseX, mouseY, rerollBtnX, rerollBtnY, REROLL_BTN_W, REROLL_BTN_H)) {
-                    ModNetwork.CHANNEL.sendToServer(
+                    PacketDistributor.sendToServer(
                             new EnhancementActionPacket(menu.getBlockPos(),
                                     EnhancementActionPacket.ACTION_REROLL, -1));
                     return true;
@@ -282,7 +284,6 @@ public class EnhancementStationScreen extends AbstractContainerScreen<Enhancemen
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);
     }

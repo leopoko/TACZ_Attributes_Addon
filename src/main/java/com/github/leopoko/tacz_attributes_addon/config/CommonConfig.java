@@ -1,74 +1,74 @@
 package com.github.leopoko.tacz_attributes_addon.config;
 
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class CommonConfig {
-    public static final ForgeConfigSpec SPEC;
+    public static final ModConfigSpec SPEC;
 
     // Feature toggles
-    public static final ForgeConfigSpec.BooleanValue ENABLE_RANDOM_ON_OBTAIN;
-    public static final ForgeConfigSpec.BooleanValue ENABLE_WEAPON_TYPE_ATTRIBUTES;
-    public static final ForgeConfigSpec.BooleanValue ENABLE_ATTRIBUTE_STATION;
-    public static final ForgeConfigSpec.BooleanValue ENABLE_APOTHEOSIS;
-    public static final ForgeConfigSpec.BooleanValue ENABLE_RARITY_SCORING;
-    public static final ForgeConfigSpec.BooleanValue SHOW_EMPTY_SLOTS;
+    public static final ModConfigSpec.BooleanValue ENABLE_RANDOM_ON_OBTAIN;
+    public static final ModConfigSpec.BooleanValue ENABLE_WEAPON_TYPE_ATTRIBUTES;
+    public static final ModConfigSpec.BooleanValue ENABLE_ATTRIBUTE_STATION;
+    public static final ModConfigSpec.BooleanValue ENABLE_APOTHEOSIS;
+    public static final ModConfigSpec.BooleanValue ENABLE_RARITY_SCORING;
+    public static final ModConfigSpec.BooleanValue SHOW_EMPTY_SLOTS;
 
     // Random mode
-    public static final ForgeConfigSpec.EnumValue<RandomMode> RANDOM_MODE;
+    public static final ModConfigSpec.EnumValue<RandomMode> RANDOM_MODE;
 
     // Fixed attribute mode
-    public static final ForgeConfigSpec.EnumValue<FixedAttributeMode> FIXED_ATTRIBUTE_MODE;
+    public static final ModConfigSpec.EnumValue<FixedAttributeMode> FIXED_ATTRIBUTE_MODE;
 
     // Random attribute count
-    public static final ForgeConfigSpec.IntValue MIN_ATTRIBUTES;
-    public static final ForgeConfigSpec.IntValue MAX_ATTRIBUTES;
+    public static final ModConfigSpec.IntValue MIN_ATTRIBUTES;
+    public static final ModConfigSpec.IntValue MAX_ATTRIBUTES;
 
     // Value distribution
-    public static final ForgeConfigSpec.EnumValue<DistributionType> VALUE_DISTRIBUTION;
-    public static final ForgeConfigSpec.DoubleValue DISTRIBUTION_EXPONENT;
+    public static final ModConfigSpec.EnumValue<DistributionType> VALUE_DISTRIBUTION;
+    public static final ModConfigSpec.DoubleValue DISTRIBUTION_EXPONENT;
 
     // Rarity settings
-    public static final ForgeConfigSpec.DoubleValue RARITY_SPREAD_FACTOR;
-    public static final ForgeConfigSpec.DoubleValue BUFF_DEBUFF_RATIO;
+    public static final ModConfigSpec.DoubleValue RARITY_SPREAD_FACTOR;
+    public static final ModConfigSpec.DoubleValue BUFF_DEBUFF_RATIO;
 
     // Rarity score thresholds
-    public static final ForgeConfigSpec.IntValue UNCOMMON_THRESHOLD;
-    public static final ForgeConfigSpec.IntValue RARE_THRESHOLD;
-    public static final ForgeConfigSpec.IntValue EPIC_THRESHOLD;
+    public static final ModConfigSpec.IntValue UNCOMMON_THRESHOLD;
+    public static final ModConfigSpec.IntValue RARE_THRESHOLD;
+    public static final ModConfigSpec.IntValue EPIC_THRESHOLD;
 
     // Attribute Station settings
-    public static final ForgeConfigSpec.IntValue STATION_PROCESSING_TIME;
-    public static final ForgeConfigSpec.BooleanValue STATION_CONSUME_ITEM;
-    public static final ForgeConfigSpec.ConfigValue<String> STATION_CONSUME_ITEM_ID;
-    public static final ForgeConfigSpec.IntValue STATION_CONSUME_COUNT;
-    public static final ForgeConfigSpec.BooleanValue STATION_ALLOW_REROLL;
-    public static final ForgeConfigSpec.IntValue STATION_MAX_REROLLS;
+    public static final ModConfigSpec.IntValue STATION_PROCESSING_TIME;
+    public static final ModConfigSpec.BooleanValue STATION_CONSUME_ITEM;
+    public static final ModConfigSpec.ConfigValue<String> STATION_CONSUME_ITEM_ID;
+    public static final ModConfigSpec.IntValue STATION_CONSUME_COUNT;
+    public static final ModConfigSpec.BooleanValue STATION_ALLOW_REROLL;
+    public static final ModConfigSpec.IntValue STATION_MAX_REROLLS;
 
     // Apotheosis socket settings
-    public static final ForgeConfigSpec.IntValue GUN_BASE_SOCKETS;
-    public static final ForgeConfigSpec.BooleanValue SOCKETS_SCALE_WITH_RARITY;
-    public static final ForgeConfigSpec.IntValue COMMON_SOCKETS;
-    public static final ForgeConfigSpec.IntValue UNCOMMON_SOCKETS;
-    public static final ForgeConfigSpec.IntValue RARE_SOCKETS;
-    public static final ForgeConfigSpec.IntValue EPIC_SOCKETS;
+    public static final ModConfigSpec.IntValue GUN_BASE_SOCKETS;
+    public static final ModConfigSpec.BooleanValue SOCKETS_SCALE_WITH_RARITY;
+    public static final ModConfigSpec.IntValue COMMON_SOCKETS;
+    public static final ModConfigSpec.IntValue UNCOMMON_SOCKETS;
+    public static final ModConfigSpec.IntValue RARE_SOCKETS;
+    public static final ModConfigSpec.IntValue EPIC_SOCKETS;
 
     // Enhancement Station settings
-    public static final ForgeConfigSpec.BooleanValue ENABLE_ENHANCEMENT_STATION;
-    public static final ForgeConfigSpec.ConfigValue<String> ENHANCEMENT_MATERIAL_ID;
-    public static final ForgeConfigSpec.IntValue ENHANCEMENT_APPLY_COST;
-    public static final ForgeConfigSpec.IntValue ENHANCEMENT_REROLL_COST;
-    public static final ForgeConfigSpec.IntValue ENHANCEMENT_CHOICE_COUNT;
-    public static final ForgeConfigSpec.IntValue ENHANCEMENT_MAX_COUNT;
-    public static final ForgeConfigSpec.BooleanValue ENHANCEMENT_COST_SCALING;
-    public static final ForgeConfigSpec.IntValue ENHANCEMENT_COST_SCALING_AMOUNT;
-    public static final ForgeConfigSpec.DoubleValue ENHANCEMENT_MIN_VALUE;
-    public static final ForgeConfigSpec.DoubleValue ENHANCEMENT_MAX_VALUE;
-    public static final ForgeConfigSpec.BooleanValue ENHANCEMENT_ONLY_POSITIVE;
-    public static final ForgeConfigSpec.IntValue ENHANCEMENT_MAX_TYPES;
-    public static final ForgeConfigSpec.BooleanValue ENHANCEMENT_EXISTING_ONLY;
+    public static final ModConfigSpec.BooleanValue ENABLE_ENHANCEMENT_STATION;
+    public static final ModConfigSpec.ConfigValue<String> ENHANCEMENT_MATERIAL_ID;
+    public static final ModConfigSpec.IntValue ENHANCEMENT_APPLY_COST;
+    public static final ModConfigSpec.IntValue ENHANCEMENT_REROLL_COST;
+    public static final ModConfigSpec.IntValue ENHANCEMENT_CHOICE_COUNT;
+    public static final ModConfigSpec.IntValue ENHANCEMENT_MAX_COUNT;
+    public static final ModConfigSpec.BooleanValue ENHANCEMENT_COST_SCALING;
+    public static final ModConfigSpec.IntValue ENHANCEMENT_COST_SCALING_AMOUNT;
+    public static final ModConfigSpec.DoubleValue ENHANCEMENT_MIN_VALUE;
+    public static final ModConfigSpec.DoubleValue ENHANCEMENT_MAX_VALUE;
+    public static final ModConfigSpec.BooleanValue ENHANCEMENT_ONLY_POSITIVE;
+    public static final ModConfigSpec.IntValue ENHANCEMENT_MAX_TYPES;
+    public static final ModConfigSpec.BooleanValue ENHANCEMENT_EXISTING_ONLY;
 
     static {
-        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
 
         builder.comment("TACZ Attributes Addon Configuration").push("general");
 

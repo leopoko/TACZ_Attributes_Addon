@@ -22,7 +22,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.fml.loading.FMLPaths;
+import net.neoforged.fml.loading.FMLPaths;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +44,7 @@ import java.util.List;
  */
 public class ModCommands {
 
-    private static final String[] OPERATION_NAMES = {"MULTIPLY_BASE", "ADDITION", "MULTIPLY_TOTAL"};
+    private static final String[] OPERATION_NAMES = {"ADD_MULTIPLIED_BASE", "ADD_VALUE", "ADD_MULTIPLIED_TOTAL"};
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("taczaddon")
@@ -69,7 +69,7 @@ public class ModCommands {
                                         .executes(ctx -> addAttribute(ctx.getSource(),
                                                 StringArgumentType.getString(ctx, "attribute"),
                                                 DoubleArgumentType.getDouble(ctx, "value"),
-                                                "MULTIPLY_BASE"))
+                                                "ADD_MULTIPLIED_BASE"))
                                         .then(Commands.argument("operation", StringArgumentType.word())
                                                 .suggests((ctx, builder) -> {
                                                     for (String op : OPERATION_NAMES) {
@@ -253,7 +253,7 @@ public class ModCommands {
             operation = AttributeModifier.Operation.valueOf(operationStr.toUpperCase());
         } catch (IllegalArgumentException e) {
             source.sendFailure(Component.literal("Invalid operation: " + operationStr
-                    + ". Use ADDITION, MULTIPLY_BASE, or MULTIPLY_TOTAL"));
+                    + ". Use ADD_VALUE, ADD_MULTIPLIED_BASE, or ADD_MULTIPLIED_TOTAL"));
             return 0;
         }
 

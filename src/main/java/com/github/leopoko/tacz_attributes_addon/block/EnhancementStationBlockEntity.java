@@ -36,8 +36,9 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.network.PacketDistributor;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -307,8 +308,8 @@ public class EnhancementStationBlockEntity extends BlockEntity implements Worldl
         if (material.isEmpty()) return false;
 
         String requiredItemId = CommonConfig.ENHANCEMENT_MATERIAL_ID.get();
-        ResourceLocation required = new ResourceLocation(requiredItemId);
-        ResourceLocation materialId = ForgeRegistries.ITEMS.getKey(material.getItem());
+        ResourceLocation required = ResourceLocation.parse(requiredItemId);
+        ResourceLocation materialId = BuiltInRegistries.ITEM.getKey(material.getItem());
         if (!required.equals(materialId)) return false;
 
         return material.getCount() >= requiredCount;
@@ -329,7 +330,7 @@ public class EnhancementStationBlockEntity extends BlockEntity implements Worldl
         List<EnhancementChoicesPacket.ChoiceEntry> entries = new ArrayList<>();
         for (EnhancementChoice c : choices) {
             entries.add(new EnhancementChoicesPacket.ChoiceEntry(
-                    c.attributeId(), c.value(), c.operation().toValue()));
+                    c.attributeId(), c.value(), c.operation().ordinal()));
         }
 
         int enhanceCount = gun.isEmpty() ? 0 : GunAttributeData.getEnhanceCount(gun);
@@ -337,7 +338,7 @@ public class EnhancementStationBlockEntity extends BlockEntity implements Worldl
         int applyCost = gun.isEmpty() ? CommonConfig.ENHANCEMENT_APPLY_COST.get() : getApplyCost(gun);
         int rerollCost = CommonConfig.ENHANCEMENT_REROLL_COST.get();
 
-        ModNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player),
+        PacketDistributor.sendToPlayer(player,
                 new EnhancementChoicesPacket(getBlockPos(), entries,
                         enhanceCount, maxEnhancements, applyCost, rerollCost));
     }
@@ -458,22 +459,22 @@ public class EnhancementStationBlockEntity extends BlockEntity implements Worldl
     // ========== NBT Persistence ==========
 
     @Override
-    protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
-        ContainerHelper.saveAllItems(tag, items);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        ContainerHelper.saveAllItems(tag, items, registries);
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
         items.clear();
-        ContainerHelper.loadAllItems(tag, items);
+        ContainerHelper.loadAllItems(tag, items, registries);
     }
 
     @Override
-    public CompoundTag getUpdateTag() {
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         CompoundTag tag = new CompoundTag();
-        saveAdditional(tag);
+        saveAdditional(tag, registries);
         return tag;
     }
 

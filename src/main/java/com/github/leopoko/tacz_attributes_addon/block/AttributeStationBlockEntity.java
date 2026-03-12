@@ -26,7 +26,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -219,8 +220,8 @@ public class AttributeStationBlockEntity extends BlockEntity implements WorldlyC
             if (material.isEmpty()) return false;
 
             String requiredItemId = CommonConfig.STATION_CONSUME_ITEM_ID.get();
-            ResourceLocation required = new ResourceLocation(requiredItemId);
-            ResourceLocation materialId = ForgeRegistries.ITEMS.getKey(material.getItem());
+            ResourceLocation required = ResourceLocation.parse(requiredItemId);
+            ResourceLocation materialId = BuiltInRegistries.ITEM.getKey(material.getItem());
             if (!required.equals(materialId)) return false;
 
             int requiredCount = CommonConfig.STATION_CONSUME_COUNT.get();
@@ -283,26 +284,26 @@ public class AttributeStationBlockEntity extends BlockEntity implements WorldlyC
     // ========== NBT Persistence ==========
 
     @Override
-    protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
-        ContainerHelper.saveAllItems(tag, items);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        ContainerHelper.saveAllItems(tag, items, registries);
         tag.putInt("Progress", progress);
         tag.putBoolean("Processing", processing);
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
         items.clear();
-        ContainerHelper.loadAllItems(tag, items);
+        ContainerHelper.loadAllItems(tag, items, registries);
         progress = tag.getInt("Progress");
         processing = tag.getBoolean("Processing");
     }
 
     @Override
-    public CompoundTag getUpdateTag() {
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         CompoundTag tag = new CompoundTag();
-        saveAdditional(tag);
+        saveAdditional(tag, registries);
         return tag;
     }
 

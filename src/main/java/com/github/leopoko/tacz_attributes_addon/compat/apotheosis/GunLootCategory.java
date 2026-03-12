@@ -2,20 +2,25 @@ package com.github.leopoko.tacz_attributes_addon.compat.apotheosis;
 
 import com.mojang.logging.LogUtils;
 import com.tacz.guns.api.item.IGun;
-import dev.shadowsoffire.apotheosis.adventure.loot.LootCategory;
-import net.minecraft.world.entity.EquipmentSlot;
+import dev.shadowsoffire.apotheosis.loot.LootCategory;
+import dev.shadowsoffire.apothic_attributes.modifiers.EntitySlotGroup;
+import net.minecraft.core.HolderSet;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import org.slf4j.Logger;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Predicate;
 
 /**
  * Registers a custom LootCategory for TACZ guns so Apotheosis
  * recognizes them as socketable items.
+ *
+ * In Apotheosis 1.21.1, the API changed:
+ * - Constructor is public: LootCategory(Predicate, EntitySlotGroup, int)
+ * - Registration into sortedCategories via reflection
  */
 public class GunLootCategory {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -24,31 +29,36 @@ public class GunLootCategory {
     @SuppressWarnings("unchecked")
     public static void register() {
         try {
-            // LootCategory constructor is private; use reflection to create a new instance
-            Constructor<LootCategory> ctor = LootCategory.class.getDeclaredConstructor(
-                    String.class, Predicate.class, EquipmentSlot[].class);
-            ctor.setAccessible(true);
-
-            GUN = ctor.newInstance(
-                    "gun",
-                    (Predicate<ItemStack>) stack -> IGun.getIGunOrNull(stack) != null,
-                    new EquipmentSlot[]{EquipmentSlot.MAINHAND}
+            // Create EntitySlotGroup for mainhand
+            EntitySlotGroup mainhandGroup = new EntitySlotGroup(
+                    ResourceLocation.fromNamespaceAndPath("tacz_attributes_addon", "gun_mainhand"),
+                    HolderSet.empty()
             );
 
-            // Register into internal maps so LootCategory.forItem() and BY_ID find our category
-            Field byIdField = LootCategory.class.getDeclaredField("BY_ID_INTERNAL");
-            byIdField.setAccessible(true);
-            Map<String, LootCategory> byId = (Map<String, LootCategory>) byIdField.get(null);
-            byId.put("gun", GUN);
+            // Create the GUN LootCategory with low priority
+            GUN = new LootCategory(
+                    (Predicate<ItemStack>) stack -> IGun.getIGunOrNull(stack) != null,
+                    mainhandGroup,
+                    100 // priority
+            );
 
-            Field valuesField = LootCategory.class.getDeclaredField("VALUES_INTERNAL");
-            valuesField.setAccessible(true);
-            List<LootCategory> values = (List<LootCategory>) valuesField.get(null);
-            values.add(GUN);
+            // Register into sortedCategories via reflection
+            try {
+                Field sortedField = LootCategory.class.getDeclaredField("sortedCategories");
+                sortedField.setAccessible(true);
+                List<LootCategory> sorted = (List<LootCategory>) sortedField.get(null);
+                if (sorted != null) {
+                    List<LootCategory> mutable = new ArrayList<>(sorted);
+                    mutable.add(GUN);
+                    sortedField.set(null, mutable);
+                }
+            } catch (Exception e) {
+                LOGGER.warn("Could not register GUN into sortedCategories", e);
+            }
 
             LOGGER.info("Registered GUN LootCategory for Apotheosis socket integration");
         } catch (Exception e) {
-            LOGGER.error("Failed to register GUN LootCategory via reflection", e);
+            LOGGER.error("Failed to register GUN LootCategory", e);
             GUN = null;
         }
     }

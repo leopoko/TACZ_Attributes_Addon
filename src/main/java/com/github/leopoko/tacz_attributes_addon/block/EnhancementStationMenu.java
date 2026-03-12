@@ -4,7 +4,7 @@ import com.github.leopoko.tacz_attributes_addon.init.ModMenuTypes;
 import com.github.leopoko.tacz_attributes_addon.network.EnhancementChoicesPacket;
 import com.tacz.guns.api.item.IGun;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
@@ -36,7 +36,7 @@ public class EnhancementStationMenu extends AbstractContainerMenu {
     private int clientRerollCost = 1;
 
     // Client constructor (from network)
-    public EnhancementStationMenu(int containerId, Inventory playerInv, FriendlyByteBuf buf) {
+    public EnhancementStationMenu(int containerId, Inventory playerInv, RegistryFriendlyByteBuf buf) {
         super(ModMenuTypes.ENHANCEMENT_STATION.get(), containerId);
         this.blockEntity = getBlockEntity(playerInv, buf);
         this.player = playerInv.player;
@@ -235,7 +235,7 @@ public class EnhancementStationMenu extends AbstractContainerMenu {
         blockEntity.onPlayerCloseMenu(player.getUUID());
     }
 
-    private static EnhancementStationBlockEntity getBlockEntity(Inventory inv, FriendlyByteBuf buf) {
+    private static EnhancementStationBlockEntity getBlockEntity(Inventory inv, RegistryFriendlyByteBuf buf) {
         BlockPos pos = buf.readBlockPos();
         return (EnhancementStationBlockEntity) inv.player.level().getBlockEntity(pos);
     }

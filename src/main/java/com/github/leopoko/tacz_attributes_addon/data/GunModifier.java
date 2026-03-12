@@ -33,7 +33,7 @@ public class GunModifier {
         CompoundTag tag = new CompoundTag();
         tag.putString("Attr", attributeId);
         tag.putDouble("Val", value);
-        tag.putInt("Op", operation.toValue());
+        tag.putInt("Op", operation.ordinal());
         return tag;
     }
 
@@ -41,7 +41,9 @@ public class GunModifier {
         String attr = tag.getString("Attr");
         double val = tag.getDouble("Val");
         int op = tag.getInt("Op");
-        return new GunModifier(attr, val, AttributeModifier.Operation.fromValue(op));
+        AttributeModifier.Operation[] ops = AttributeModifier.Operation.values();
+        AttributeModifier.Operation operation = (op >= 0 && op < ops.length) ? ops[op] : AttributeModifier.Operation.ADD_MULTIPLIED_BASE;
+        return new GunModifier(attr, val, operation);
     }
 
     /**

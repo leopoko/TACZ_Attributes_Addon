@@ -2,10 +2,10 @@ package com.github.leopoko.tacz_attributes_addon.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -13,10 +13,16 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.Nullable;
 
 public class EnhancementStationBlock extends BaseEntityBlock {
+
+    public static final MapCodec<EnhancementStationBlock> CODEC = simpleCodec(p -> new EnhancementStationBlock());
+
+    @Override
+    protected MapCodec<? extends BaseEntityBlock> codec() {
+        return CODEC;
+    }
 
     public EnhancementStationBlock() {
         super(BlockBehaviour.Properties.of()
@@ -37,13 +43,13 @@ public class EnhancementStationBlock extends BaseEntityBlock {
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
-                                  InteractionHand hand, BlockHitResult hit) {
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
+                                                Player player, BlockHitResult hit) {
         if (level.isClientSide) return InteractionResult.SUCCESS;
 
         BlockEntity be = level.getBlockEntity(pos);
         if (be instanceof EnhancementStationBlockEntity station) {
-            NetworkHooks.openScreen((ServerPlayer) player, station, pos);
+            ((ServerPlayer) player).openMenu(station, pos);
             station.onPlayerOpenMenu((ServerPlayer) player);
         }
 

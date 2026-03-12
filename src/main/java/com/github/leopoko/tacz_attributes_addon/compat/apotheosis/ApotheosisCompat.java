@@ -3,8 +3,8 @@ package com.github.leopoko.tacz_attributes_addon.compat.apotheosis;
 import com.github.leopoko.tacz_attributes_addon.bridge.AttributeBridge;
 import com.github.leopoko.tacz_attributes_addon.config.CommonConfig;
 import com.mojang.logging.LogUtils;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.ModList;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.fml.ModList;
 import org.slf4j.Logger;
 
 /**
@@ -47,7 +47,7 @@ public class ApotheosisCompat {
             }
 
             // 2. Register event handler for socket count
-            MinecraftForge.EVENT_BUS.register(GunSocketHandler.class);
+            NeoForge.EVENT_BUS.register(GunSocketHandler.class);
             LOGGER.info("Registered GunSocketHandler for GetItemSocketsEvent");
 
             // 3. Wire gem modifier extraction into AttributeBridge

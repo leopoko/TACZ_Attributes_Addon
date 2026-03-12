@@ -3,7 +3,7 @@ package com.github.leopoko.tacz_attributes_addon.block;
 import com.github.leopoko.tacz_attributes_addon.init.ModMenuTypes;
 import com.tacz.guns.api.item.IGun;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
@@ -19,7 +19,7 @@ public class AttributeStationMenu extends AbstractContainerMenu {
     private final ContainerData data;
 
     // Client constructor (from network)
-    public AttributeStationMenu(int containerId, Inventory playerInv, FriendlyByteBuf buf) {
+    public AttributeStationMenu(int containerId, Inventory playerInv, RegistryFriendlyByteBuf buf) {
         this(containerId, playerInv, getBlockEntity(playerInv, buf), new SimpleContainerData(2));
     }
 
@@ -134,7 +134,7 @@ public class AttributeStationMenu extends AbstractContainerMenu {
         return true;
     }
 
-    private static AttributeStationBlockEntity getBlockEntity(Inventory inv, FriendlyByteBuf buf) {
+    private static AttributeStationBlockEntity getBlockEntity(Inventory inv, RegistryFriendlyByteBuf buf) {
         BlockPos pos = buf.readBlockPos();
         return (AttributeStationBlockEntity) inv.player.level().getBlockEntity(pos);
     }

@@ -183,10 +183,13 @@ public class AttributeRegistry {
 
     private static AttributeModifier.Operation parseOperation(String op) {
         switch (op.toUpperCase()) {
-            case "ADDITION": return AttributeModifier.Operation.ADDITION;
-            case "MULTIPLY_TOTAL": return AttributeModifier.Operation.MULTIPLY_TOTAL;
+            case "ADDITION":
+            case "ADD_VALUE": return AttributeModifier.Operation.ADD_VALUE;
+            case "MULTIPLY_TOTAL":
+            case "ADD_MULTIPLIED_TOTAL": return AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL;
             case "MULTIPLY_BASE":
-            default: return AttributeModifier.Operation.MULTIPLY_BASE;
+            case "ADD_MULTIPLIED_BASE":
+            default: return AttributeModifier.Operation.ADD_MULTIPLIED_BASE;
         }
     }
 
@@ -285,9 +288,9 @@ public class AttributeRegistry {
 
     private static String operationToString(AttributeModifier.Operation op) {
         switch (op) {
-            case ADDITION: return "ADDITION";
-            case MULTIPLY_TOTAL: return "MULTIPLY_TOTAL";
-            case MULTIPLY_BASE:
+            case ADD_VALUE: return "ADDITION";
+            case ADD_MULTIPLIED_TOTAL: return "MULTIPLY_TOTAL";
+            case ADD_MULTIPLIED_BASE:
             default: return "MULTIPLY_BASE";
         }
     }
@@ -301,8 +304,8 @@ public class AttributeRegistry {
         Set<String> sniperRifle = Set.of("sniper", "rifle");
         Set<String> closeCombat = Set.of("pistol", "shotgun", "smg");
 
-        AttributeModifier.Operation MULT = AttributeModifier.Operation.MULTIPLY_BASE;
-        AttributeModifier.Operation ADD = AttributeModifier.Operation.ADDITION;
+        AttributeModifier.Operation MULT = AttributeModifier.Operation.ADD_MULTIPLIED_BASE;
+        AttributeModifier.Operation ADD = AttributeModifier.Operation.ADD_VALUE;
 
         // === Core damage attributes ===
         add("tacz_attributes:gun_damage", -0.20, 0.30, MULT, 20, 1, all, 0.0, 500);

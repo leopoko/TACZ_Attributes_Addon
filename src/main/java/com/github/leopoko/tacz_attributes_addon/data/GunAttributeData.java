@@ -1,18 +1,21 @@
 package com.github.leopoko.tacz_attributes_addon.data;
 
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.component.CustomData;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Static helper for reading/writing addon attribute data from/to gun ItemStack NBT.
+ * In 1.21.1, data is stored via DataComponents.CUSTOM_DATA wrapping CompoundTag.
  *
- * NBT structure:
+ * NBT structure (inside CUSTOM_DATA):
  * TaczAddon: {
  *   Modifiers: [{Attr:"...", Val:0.15, Op:1}, ...],
  *   FixedModifiers: [{Attr:"...", Val:0.1, Op:1}, ...],
@@ -33,18 +36,18 @@ public class GunAttributeData {
     public static final String ENHANCE_COUNT_TAG = "EnhanceCount";
 
     public static boolean hasAddonData(ItemStack stack) {
-        CompoundTag tag = stack.getTag();
-        if (tag == null) return false;
+        CustomData customData = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+        CompoundTag tag = customData.copyTag();
         return tag.contains(ROOT_TAG, Tag.TAG_COMPOUND);
     }
 
     public static boolean isSealed(ItemStack stack) {
-        CompoundTag root = getOrCreateRoot(stack);
+        CompoundTag root = getRoot(stack);
         return root.getBoolean(SEALED_TAG);
     }
 
     public static void setSealed(ItemStack stack, boolean sealed) {
-        getOrCreateRoot(stack).putBoolean(SEALED_TAG, sealed);
+        updateRoot(stack, root -> root.putBoolean(SEALED_TAG, sealed));
     }
 
     public static List<GunModifier> getModifiers(ItemStack stack) {
@@ -72,11 +75,11 @@ public class GunAttributeData {
     }
 
     public static int getEnhanceCount(ItemStack stack) {
-        return getOrCreateRoot(stack).getInt(ENHANCE_COUNT_TAG);
+        return getRoot(stack).getInt(ENHANCE_COUNT_TAG);
     }
 
     public static void setEnhanceCount(ItemStack stack, int count) {
-        getOrCreateRoot(stack).putInt(ENHANCE_COUNT_TAG, count);
+        updateRoot(stack, root -> root.putInt(ENHANCE_COUNT_TAG, count));
     }
 
     public static void incrementEnhanceCount(ItemStack stack) {
@@ -92,29 +95,29 @@ public class GunAttributeData {
     }
 
     public static int getScore(ItemStack stack) {
-        return getOrCreateRoot(stack).getInt(SCORE_TAG);
+        return getRoot(stack).getInt(SCORE_TAG);
     }
 
     public static void setScore(ItemStack stack, int score) {
-        getOrCreateRoot(stack).putInt(SCORE_TAG, score);
+        updateRoot(stack, root -> root.putInt(SCORE_TAG, score));
     }
 
     public static int getRarityOrdinal(ItemStack stack) {
-        return getOrCreateRoot(stack).getInt(RARITY_TAG);
+        return getRoot(stack).getInt(RARITY_TAG);
     }
 
     public static void setRarityOrdinal(ItemStack stack, int rarityOrdinal) {
-        getOrCreateRoot(stack).putInt(RARITY_TAG, rarityOrdinal);
+        updateRoot(stack, root -> root.putInt(RARITY_TAG, rarityOrdinal));
     }
 
     // ========== Reroll Count ==========
 
     public static int getRerollCount(ItemStack stack) {
-        return getOrCreateRoot(stack).getInt(REROLL_COUNT_TAG);
+        return getRoot(stack).getInt(REROLL_COUNT_TAG);
     }
 
     public static void setRerollCount(ItemStack stack, int count) {
-        getOrCreateRoot(stack).putInt(REROLL_COUNT_TAG, count);
+        updateRoot(stack, root -> root.putInt(REROLL_COUNT_TAG, count));
     }
 
     public static void incrementRerollCount(ItemStack stack) {
@@ -127,10 +130,8 @@ public class GunAttributeData {
      * Remove the entire TaczAddon NBT compound from the item, fully resetting it.
      */
     public static void removeAllAddonData(ItemStack stack) {
-        CompoundTag tag = stack.getTag();
-        if (tag != null && tag.contains(ROOT_TAG)) {
-            tag.remove(ROOT_TAG);
-        }
+        stack.update(DataComponents.CUSTOM_DATA, CustomData.EMPTY, data ->
+                data.update(tag -> tag.remove(ROOT_TAG)));
     }
 
     // ========== Rarity ==========
@@ -145,17 +146,34 @@ public class GunAttributeData {
         return Rarity.COMMON;
     }
 
-    private static CompoundTag getOrCreateRoot(ItemStack stack) {
-        CompoundTag tag = stack.getOrCreateTag();
+    /**
+     * Read the root TaczAddon compound (read-only snapshot).
+     */
+    private static CompoundTag getRoot(ItemStack stack) {
+        CustomData customData = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+        CompoundTag tag = customData.copyTag();
         if (!tag.contains(ROOT_TAG, Tag.TAG_COMPOUND)) {
-            tag.put(ROOT_TAG, new CompoundTag());
+            return new CompoundTag();
         }
         return tag.getCompound(ROOT_TAG);
     }
 
+    /**
+     * Modify the root TaczAddon compound via DataComponents.CUSTOM_DATA update.
+     */
+    private static void updateRoot(ItemStack stack, java.util.function.Consumer<CompoundTag> modifier) {
+        stack.update(DataComponents.CUSTOM_DATA, CustomData.EMPTY, data ->
+                data.update(tag -> {
+                    if (!tag.contains(ROOT_TAG, Tag.TAG_COMPOUND)) {
+                        tag.put(ROOT_TAG, new CompoundTag());
+                    }
+                    modifier.accept(tag.getCompound(ROOT_TAG));
+                }));
+    }
+
     private static List<GunModifier> readModifierList(ItemStack stack, String key) {
         List<GunModifier> result = new ArrayList<>();
-        CompoundTag root = getOrCreateRoot(stack);
+        CompoundTag root = getRoot(stack);
         if (!root.contains(key, Tag.TAG_LIST)) return result;
         ListTag list = root.getList(key, Tag.TAG_COMPOUND);
         for (int i = 0; i < list.size(); i++) {
@@ -165,11 +183,12 @@ public class GunAttributeData {
     }
 
     private static void writeModifierList(ItemStack stack, String key, List<GunModifier> modifiers) {
-        CompoundTag root = getOrCreateRoot(stack);
-        ListTag list = new ListTag();
-        for (GunModifier mod : modifiers) {
-            list.add(mod.toNbt());
-        }
-        root.put(key, list);
+        updateRoot(stack, root -> {
+            ListTag list = new ListTag();
+            for (GunModifier mod : modifiers) {
+                list.add(mod.toNbt());
+            }
+            root.put(key, list);
+        });
     }
 }

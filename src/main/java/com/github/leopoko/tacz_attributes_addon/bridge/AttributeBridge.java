@@ -4,6 +4,9 @@ import com.github.leopoko.tacz_attributes_addon.TaczAttributesAddon;
 import com.github.leopoko.tacz_attributes_addon.data.GunAttributeData;
 import com.github.leopoko.tacz_attributes_addon.data.GunModifier;
 import com.tacz.guns.api.item.IGun;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -11,10 +14,10 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.world.item.component.CustomData;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 import java.util.*;
 
@@ -26,13 +29,13 @@ import java.util.*;
  *
  * Also supports Apotheosis gem modifiers via a pluggable GemModifierSupplier.
  */
-@Mod.EventBusSubscriber(modid = TaczAttributesAddon.MODID)
+@EventBusSubscriber(modid = TaczAttributesAddon.MODID)
 public class AttributeBridge {
 
     /**
      * Represents an attribute modifier pair extracted from an external source (e.g., Apotheosis gems).
      */
-    public record AttributeModifierEntry(Attribute attribute, AttributeModifier modifier) {}
+    public record AttributeModifierEntry(Holder<Attribute> attribute, AttributeModifier modifier) {}
 
     /**
      * Supplier for gem-based attribute modifiers. Set by Apotheosis compat layer.
@@ -45,8 +48,8 @@ public class AttributeBridge {
     // Track the last held gun's identity per player to detect changes
     private static final WeakHashMap<Player, GunIdentity> LAST_HELD = new WeakHashMap<>();
 
-    // Set of all modifier UUIDs we've applied, per player
-    private static final WeakHashMap<Player, Set<UUID>> APPLIED_UUIDS = new WeakHashMap<>();
+    // Set of all modifier ResourceLocations we've applied, per player
+    private static final WeakHashMap<Player, Set<ResourceLocation>> APPLIED_IDS = new WeakHashMap<>();
 
     // Optional gem modifier supplier (set by ApotheosisCompat when loaded)
     private static GemModifierSupplier gemModifierSupplier = null;
@@ -59,9 +62,8 @@ public class AttributeBridge {
     }
 
     @SubscribeEvent
-    public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.phase != TickEvent.Phase.START) return;
-        if (!(event.player instanceof ServerPlayer player)) return;
+    public static void onPlayerTick(PlayerTickEvent.Pre event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) return;
 
         ItemStack held = player.getMainHandItem();
         GunIdentity currentIdentity = GunIdentity.of(held);
@@ -88,73 +90,65 @@ public class AttributeBridge {
     }
 
     private static void applyModifiers(ServerPlayer player, List<GunModifier> modifiers) {
-        Set<UUID> uuids = new HashSet<>();
+        Set<ResourceLocation> ids = new HashSet<>();
 
         for (int i = 0; i < modifiers.size(); i++) {
             GunModifier mod = modifiers.get(i);
-            ResourceLocation attrId = new ResourceLocation(mod.getAttributeId());
-            Attribute attribute = ForgeRegistries.ATTRIBUTES.getValue(attrId);
-            if (attribute == null) continue;
+            ResourceLocation attrId = ResourceLocation.parse(mod.getAttributeId());
+            Optional<Holder.Reference<Attribute>> holderOpt = BuiltInRegistries.ATTRIBUTE.getHolder(attrId);
+            if (holderOpt.isEmpty()) continue;
 
-            AttributeInstance instance = player.getAttribute(attribute);
+            Holder<Attribute> holder = holderOpt.get();
+            AttributeInstance instance = player.getAttribute(holder);
             if (instance == null) continue;
 
-            // Use index-based UUID so the same attributeId can appear multiple times
-            // (e.g., once from FixedModifiers and once from Modifiers) and both apply
-            UUID uuid = generateUUID(mod.getAttributeId(), i);
+            // Use index-based ResourceLocation so the same attributeId can appear multiple times
+            ResourceLocation modifierId = ResourceLocation.fromNamespaceAndPath(
+                    TaczAttributesAddon.MODID, "gun_modifier_" + i + "_" + attrId.getPath());
             AttributeModifier modifier = new AttributeModifier(
-                    uuid, "tacz_addon_gun_modifier", mod.getValue(), mod.getOperation()
+                    modifierId, mod.getValue(), mod.getOperation()
             );
 
             // Remove existing first to prevent stacking
-            instance.removeModifier(uuid);
+            instance.removeModifier(modifierId);
             instance.addTransientModifier(modifier);
-            uuids.add(uuid);
+            ids.add(modifierId);
         }
 
-        APPLIED_UUIDS.put(player, uuids);
+        APPLIED_IDS.put(player, ids);
     }
 
     private static void applyGemModifiers(ServerPlayer player, ItemStack held) {
         List<AttributeModifierEntry> gemMods = gemModifierSupplier.getGemModifiers(held);
         if (gemMods.isEmpty()) return;
 
-        Set<UUID> uuids = APPLIED_UUIDS.computeIfAbsent(player, k -> new HashSet<>());
+        Set<ResourceLocation> ids = APPLIED_IDS.computeIfAbsent(player, k -> new HashSet<>());
 
         for (AttributeModifierEntry entry : gemMods) {
             AttributeInstance instance = player.getAttribute(entry.attribute());
             if (instance == null) continue;
 
-            UUID uuid = entry.modifier().getId();
+            ResourceLocation id = entry.modifier().id();
             // Remove existing first to prevent stacking
-            instance.removeModifier(uuid);
+            instance.removeModifier(id);
             instance.addTransientModifier(entry.modifier());
-            uuids.add(uuid);
+            ids.add(id);
         }
     }
 
     private static void removeAllModifiers(Player player) {
-        Set<UUID> uuids = APPLIED_UUIDS.remove(player);
-        if (uuids == null || uuids.isEmpty()) return;
+        Set<ResourceLocation> ids = APPLIED_IDS.remove(player);
+        if (ids == null || ids.isEmpty()) return;
 
-        for (UUID uuid : uuids) {
+        for (ResourceLocation id : ids) {
             // Remove from all attributes - iterate all registered attributes
-            for (Attribute attr : ForgeRegistries.ATTRIBUTES.getValues()) {
-                AttributeInstance instance = player.getAttribute(attr);
+            for (Holder<Attribute> holder : BuiltInRegistries.ATTRIBUTE.holders().toList()) {
+                AttributeInstance instance = player.getAttribute(holder);
                 if (instance != null) {
-                    instance.removeModifier(uuid);
+                    instance.removeModifier(id);
                 }
             }
         }
-    }
-
-    /**
-     * Generate a deterministic UUID for an attribute modifier.
-     * Uses index to ensure uniqueness when the same attributeId appears multiple times
-     * (e.g., in both FixedModifiers and random Modifiers).
-     */
-    private static UUID generateUUID(String attributeId, int index) {
-        return UUID.nameUUIDFromBytes(("tacz_addon_" + index + "_" + attributeId).getBytes());
     }
 
     /**
@@ -179,10 +173,9 @@ public class AttributeBridge {
             IGun iGun = IGun.getIGunOrNull(stack);
             if (iGun == null) return null;
 
-            // Use the stack's NBT hash + addon data hash for identity
-            int hash = Objects.hash(
-                    stack.getTag() != null ? stack.getTag().hashCode() : 0
-            );
+            // Use the stack's custom data hash for identity
+            CustomData customData = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+            int hash = customData.copyTag().hashCode();
             return new GunIdentity(hash);
         }
 

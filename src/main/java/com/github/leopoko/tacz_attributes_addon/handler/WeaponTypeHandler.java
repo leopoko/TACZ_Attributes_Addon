@@ -102,10 +102,13 @@ public class WeaponTypeHandler {
 
     private static AttributeModifier.Operation parseOperation(String op) {
         switch (op.toUpperCase()) {
-            case "ADDITION": return AttributeModifier.Operation.ADDITION;
-            case "MULTIPLY_TOTAL": return AttributeModifier.Operation.MULTIPLY_TOTAL;
+            case "ADDITION":
+            case "ADD_VALUE": return AttributeModifier.Operation.ADD_VALUE;
+            case "MULTIPLY_TOTAL":
+            case "ADD_MULTIPLIED_TOTAL": return AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL;
             case "MULTIPLY_BASE":
-            default: return AttributeModifier.Operation.MULTIPLY_BASE;
+            case "ADD_MULTIPLIED_BASE":
+            default: return AttributeModifier.Operation.ADD_MULTIPLIED_BASE;
         }
     }
 

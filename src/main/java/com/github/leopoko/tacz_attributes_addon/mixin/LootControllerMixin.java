@@ -1,9 +1,9 @@
 package com.github.leopoko.tacz_attributes_addon.mixin;
 
-import dev.shadowsoffire.apotheosis.adventure.loot.LootCategory;
-import dev.shadowsoffire.apotheosis.adventure.loot.LootController;
-import dev.shadowsoffire.apotheosis.adventure.loot.LootRarity;
-import net.minecraft.util.RandomSource;
+import dev.shadowsoffire.apotheosis.loot.LootCategory;
+import dev.shadowsoffire.apotheosis.loot.LootController;
+import dev.shadowsoffire.apotheosis.loot.LootRarity;
+import dev.shadowsoffire.apotheosis.tiers.GenContext;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -33,7 +33,7 @@ public class LootControllerMixin {
      * due to empty affix list. Only cancels for the "gun" category.
      */
     @Inject(
-            method = "createLootItem(Lnet/minecraft/world/item/ItemStack;Ldev/shadowsoffire/apotheosis/adventure/loot/LootCategory;Ldev/shadowsoffire/apotheosis/adventure/loot/LootRarity;Lnet/minecraft/util/RandomSource;)Lnet/minecraft/world/item/ItemStack;",
+            method = "createLootItem(Lnet/minecraft/world/item/ItemStack;Ldev/shadowsoffire/apotheosis/loot/LootCategory;Ldev/shadowsoffire/apotheosis/loot/LootRarity;Ldev/shadowsoffire/apotheosis/tiers/GenContext;)Lnet/minecraft/world/item/ItemStack;",
             at = @At(
                     value = "NEW",
                     target = "java/lang/RuntimeException"
@@ -42,10 +42,9 @@ public class LootControllerMixin {
             remap = false
     )
     private static void taczAddon$preventGunAffixCrash(ItemStack stack, LootCategory cat, LootRarity rarity,
-                                                        RandomSource rand, CallbackInfoReturnable<ItemStack> cir) {
-        // Safety net: only fires when the affix list is empty (error path).
-        // For guns, return the item unchanged instead of crashing.
-        if ("gun".equals(cat.getName())) {
+                                                        GenContext ctx, CallbackInfoReturnable<ItemStack> cir) {
+        // Compare by reference to our registered GUN category
+        if (cat == com.github.leopoko.tacz_attributes_addon.compat.apotheosis.GunLootCategory.GUN) {
             cir.setReturnValue(stack);
         }
     }

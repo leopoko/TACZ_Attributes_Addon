@@ -13,27 +13,26 @@ import com.github.leopoko.tacz_attributes_addon.init.ModBlockEntities;
 import com.github.leopoko.tacz_attributes_addon.init.ModBlocks;
 import com.github.leopoko.tacz_attributes_addon.init.ModItems;
 import com.github.leopoko.tacz_attributes_addon.init.ModMenuTypes;
-import com.github.leopoko.tacz_attributes_addon.item.GunIngredient;
+import com.github.leopoko.tacz_attributes_addon.item.ModIngredientTypes;
 import com.mojang.logging.LogUtils;
-import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.loading.FMLPaths;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.fml.loading.FMLPaths;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 import org.slf4j.Logger;
 
 @Mod(TaczAttributesAddon.MODID)
@@ -44,7 +43,7 @@ public class TaczAttributesAddon {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
             DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
 
-    public static final RegistryObject<CreativeModeTab> TAB = CREATIVE_MODE_TABS.register("tab",
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = CREATIVE_MODE_TABS.register("tab",
             () -> CreativeModeTab.builder()
                     .withTabsBefore(CreativeModeTabs.COMBAT)
                     .title(Component.translatable("itemGroup." + MODID))
@@ -56,30 +55,26 @@ public class TaczAttributesAddon {
                     })
                     .build());
 
-    public TaczAttributesAddon() {
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-
+    public TaczAttributesAddon(IEventBus modEventBus, ModContainer container) {
         // Register deferred registers
         ModBlocks.BLOCKS.register(modEventBus);
         ModItems.ITEMS.register(modEventBus);
         ModBlockEntities.BLOCK_ENTITIES.register(modEventBus);
         ModMenuTypes.MENU_TYPES.register(modEventBus);
         CREATIVE_MODE_TABS.register(modEventBus);
+        ModIngredientTypes.INGREDIENT_TYPES.register(modEventBus);
 
         // Register lifecycle events
         modEventBus.addListener(this::commonSetup);
 
-        // Register Forge event bus
-        MinecraftForge.EVENT_BUS.register(this);
+        // Register NeoForge event bus
+        NeoForge.EVENT_BUS.register(this);
 
         // Register config
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC);
+        container.registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC);
 
         // Register network packets
-        ModNetwork.init();
-
-        // Register custom recipe ingredient types
-        GunIngredient.register();
+        modEventBus.addListener(ModNetwork::register);
 
         LOGGER.info("TACZ Attributes Addon initialized");
     }
@@ -107,15 +102,13 @@ public class TaczAttributesAddon {
         ModCommands.register(event.getDispatcher());
     }
 
-    @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    @SuppressWarnings("removal")
+    @EventBusSubscriber(modid = MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
     public static class ClientModEvents {
         @SubscribeEvent
-        public static void onClientSetup(FMLClientSetupEvent event) {
-            event.enqueueWork(() -> {
-                MenuScreens.register(ModMenuTypes.ATTRIBUTE_STATION.get(), AttributeStationScreen::new);
-                MenuScreens.register(ModMenuTypes.ENHANCEMENT_STATION.get(), EnhancementStationScreen::new);
-            });
-            LOGGER.info("TACZ Attributes Addon client setup complete");
+        public static void onRegisterMenuScreens(RegisterMenuScreensEvent event) {
+            event.register(ModMenuTypes.ATTRIBUTE_STATION.get(), AttributeStationScreen::new);
+            event.register(ModMenuTypes.ENHANCEMENT_STATION.get(), EnhancementStationScreen::new);
         }
     }
 }

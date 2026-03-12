@@ -10,9 +10,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 import java.util.List;
 
@@ -20,17 +20,16 @@ import java.util.List;
  * Feature 1: Automatically applies random attributes to guns when obtained.
  * Scans player inventory each tick for guns without addon data.
  */
-@Mod.EventBusSubscriber(modid = TaczAttributesAddon.MODID)
+@EventBusSubscriber(modid = TaczAttributesAddon.MODID)
 public class GunObtainHandler {
 
     // Only check every N ticks to reduce overhead
     private static final int CHECK_INTERVAL = 10;
 
     @SubscribeEvent
-    public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
+    public static void onPlayerTick(PlayerTickEvent.Post event) {
         if (!CommonConfig.ENABLE_RANDOM_ON_OBTAIN.get()) return;
-        if (!(event.player instanceof ServerPlayer player)) return;
+        if (!(event.getEntity() instanceof ServerPlayer player)) return;
 
         // Use player's own tick count for multiplayer-safe interval checking
         if (player.tickCount % CHECK_INTERVAL != 0) return;

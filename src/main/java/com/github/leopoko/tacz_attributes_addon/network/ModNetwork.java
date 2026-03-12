@@ -1,29 +1,26 @@
 package com.github.leopoko.tacz_attributes_addon.network;
 
 import com.github.leopoko.tacz_attributes_addon.TaczAttributesAddon;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.network.NetworkRegistry;
-import net.minecraftforge.network.simple.SimpleChannel;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public class ModNetwork {
     private static final String PROTOCOL_VERSION = "1";
-    public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
-            new ResourceLocation(TaczAttributesAddon.MODID, "main"),
-            () -> PROTOCOL_VERSION,
-            PROTOCOL_VERSION::equals,
-            PROTOCOL_VERSION::equals
-    );
 
-    public static void init() {
-        int id = 0;
-        CHANNEL.registerMessage(id++, EnhancementChoicesPacket.class,
-                EnhancementChoicesPacket::encode,
-                EnhancementChoicesPacket::decode,
-                EnhancementChoicesPacket::handle);
+    public static void register(final RegisterPayloadHandlersEvent event) {
+        final PayloadRegistrar registrar = event.registrar(TaczAttributesAddon.MODID)
+                .versioned(PROTOCOL_VERSION);
 
-        CHANNEL.registerMessage(id++, EnhancementActionPacket.class,
-                EnhancementActionPacket::encode,
-                EnhancementActionPacket::decode,
-                EnhancementActionPacket::handle);
+        registrar.playToClient(
+                EnhancementChoicesPacket.TYPE,
+                EnhancementChoicesPacket.STREAM_CODEC,
+                EnhancementChoicesPacket::handle
+        );
+
+        registrar.playToServer(
+                EnhancementActionPacket.TYPE,
+                EnhancementActionPacket.STREAM_CODEC,
+                EnhancementActionPacket::handle
+        );
     }
 }
