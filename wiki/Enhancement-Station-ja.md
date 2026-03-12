@@ -24,6 +24,4 @@
 
 ---
 
-| | |
-|:---|---:|
-| [前へ: Attribute Station](Attribute-Station-ja) | [次へ: 固定属性](Weapon-Attributes-ja) |
+[< 前へ: Attribute Station](Attribute-Station-ja) | [次へ >: 固定属性](Weapon-Attributes-ja)

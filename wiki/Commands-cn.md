@@ -77,6 +77,4 @@
 
 ---
 
-| | |
-|:---|---:|
-| [上一页: 枪械覆盖](Gun-Attribute-Overrides-cn) | [下一页: Apotheosis](Apotheosis-cn) |
+[< 上一页: 枪械覆盖](Gun-Attribute-Overrides-cn) | [下一页 >: Apotheosis](Apotheosis-cn)

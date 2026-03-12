@@ -48,6 +48,4 @@ Apotheosis MOD との連携機能を有効にします。Apotheosisがインス�
 
 ---
 
-| | |
-|:---|---:|
-| | [次へ: ランダム属性生成](Random-Attribute-Generation-ja) |
+ | [次へ >: ランダム属性生成](Random-Attribute-Generation-ja)

@@ -67,6 +67,4 @@ EPIC 稀有度枪械的插槽数量。
 
 ---
 
-| | |
-|:---|---:|
-| [上一页: 命令](Commands-cn) | [下一页: NBT结构](NBT-Structure-cn) |
+[< 上一页: 命令](Commands-cn) | [下一页 >: NBT结构](NBT-Structure-cn)

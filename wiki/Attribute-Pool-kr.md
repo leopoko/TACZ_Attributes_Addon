@@ -173,6 +173,4 @@
 
 ---
 
-| | |
-|:---|---:|
-| [이전: 고정 속성](Weapon-Attributes-kr) | [다음: 총기별 오버라이드](Gun-Attribute-Overrides-kr) |
+[< 이전: 고정 속성](Weapon-Attributes-kr) | [다음 >: 총기별 오버라이드](Gun-Attribute-Overrides-kr)

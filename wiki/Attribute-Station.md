@@ -74,6 +74,4 @@ If item consumption is enabled, you can feed materials via a hopper from the sid
 
 ---
 
-| | |
-|:---|---:|
-| [Previous: Rarity Scoring](Rarity-Scoring) | [Next: Enhancement Station](Enhancement-Station) |
+[< Previous: Rarity Scoring](Rarity-Scoring) | [Next >: Enhancement Station](Enhancement-Station)

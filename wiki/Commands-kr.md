@@ -77,6 +77,4 @@ OP 권한 (레벨 2)이 필요합니다.
 
 ---
 
-| | |
-|:---|---:|
-| [이전: 총기별 오버라이드](Gun-Attribute-Overrides-kr) | [다음: Apotheosis](Apotheosis-kr) |
+[< 이전: 총기별 오버라이드](Gun-Attribute-Overrides-kr) | [다음 >: Apotheosis](Apotheosis-kr)

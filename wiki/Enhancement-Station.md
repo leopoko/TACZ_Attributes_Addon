@@ -24,6 +24,4 @@ When enabled, the Enhancement Station only offers choices from attributes that a
 
 ---
 
-| | |
-|:---|---:|
-| [Previous: Attribute Station](Attribute-Station) | [Next: Weapon Attributes](Weapon-Attributes) |
+[< Previous: Attribute Station](Attribute-Station) | [Next >: Weapon Attributes](Weapon-Attributes)

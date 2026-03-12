@@ -173,6 +173,4 @@
 
 ---
 
-| | |
-|:---|---:|
-| [前へ: 固定属性](Weapon-Attributes-ja) | [次へ: 銃別オーバーライド](Gun-Attribute-Overrides-ja) |
+[< 前へ: 固定属性](Weapon-Attributes-ja) | [次へ >: 銃別オーバーライド](Gun-Attribute-Overrides-ja)

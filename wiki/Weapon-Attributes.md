@@ -74,6 +74,4 @@ An empty JSON file `{}` is generated on first launch. You can configure fixed at
 
 ---
 
-| | |
-|:---|---:|
-| [Previous: Enhancement Station](Enhancement-Station) | [Next: Attribute Pool](Attribute-Pool) |
+[< Previous: Enhancement Station](Enhancement-Station) | [Next >: Attribute Pool](Attribute-Pool)

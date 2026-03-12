@@ -74,6 +74,4 @@
 
 ---
 
-| | |
-|:---|---:|
-| [前へ: Enhancement Station](Enhancement-Station-ja) | [次へ: 属性プール](Attribute-Pool-ja) |
+[< 前へ: Enhancement Station](Enhancement-Station-ja) | [次へ >: 属性プール](Attribute-Pool-ja)

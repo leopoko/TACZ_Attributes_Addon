@@ -165,6 +165,4 @@
 
 ---
 
-| | |
-|:---|---:|
-| [前へ: 属性プール](Attribute-Pool-ja) | [次へ: コマンド](Commands-ja) |
+[< 前へ: 属性プール](Attribute-Pool-ja) | [次へ >: コマンド](Commands-ja)

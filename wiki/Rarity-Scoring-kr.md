@@ -39,6 +39,4 @@
 
 ---
 
-| | |
-|:---|---:|
-| [이전: 랜덤 속성 생성](Random-Attribute-Generation-kr) | [다음: 속성 작업대](Attribute-Station-kr) |
+[< 이전: 랜덤 속성 생성](Random-Attribute-Generation-kr) | [다음 >: 속성 작업대](Attribute-Station-kr)

@@ -34,6 +34,4 @@ ItemStack NBT → TaczAddon: {
 
 ---
 
-| | |
-|:---|---:|
-| [前へ: Apotheosis](Apotheosis-ja) | |
+[< 前へ: Apotheosis](Apotheosis-ja) | 

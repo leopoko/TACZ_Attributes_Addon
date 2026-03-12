@@ -165,6 +165,4 @@
 
 ---
 
-| | |
-|:---|---:|
-| [이전: 속성 풀](Attribute-Pool-kr) | [다음: 명령어](Commands-kr) |
+[< 이전: 속성 풀](Attribute-Pool-kr) | [다음 >: 명령어](Commands-kr)

@@ -24,6 +24,4 @@
 
 ---
 
-| | |
-|:---|---:|
-| [이전: 속성 작업대](Attribute-Station-kr) | [다음: 고정 속성](Weapon-Attributes-kr) |
+[< 이전: 속성 작업대](Attribute-Station-kr) | [다음 >: 고정 속성](Weapon-Attributes-kr)

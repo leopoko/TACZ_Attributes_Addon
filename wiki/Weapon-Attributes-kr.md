@@ -74,6 +74,4 @@
 
 ---
 
-| | |
-|:---|---:|
-| [이전: Enhancement Station](Enhancement-Station-kr) | [다음: 속성 풀](Attribute-Pool-kr) |
+[< 이전: Enhancement Station](Enhancement-Station-kr) | [다음 >: 속성 풀](Attribute-Pool-kr)
