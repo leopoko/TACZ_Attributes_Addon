@@ -2,6 +2,7 @@ package com.github.leopoko.tacz_attributes_addon.random;
 
 import com.github.leopoko.tacz_attributes_addon.config.CommonConfig;
 import com.github.leopoko.tacz_attributes_addon.data.AttributeEntry;
+import com.github.leopoko.tacz_attributes_addon.data.AttributeGroup;
 import com.github.leopoko.tacz_attributes_addon.data.AttributeRegistry;
 import com.github.leopoko.tacz_attributes_addon.data.GunAttributeOverrides;
 import com.github.leopoko.tacz_attributes_addon.data.GunModifier;
@@ -308,13 +309,54 @@ public class AttributeGenerator {
                                                          CommonConfig.RandomMode mode, double raritySpread,
                                                          GunAttributeOverrides.GunOverride override,
                                                          RandomSource random) {
+        List<AttributeGroup> groups = getEffectiveGroups(override);
         if (mode == CommonConfig.RandomMode.FULL_RANDOM || mode == CommonConfig.RandomMode.ADAPTIVE) {
             // Uniform selection by weight
-            return weightedSelect(pool, count, false, 1.0, override, random);
+            return weightedSelect(pool, count, false, 1.0, override, groups, random);
         } else {
             // Rarity-weighted selection
-            return weightedSelect(pool, count, true, raritySpread, override, random);
+            return weightedSelect(pool, count, true, raritySpread, override, groups, random);
         }
+    }
+
+    /**
+     * Merge global attribute groups with per-gun overrides.
+     * Per-gun groups with the same name override the global definition.
+     * Per-gun groups without an attributes list inherit the global group's attribute list.
+     */
+    private static List<AttributeGroup> getEffectiveGroups(GunAttributeOverrides.GunOverride override) {
+        List<AttributeGroup> globalGroups = AttributeRegistry.getGroups();
+
+        if (override == null || !override.hasAttributeGroups()) {
+            return globalGroups;
+        }
+
+        // Build a map from global groups
+        Map<String, AttributeGroup> merged = new LinkedHashMap<>();
+        for (AttributeGroup g : globalGroups) {
+            merged.put(g.getName(), g);
+        }
+
+        // Merge per-gun groups
+        for (AttributeGroup perGun : override.getAttributeGroups()) {
+            if (perGun.hasAttributes()) {
+                // Per-gun group has its own attribute list — fully overrides
+                merged.put(perGun.getName(), perGun);
+            } else {
+                // Per-gun group has no attribute list — inherit from global if exists
+                AttributeGroup existing = merged.get(perGun.getName());
+                if (existing != null) {
+                    // Override maxFromGroup but keep global attributes
+                    merged.put(perGun.getName(), new AttributeGroup(
+                            perGun.getName(), perGun.getMaxFromGroup(), existing.getAttributes()));
+                } else {
+                    // New group with no attributes — effectively a no-op, but store it
+                    merged.put(perGun.getName(), perGun);
+                }
+            }
+        }
+
+        return new ArrayList<>(merged.values());
     }
 
     /**
@@ -353,13 +395,18 @@ public class AttributeGenerator {
 
     /**
      * Weighted random selection without replacement.
+     * Enforces attribute group limits by removing exhausted group members from the pool.
      */
     private static List<AttributeEntry> weightedSelect(List<AttributeEntry> pool, int count,
                                                        boolean useRarityWeight, double raritySpread,
                                                        GunAttributeOverrides.GunOverride override,
+                                                       List<AttributeGroup> groups,
                                                        RandomSource random) {
         List<AttributeEntry> available = new ArrayList<>(pool);
         List<AttributeEntry> selected = new ArrayList<>();
+
+        // Track group selection counts
+        Map<String, Integer> groupCounts = groups.isEmpty() ? Collections.emptyMap() : new HashMap<>();
 
         for (int i = 0; i < count && !available.isEmpty(); i++) {
             double totalWeight = 0;
@@ -397,7 +444,22 @@ public class AttributeGenerator {
                 }
             }
 
-            selected.add(available.remove(selectedIndex));
+            AttributeEntry chosen = available.remove(selectedIndex);
+            selected.add(chosen);
+
+            // Enforce attribute group limits
+            if (!groups.isEmpty()) {
+                String chosenId = chosen.getAttributeId();
+                for (AttributeGroup group : groups) {
+                    if (group.getAttributes().contains(chosenId)) {
+                        int newCount = groupCounts.merge(group.getName(), 1, Integer::sum);
+                        if (newCount >= group.getMaxFromGroup()) {
+                            // Remove all remaining members of this group from available pool
+                            available.removeIf(e -> group.getAttributes().contains(e.getAttributeId()));
+                        }
+                    }
+                }
+            }
         }
 
         return selected;

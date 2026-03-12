@@ -494,6 +494,49 @@ Custom linked attributes:
 > **Note:** `attributeId` must match an attribute ID registered in the TACZ Attributes mod.
 > After editing the file, reload in-game with `/taczaddon reload`.
 
+### Attribute Groups (Mutex Control)
+
+The `attributeGroups` field lets you group similar attributes and limit how many from the same group can appear on a single gun. This prevents stacking of similar attribute types (e.g., multiple damage attributes at once).
+
+```json
+{
+  "attributes": [ ... ],
+  "attributeGroups": [
+    {
+      "name": "damage",
+      "maxFromGroup": 1,
+      "attributes": [
+        "tacz_attributes:gun_damage",
+        "tacz_attributes:headshot_multiplier",
+        "tacz_attributes:ads_damage",
+        "tacz_attributes:hip_fire_damage"
+      ]
+    },
+    {
+      "name": "recoil",
+      "maxFromGroup": 2,
+      "attributes": [
+        "tacz_attributes:recoil",
+        "tacz_attributes:vertical_recoil",
+        "tacz_attributes:horizontal_recoil"
+      ]
+    }
+  ]
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `name` | Group identifier |
+| `maxFromGroup` | Maximum number of attributes from this group that can appear on a single gun |
+| `attributes` | List of attribute IDs in this group |
+
+In the example above:
+- **damage group**: Only 1 of the 4 damage-related attributes can appear at once
+- **recoil group**: Up to 2 of the 3 recoil attributes can appear together
+
+> **Note:** An attribute can belong to multiple groups; the most restrictive group wins. Omitting `attributeGroups` or using an empty array means no restrictions (backwards compatible). Linked attributes (paired generation) are not affected by group limits.
+
 ---
 
 ## Per-Gun Attribute Overrides (gun_attribute_overrides.json)
@@ -620,6 +663,40 @@ In this example:
 - `minValuePos`/`maxValuePos`/`minValueNeg`/`maxValueNeg` are all optional. If omitted, the attribute's full value range is split at `buffThreshold` (usually 0.0).
 
 > **Note:** Split mode activates automatically when any of `minAttributesPos`/`maxAttributesPos`/`minAttributesNeg`/`maxAttributesNeg` is set. When combined with `minAttributes`/`maxAttributes`, the total count acts as an upper cap. Works with all generation modes (FULL_RANDOM, ADAPTIVE, RARITY_ADAPTIVE, BALANCED).
+
+### Per-Gun Attribute Groups (Override)
+
+Add `attributeGroups` to a gun's override to customize attribute group restrictions per gun. Same-name groups override the global definition; new names are added on top.
+
+```json
+{
+  "tacz:ak47": {
+    "minAttributes": 3,
+    "maxAttributes": 5,
+    "attributeGroups": [
+      {
+        "name": "damage",
+        "maxFromGroup": 2
+      },
+      {
+        "name": "speed",
+        "maxFromGroup": 1,
+        "attributes": [
+          "tacz_attributes:reload_speed",
+          "tacz_attributes:draw_speed",
+          "tacz_attributes:ads_speed"
+        ]
+      }
+    ]
+  }
+}
+```
+
+In this example (AK47):
+- **damage group**: Global config has `maxFromGroup: 1`, but AK47 relaxes it to `2`. The attribute list is inherited from the global group when `attributes` is omitted.
+- **speed group**: A new AK47-specific group. Only 1 speed attribute can appear.
+
+> **Note:** Omitting the `attributes` field inherits the attribute list from the same-name global group. New groups that only exist per-gun require `attributes` to be specified.
 
 ---
 

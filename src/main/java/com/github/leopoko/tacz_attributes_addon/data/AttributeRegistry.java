@@ -21,6 +21,7 @@ import java.util.*;
 public class AttributeRegistry {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final List<AttributeEntry> ENTRIES = new ArrayList<>();
+    private static final List<AttributeGroup> GROUPS = new ArrayList<>();
     private static boolean initialized = false;
 
     public static List<AttributeEntry> getEntries() {
@@ -31,8 +32,13 @@ public class AttributeRegistry {
         return Collections.unmodifiableList(ENTRIES);
     }
 
+    public static List<AttributeGroup> getGroups() {
+        return Collections.unmodifiableList(GROUPS);
+    }
+
     public static void clear() {
         ENTRIES.clear();
+        GROUPS.clear();
         initialized = false;
     }
 
@@ -81,8 +87,25 @@ public class AttributeRegistry {
                 }
             }
 
+            // Parse attribute groups
+            GROUPS.clear();
+            if (root.has("attributeGroups") && root.get("attributeGroups").isJsonArray()) {
+                JsonArray groupsArr = root.getAsJsonArray("attributeGroups");
+                for (JsonElement groupElem : groupsArr) {
+                    try {
+                        AttributeGroup group = parseGroup(groupElem.getAsJsonObject());
+                        if (group != null) {
+                            GROUPS.add(group);
+                        }
+                    } catch (Exception e) {
+                        LOGGER.warn("Skipping invalid attribute group: {}", e.getMessage());
+                    }
+                }
+            }
+
             initialized = true;
-            LOGGER.info("Loaded {} attribute entries from attribute_pool.json", ENTRIES.size());
+            LOGGER.info("Loaded {} attribute entries and {} attribute groups from attribute_pool.json",
+                    ENTRIES.size(), GROUPS.size());
         } catch (IOException | JsonSyntaxException e) {
             LOGGER.error("Failed to load attribute_pool.json, using defaults", e);
             initDefaults();
@@ -143,6 +166,21 @@ public class AttributeRegistry {
                 linkedAttribute, weaponWhitelist, weaponBlacklist);
     }
 
+    private static AttributeGroup parseGroup(JsonObject obj) {
+        String name = obj.get("name").getAsString();
+        int maxFromGroup = obj.get("maxFromGroup").getAsInt();
+
+        Set<String> attributes = new HashSet<>();
+        if (obj.has("attributes") && obj.get("attributes").isJsonArray()) {
+            JsonArray attrsArr = obj.getAsJsonArray("attributes");
+            for (JsonElement a : attrsArr) {
+                attributes.add(a.getAsString());
+            }
+        }
+
+        return new AttributeGroup(name, maxFromGroup, attributes);
+    }
+
     private static AttributeModifier.Operation parseOperation(String op) {
         switch (op.toUpperCase()) {
             case "ADDITION": return AttributeModifier.Operation.ADDITION;
@@ -177,6 +215,17 @@ public class AttributeRegistry {
                 attrs.add(entryToJson(entry));
             }
             root.add("attributes", attrs);
+
+            root.addProperty("_attributeGroupsFormat",
+                    "attributeGroups: (optional) define groups of similar attributes with a limit on how many "
+                    + "from the group can appear on a single gun. "
+                    + "name: group identifier | maxFromGroup: max attributes from this group per gun | "
+                    + "attributes: list of attribute IDs in this group");
+            JsonArray groupsArr = new JsonArray();
+            for (AttributeGroup group : GROUPS) {
+                groupsArr.add(groupToJson(group));
+            }
+            root.add("attributeGroups", groupsArr);
 
             String json = new GsonBuilder().setPrettyPrinting().create().toJson(root);
             Files.writeString(configFile, json);
@@ -219,6 +268,18 @@ public class AttributeRegistry {
             }
             obj.add("weaponBlacklist", bl);
         }
+        return obj;
+    }
+
+    private static JsonObject groupToJson(AttributeGroup group) {
+        JsonObject obj = new JsonObject();
+        obj.addProperty("name", group.getName());
+        obj.addProperty("maxFromGroup", group.getMaxFromGroup());
+        JsonArray attrs = new JsonArray();
+        for (String attrId : group.getAttributes()) {
+            attrs.add(attrId);
+        }
+        obj.add("attributes", attrs);
         return obj;
     }
 

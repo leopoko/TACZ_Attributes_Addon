@@ -104,17 +104,19 @@ public class GunAttributeOverrides {
         private final int maxAttributesNeg;  // -1 = not set
         private final int maxEnhancement;    // -1 = not set (use global)
         private final Map<String, AttributeOverrideEntry> attributeOverrides;
+        private final List<AttributeGroup> attributeGroups;
 
         public GunOverride(int minAttributes, int maxAttributes,
                            Map<String, AttributeOverrideEntry> attributeOverrides) {
-            this(minAttributes, maxAttributes, -1, -1, -1, -1, -1, attributeOverrides);
+            this(minAttributes, maxAttributes, -1, -1, -1, -1, -1, attributeOverrides, Collections.emptyList());
         }
 
         public GunOverride(int minAttributes, int maxAttributes,
                            int minAttributesPos, int maxAttributesPos,
                            int minAttributesNeg, int maxAttributesNeg,
                            int maxEnhancement,
-                           Map<String, AttributeOverrideEntry> attributeOverrides) {
+                           Map<String, AttributeOverrideEntry> attributeOverrides,
+                           List<AttributeGroup> attributeGroups) {
             this.minAttributes = minAttributes;
             this.maxAttributes = maxAttributes;
             this.minAttributesPos = minAttributesPos;
@@ -123,6 +125,7 @@ public class GunAttributeOverrides {
             this.maxAttributesNeg = maxAttributesNeg;
             this.maxEnhancement = maxEnhancement;
             this.attributeOverrides = attributeOverrides;
+            this.attributeGroups = attributeGroups;
         }
 
         public boolean hasMinAttributes() { return minAttributes >= 0; }
@@ -141,6 +144,9 @@ public class GunAttributeOverrides {
 
         public boolean hasMaxEnhancement() { return maxEnhancement >= 0; }
         public int getMaxEnhancement() { return maxEnhancement; }
+
+        public boolean hasAttributeGroups() { return !attributeGroups.isEmpty(); }
+        public List<AttributeGroup> getAttributeGroups() { return attributeGroups; }
 
         /** Whether this override uses split positive/negative count mode. */
         public boolean hasSplitCounts() {
@@ -300,9 +306,33 @@ public class GunAttributeOverrides {
             }
         }
 
+        List<AttributeGroup> groups = new ArrayList<>();
+        if (obj.has("attributeGroups") && obj.get("attributeGroups").isJsonArray()) {
+            JsonArray groupsArr = obj.getAsJsonArray("attributeGroups");
+            for (JsonElement groupElem : groupsArr) {
+                try {
+                    JsonObject groupObj = groupElem.getAsJsonObject();
+                    String groupName = groupObj.get("name").getAsString();
+                    int maxFromGroup = groupObj.get("maxFromGroup").getAsInt();
+
+                    Set<String> groupAttrs = new HashSet<>();
+                    if (groupObj.has("attributes") && groupObj.get("attributes").isJsonArray()) {
+                        JsonArray ga = groupObj.getAsJsonArray("attributes");
+                        for (JsonElement a : ga) {
+                            groupAttrs.add(a.getAsString());
+                        }
+                    }
+
+                    groups.add(new AttributeGroup(groupName, maxFromGroup, groupAttrs));
+                } catch (Exception e) {
+                    LOGGER.warn("Skipping invalid attribute group in gun override: {}", e.getMessage());
+                }
+            }
+        }
+
         return new GunOverride(minAttributes, maxAttributes,
                 minAttributesPos, maxAttributesPos, minAttributesNeg, maxAttributesNeg,
-                maxEnhancement, attributeOverrides);
+                maxEnhancement, attributeOverrides, groups);
     }
 
     private static AttributeModifier.Operation parseOperation(String opStr) {
@@ -334,7 +364,10 @@ public class GunAttributeOverrides {
                     + "Each attribute entry supports optional fields: "
                     + "minValue, maxValue, weight, rarityTier, scoreWeight, operation, "
                     + "minValuePos, maxValuePos, minValueNeg, maxValueNeg. "
-                    + "Omitted fields fall back to attribute_pool.json values.");
+                    + "Omitted fields fall back to attribute_pool.json values. "
+                    + "attributeGroups: (optional) per-gun attribute groups that merge with global groups. "
+                    + "Same-name groups override the global definition. "
+                    + "Groups without 'attributes' list inherit the global group's attribute list.");
             root.addProperty("_example",
                     "{ \"tacz:hk416d\": { \"minAttributesPos\": 2, \"maxAttributesPos\": 3, "
                     + "\"minAttributesNeg\": 1, \"maxAttributesNeg\": 1, "

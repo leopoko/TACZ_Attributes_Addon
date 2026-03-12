@@ -494,6 +494,49 @@ ItemStack NBT → TaczAddon: {
 > **注意:** `attributeId` は TACZ Attributes MODに登録されている属性IDと一致させてください。
 > ファイルを編集後、ゲーム内で `/taczaddon reload` コマンドでリロードできます。
 
+### 属性グループ（排他制御）
+
+`attributeGroups` フィールドを使用すると、類似した属性をグループ化し、同じグループから同時に出現できる属性の数を制限できます。これにより、ダメージ系の属性が大量に重複するのを防ぐなど、属性の組み合わせバランスを調整できます。
+
+```json
+{
+  "attributes": [ ... ],
+  "attributeGroups": [
+    {
+      "name": "damage",
+      "maxFromGroup": 1,
+      "attributes": [
+        "tacz_attributes:gun_damage",
+        "tacz_attributes:headshot_multiplier",
+        "tacz_attributes:ads_damage",
+        "tacz_attributes:hip_fire_damage"
+      ]
+    },
+    {
+      "name": "recoil",
+      "maxFromGroup": 2,
+      "attributes": [
+        "tacz_attributes:recoil",
+        "tacz_attributes:vertical_recoil",
+        "tacz_attributes:horizontal_recoil"
+      ]
+    }
+  ]
+}
+```
+
+| フィールド | 説明 |
+|-----------|------|
+| `name` | グループ名（識別用） |
+| `maxFromGroup` | このグループから1つの銃に同時に付与できる属性の最大数 |
+| `attributes` | グループに含まれる属性IDのリスト |
+
+上記の例:
+- **damage グループ**: ダメージ系4属性のうち最大1つのみ出現可能
+- **recoil グループ**: リコイル系3属性のうち最大2つまで出現可能
+
+> **注意:** 1つの属性を複数のグループに含めることができます。その場合、最も制限が厳しいグループが優先されます。`attributeGroups` を省略するか空配列にすると制限なし（従来通り）です。リンク属性（ペア生成）による追加はグループ制限の対象外です。
+
 ---
 
 ## 銃別属性オーバーライド（gun_attribute_overrides.json）
@@ -620,6 +663,40 @@ ItemStack NBT → TaczAddon: {
 - `minValuePos`/`maxValuePos`/`minValueNeg`/`maxValueNeg` は省略可能。省略時は属性の全体値範囲を `buffThreshold`（通常0.0）で分割した範囲を使用
 
 > **注意:** スプリットモードは `minAttributesPos`/`maxAttributesPos`/`minAttributesNeg`/`maxAttributesNeg` のいずれかが設定されると自動的に有効になります。`minAttributes`/`maxAttributes` と併用する場合は合計数の上限として機能します。全生成モード（FULL_RANDOM、ADAPTIVE、RARITY_ADAPTIVE、BALANCED）で動作します。
+
+### 銃別属性グループ（排他制御オーバーライド）
+
+`attributeGroups` フィールドを銃別設定に追加すると、グローバルの属性グループ設定を銃ごとにオーバーライドできます。同名のグループはグローバル設定を上書きし、新しい名前のグループは追加されます。
+
+```json
+{
+  "tacz:ak47": {
+    "minAttributes": 3,
+    "maxAttributes": 5,
+    "attributeGroups": [
+      {
+        "name": "damage",
+        "maxFromGroup": 2
+      },
+      {
+        "name": "speed",
+        "maxFromGroup": 1,
+        "attributes": [
+          "tacz_attributes:reload_speed",
+          "tacz_attributes:draw_speed",
+          "tacz_attributes:ads_speed"
+        ]
+      }
+    ]
+  }
+}
+```
+
+上記の例（AK47の場合）:
+- **damage グループ**: グローバル設定では `maxFromGroup: 1` だが、AK47では `2` に緩和。属性リストは `attributes` 省略時にグローバル設定を継承
+- **speed グループ**: AK47専用の新しいグループ。速度系属性から最大1つのみ出現
+
+> **注意:** `attributes` フィールドを省略すると、同名のグローバルグループの属性リストを継承します。銃別にのみ存在する新しいグループには `attributes` の指定が必要です。
 
 ---
 

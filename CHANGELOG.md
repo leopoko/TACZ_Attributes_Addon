@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.3]
+### 新機能
+- 属性グループ（排他制御）機能追加 - 類似属性のグループ化と同時出現数の制限
+  - `attribute_pool.json` に `attributeGroups` フィールド追加（グローバル設定）
+  - `gun_attribute_overrides.json` に銃別 `attributeGroups` オーバーライド追加
+  - 同名グループはグローバル設定を上書き、`attributes` 省略時はグローバルの属性リストを継承
+
+### 設定追加
+- `attribute_pool.json` に `attributeGroups` 配列（name, maxFromGroup, attributes）
+- `gun_attribute_overrides.json` の各銃に `attributeGroups` 配列（グローバルとマージ）
+
 ## [1.2]
 ### 新機能
 - `/taczaddon add <attribute> <value> [operation]` コマンド追加（手動で属性を追加・KubeJS連携用）

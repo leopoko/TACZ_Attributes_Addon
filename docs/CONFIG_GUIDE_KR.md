@@ -494,6 +494,49 @@ ItemStack NBT → TaczAddon: {
 > **주의:** `attributeId`는 TACZ Attributes MOD에 등록된 속성 ID와 일치시켜야 합니다.
 > 파일 편집 후 게임 내에서 `/taczaddon reload` 명령어로 리로드할 수 있습니다.
 
+### 속성 그룹 (배타 제어)
+
+`attributeGroups` 필드를 사용하면 유사한 속성을 그룹화하고, 같은 그룹에서 하나의 총기에 동시에 나타날 수 있는 속성 수를 제한할 수 있습니다. 이를 통해 비슷한 유형의 속성이 대량으로 중복되는 것을 방지할 수 있습니다 (예: 여러 데미지 속성이 동시에 출현).
+
+```json
+{
+  "attributes": [ ... ],
+  "attributeGroups": [
+    {
+      "name": "damage",
+      "maxFromGroup": 1,
+      "attributes": [
+        "tacz_attributes:gun_damage",
+        "tacz_attributes:headshot_multiplier",
+        "tacz_attributes:ads_damage",
+        "tacz_attributes:hip_fire_damage"
+      ]
+    },
+    {
+      "name": "recoil",
+      "maxFromGroup": 2,
+      "attributes": [
+        "tacz_attributes:recoil",
+        "tacz_attributes:vertical_recoil",
+        "tacz_attributes:horizontal_recoil"
+      ]
+    }
+  ]
+}
+```
+
+| 필드 | 설명 |
+|------|------|
+| `name` | 그룹 이름 (식별용) |
+| `maxFromGroup` | 이 그룹에서 하나의 총기에 동시에 부여될 수 있는 최대 속성 수 |
+| `attributes` | 그룹에 포함되는 속성 ID 목록 |
+
+위 예시:
+- **damage 그룹**: 데미지 관련 4개 속성 중 최대 1개만 출현 가능
+- **recoil 그룹**: 반동 관련 3개 속성 중 최대 2개까지 출현 가능
+
+> **참고:** 하나의 속성을 여러 그룹에 포함시킬 수 있으며, 이 경우 가장 제한이 엄격한 그룹이 우선됩니다. `attributeGroups`를 생략하거나 빈 배열로 설정하면 제한 없음 (기존 동작과 동일). 연결 속성 (쌍 생성)에 의한 추가는 그룹 제한의 대상이 아닙니다.
+
 ---
 
 ## 총기별 속성 오버라이드 (gun_attribute_overrides.json)
@@ -620,6 +663,40 @@ ItemStack NBT → TaczAddon: {
 - `minValuePos`/`maxValuePos`/`minValueNeg`/`maxValueNeg`는 모두 선택 사항. 생략 시 속성의 전체 값 범위를 `buffThreshold`(보통 0.0)로 분할하여 사용
 
 > **참고:** `minAttributesPos`/`maxAttributesPos`/`minAttributesNeg`/`maxAttributesNeg` 중 하나라도 설정하면 분리 모드가 자동으로 활성화됩니다. `minAttributes`/`maxAttributes`와 함께 사용하면 총 개수 상한으로 기능합니다. 모든 생성 모드(FULL_RANDOM, ADAPTIVE, RARITY_ADAPTIVE, BALANCED)에서 작동합니다.
+
+### 총기별 속성 그룹 (오버라이드)
+
+총기별 오버라이드 설정에 `attributeGroups`를 추가하면 총기마다 속성 그룹 제한을 커스터마이즈할 수 있습니다. 같은 이름의 그룹은 글로벌 설정을 덮어쓰고, 새로운 이름의 그룹은 추가됩니다.
+
+```json
+{
+  "tacz:ak47": {
+    "minAttributes": 3,
+    "maxAttributes": 5,
+    "attributeGroups": [
+      {
+        "name": "damage",
+        "maxFromGroup": 2
+      },
+      {
+        "name": "speed",
+        "maxFromGroup": 1,
+        "attributes": [
+          "tacz_attributes:reload_speed",
+          "tacz_attributes:draw_speed",
+          "tacz_attributes:ads_speed"
+        ]
+      }
+    ]
+  }
+}
+```
+
+위 예시 (AK47):
+- **damage 그룹**: 글로벌 설정은 `maxFromGroup: 1`이지만, AK47에서는 `2`로 완화. `attributes` 생략 시 글로벌 그룹의 속성 목록을 상속
+- **speed 그룹**: AK47 전용 새 그룹. 속도 관련 속성은 최대 1개만 출현
+
+> **참고:** `attributes` 필드를 생략하면 같은 이름의 글로벌 그룹의 속성 목록을 상속합니다. 총기별로만 존재하는 새 그룹에는 `attributes` 지정이 필요합니다.
 
 ---
 

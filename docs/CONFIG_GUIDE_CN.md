@@ -494,6 +494,49 @@ ItemStack NBT → TaczAddon: {
 > **注意：** `attributeId` 必须与 TACZ Attributes MOD 中注册的属性 ID 完全一致。
 > 编辑文件后，可在游戏内使用 `/taczaddon reload` 命令重新加载。
 
+### 属性分组（互斥控制）
+
+`attributeGroups` 字段可将相似属性分组，并限制同一分组中同时出现在一把枪上的属性数量。这可以防止大量相似类型的属性堆叠（例如多个伤害属性同时出现）。
+
+```json
+{
+  "attributes": [ ... ],
+  "attributeGroups": [
+    {
+      "name": "damage",
+      "maxFromGroup": 1,
+      "attributes": [
+        "tacz_attributes:gun_damage",
+        "tacz_attributes:headshot_multiplier",
+        "tacz_attributes:ads_damage",
+        "tacz_attributes:hip_fire_damage"
+      ]
+    },
+    {
+      "name": "recoil",
+      "maxFromGroup": 2,
+      "attributes": [
+        "tacz_attributes:recoil",
+        "tacz_attributes:vertical_recoil",
+        "tacz_attributes:horizontal_recoil"
+      ]
+    }
+  ]
+}
+```
+
+| 字段 | 说明 |
+|------|------|
+| `name` | 分组名称（用于标识） |
+| `maxFromGroup` | 此分组中最多可同时出现在一把枪上的属性数量 |
+| `attributes` | 分组中包含的属性 ID 列表 |
+
+上述示例：
+- **damage 分组**：4个伤害类属性中最多只能出现1个
+- **recoil 分组**：3个后坐力属性中最多可出现2个
+
+> **注意：** 一个属性可以属于多个分组，此时最严格的限制生效。省略 `attributeGroups` 或使用空数组表示无限制（与旧版兼容）。关联属性（成对生成）不受分组限制影响。
+
 ---
 
 ## 枪械属性覆盖（gun_attribute_overrides.json）
@@ -620,6 +663,40 @@ ItemStack NBT → TaczAddon: {
 - `minValuePos`/`maxValuePos`/`minValueNeg`/`maxValueNeg` 均为可选。省略时使用属性完整值范围按 `buffThreshold`（通常为 0.0）分割
 
 > **注意：** 当设置了 `minAttributesPos`/`maxAttributesPos`/`minAttributesNeg`/`maxAttributesNeg` 中的任意一个时，分离模式自动启用。与 `minAttributes`/`maxAttributes` 同时使用时，总数作为上限。支持所有生成模式（FULL_RANDOM、ADAPTIVE、RARITY_ADAPTIVE、BALANCED）。
+
+### 枪械属性分组（覆盖）
+
+在枪械覆盖配置中添加 `attributeGroups` 可为每把枪自定义属性分组限制。同名分组覆盖全局定义，新名称的分组则额外添加。
+
+```json
+{
+  "tacz:ak47": {
+    "minAttributes": 3,
+    "maxAttributes": 5,
+    "attributeGroups": [
+      {
+        "name": "damage",
+        "maxFromGroup": 2
+      },
+      {
+        "name": "speed",
+        "maxFromGroup": 1,
+        "attributes": [
+          "tacz_attributes:reload_speed",
+          "tacz_attributes:draw_speed",
+          "tacz_attributes:ads_speed"
+        ]
+      }
+    ]
+  }
+}
+```
+
+上述示例（AK47）：
+- **damage 分组**：全局设置为 `maxFromGroup: 1`，但 AK47 放宽为 `2`。省略 `attributes` 时继承全局分组的属性列表
+- **speed 分组**：AK47 专用的新分组，速度类属性最多出现1个
+
+> **注意：** 省略 `attributes` 字段时继承同名全局分组的属性列表。仅存在于枪械配置中的新分组需要指定 `attributes`。
 
 ---
 

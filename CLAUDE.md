@@ -23,6 +23,11 @@ Minecraft 1.20.1 Forge MODアドオン。TACZ（銃MOD）とTACZ Attributes（�
 
 成果物: `build/libs/` 配下の `.jar`ファイル（`-sources`なし）
 
+### バージョン更新手順
+1. `gradle.properties` の `mod_version` を新バージョンに変更（例: `1.2` → `1.3`）
+2. `CHANGELOG.md` の先頭に新バージョンのセクションを追加（`## [x.x]` 形式）
+3. ビルド確認: `./gradlew build`
+
 ### CurseForge公開設定
 - **プラグイン**: `me.modmuss50.mod-publish-plugin` v0.8.4
 - **プロジェクトID**: `1482794`（`gradle.properties` の `curseforge_project_id`）
@@ -310,6 +315,40 @@ src/main/resources/
 - `FULL_RANDOM` モードでもブラックリスト/ホワイトリストは適用される
 - 両フィールドともオプション（省略時 = 空リスト = フィルタなし）
 - `/taczaddon reload` でホットリロード対応
+
+## 属性グループ（排他制御）
+
+`attribute_pool.json` の `attributeGroups` で類似属性をグループ化し、同グループから同時に出現できる属性数を制限する。`gun_attribute_overrides.json` の銃別設定でもオーバーライド可能。
+
+### 設定例（attribute_pool.json）
+```json
+"attributeGroups": [
+  {"name": "damage", "maxFromGroup": 1, "attributes": ["tacz_attributes:gun_damage", "tacz_attributes:headshot_multiplier"]}
+]
+```
+
+### 銃別オーバーライド（gun_attribute_overrides.json）
+```json
+"tacz:ak47": {
+  "attributeGroups": [
+    {"name": "damage", "maxFromGroup": 2},
+    {"name": "speed", "maxFromGroup": 1, "attributes": ["tacz_attributes:reload_speed", "tacz_attributes:draw_speed"]}
+  ]
+}
+```
+
+### マージルール
+- 同名グループ: 銃別設定が優先。`attributes` 省略時はグローバルの属性リストを継承
+- 新名グループ: グローバルに追加
+- 制約は `weightedSelect()` 内で `available` プールから排除することで適用
+- リンク属性（ペア生成）はグループ制限の対象外
+
+### 実装
+- `AttributeGroup.java`: データクラス（name, maxFromGroup, attributes）
+- `AttributeRegistry`: グローバルグループの読み込み・保存
+- `GunAttributeOverrides.GunOverride`: 銃別グループ保持
+- `AttributeGenerator.getEffectiveGroups()`: グローバルと銃別をマージ
+- `AttributeGenerator.weightedSelect()`: 選択ごとにグループカウントを追跡し、上限到達時にプールから除外
 
 ## 未実装・今後の課題
 
