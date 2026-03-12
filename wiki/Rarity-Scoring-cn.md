@@ -39,4 +39,6 @@
 
 ---
 
-[上一页: 随机属性生成](Random-Attribute-Generation-cn) | [下一页: 属性工作台](Attribute-Station-cn)
+| | |
+|:---|---:|
+| [上一页: 随机属性生成](Random-Attribute-Generation-cn) | [下一页: 属性工作台](Attribute-Station-cn) |

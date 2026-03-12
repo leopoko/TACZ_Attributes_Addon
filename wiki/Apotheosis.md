@@ -67,4 +67,6 @@ When Apotheosis integration is enabled, the following gun-specific gems are avai
 
 ---
 
-[Previous: Commands](Commands) | [Next: NBT Structure](NBT-Structure)
+| | |
+|:---|---:|
+| [Previous: Commands](Commands) | [Next: NBT Structure](NBT-Structure) |

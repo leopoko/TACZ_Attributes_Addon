@@ -48,4 +48,6 @@ Apotheosis MOD와의 연동 기능을 활성화합니다. Apotheosis가 설치�
 
 ---
 
-[다음: 랜덤 속성 생성](Random-Attribute-Generation-kr)
+| | |
+|:---|---:|
+| | [다음: 랜덤 속성 생성](Random-Attribute-Generation-kr) |

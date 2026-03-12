@@ -67,4 +67,6 @@ Apotheosis連携が有効な場合、以下の銃専用ジェムが利用可能�
 
 ---
 
-[前へ: コマンド](Commands-ja) | [次へ: NBTデータ構造](NBT-Structure-ja)
+| | |
+|:---|---:|
+| [前へ: コマンド](Commands-ja) | [次へ: NBT構造](NBT-Structure-ja) |

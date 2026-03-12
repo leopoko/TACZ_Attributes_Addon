@@ -39,4 +39,6 @@ Score at or above this value → EPIC (purple).
 
 ---
 
-[Previous: Random Attribute Generation](Random-Attribute-Generation) | [Next: Attribute Station](Attribute-Station)
+| | |
+|:---|---:|
+| [Previous: Random Attribute Generation](Random-Attribute-Generation) | [Next: Attribute Station](Attribute-Station) |

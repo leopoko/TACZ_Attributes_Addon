@@ -74,4 +74,6 @@ Attribute Station はホッパーに対応しています。
 
 ---
 
-[前へ: レアリティスコア閾値](Rarity-Scoring-ja) | [次へ: Enhancement Station](Enhancement-Station-ja)
+| | |
+|:---|---:|
+| [前へ: レアリティスコア](Rarity-Scoring-ja) | [次へ: Enhancement Station](Enhancement-Station-ja) |

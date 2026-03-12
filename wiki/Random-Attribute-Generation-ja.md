@@ -74,4 +74,6 @@ BALANCEDモード専用。バフとデバフの目標比率。
 
 ---
 
-[前へ: 機能トグル](Feature-Toggles-ja) | [次へ: レアリティスコア閾値](Rarity-Scoring-ja)
+| | |
+|:---|---:|
+| [前へ: 機能トグル](Feature-Toggles-ja) | [次へ: レアリティスコア](Rarity-Scoring-ja) |

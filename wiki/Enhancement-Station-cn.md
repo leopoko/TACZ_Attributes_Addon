@@ -24,4 +24,6 @@
 
 ---
 
-[上一页: 属性工作台](Attribute-Station-cn) | [下一页: 枪型号固定属性](Weapon-Attributes-cn)
+| | |
+|:---|---:|
+| [上一页: 属性工作台](Attribute-Station-cn) | [下一页: 固定属性](Weapon-Attributes-cn) |
