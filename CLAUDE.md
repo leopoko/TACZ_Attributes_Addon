@@ -158,6 +158,24 @@ docs/
 - 4言語すべて同一構成・同一内容。新機能追加時は**4ファイルすべてに追記**すること
 - 構成: [general] → [random] → [rarity] → [station] → [apotheosis] → [enhancement] → weapon_attributes.json → ホッパー対応 → NBT構造 → attribute_pool.json → gun_attribute_overrides.json → コマンド → 固定属性リロール独立性 → Apotheosisジェム/アフィックス一覧
 
+### GitHub Wiki
+```
+wiki/
+├── Home.md              # ランディングページ（言語選択テーブル）
+├── _Sidebar.md          # サイドバーナビゲーション（4言語）
+├── Feature-Toggles.md   # 英語ページ（サフィックスなし）
+├── Feature-Toggles-ja.md # 日本語ページ（-ja）
+├── Feature-Toggles-cn.md # 中国語ページ（-cn）
+├── Feature-Toggles-kr.md # 韓国語ページ（-kr）
+└── ...                  # 全11セクション × 4言語 = 44ページ + Home + _Sidebar = 46ファイル
+```
+- `docs/CONFIG_GUIDE*.md` を11セクションに分割してwikiページ化
+- 新機能追加時は**docs（4ファイル）とwiki（4言語×該当ページ）の両方を更新**すること
+- ページ順序: Feature Toggles → Random Attribute Generation → Rarity Scoring → Attribute Station → Enhancement Station → Weapon Attributes → Attribute Pool → Gun Attribute Overrides → Commands → Apotheosis → NBT Structure
+- 各ページにパンくずナビ、言語切替、前後ページナビを含む
+- wikiリポジトリ: `https://github.com/leopoko/TACZ_Attributes_Addon.wiki.git`（本体リポジトリとは別）
+- デプロイ: `wiki/` の内容を wiki リポジトリにコピーしてpush
+
 ## ランダム生成の4モード
 
 | モード | 説明 |

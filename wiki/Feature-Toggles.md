@@ -48,4 +48,6 @@ Shows empty attribute slots in tooltips when the gun has fewer random attributes
 
 ---
 
-[Next: Random Attribute Generation](Random-Attribute-Generation)
+| | |
+|:---|---:|
+| | [Next: Random Attribute Generation](Random-Attribute-Generation) |

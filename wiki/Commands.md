@@ -77,4 +77,6 @@ Fixed attributes (defined in weapon_attributes.json) are not regenerated on rero
 
 ---
 
-[Previous: Gun Attribute Overrides](Gun-Attribute-Overrides) | [Next: Apotheosis](Apotheosis)
+| | |
+|:---|---:|
+| [Previous: Gun Attribute Overrides](Gun-Attribute-Overrides) | [Next: Apotheosis](Apotheosis) |

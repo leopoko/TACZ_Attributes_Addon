@@ -74,4 +74,6 @@ BALANCED 모드 전용. 버프와 디버프의 목표 비율.
 
 ---
 
-[이전: 기능 토글](Feature-Toggles-kr) | [다음: 희귀도 점수 임계값](Rarity-Scoring-kr)
+| | |
+|:---|---:|
+| [이전: 기능 토글](Feature-Toggles-kr) | [다음: 희귀도 점수](Rarity-Scoring-kr) |

@@ -173,4 +173,6 @@ In the example above:
 
 ---
 
-[Previous: Weapon Attributes](Weapon-Attributes) | [Next: Gun Attribute Overrides](Gun-Attribute-Overrides)
+| | |
+|:---|---:|
+| [Previous: Weapon Attributes](Weapon-Attributes) | [Next: Gun Attribute Overrides](Gun-Attribute-Overrides) |

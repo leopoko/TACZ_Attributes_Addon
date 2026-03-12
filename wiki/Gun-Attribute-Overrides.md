@@ -165,4 +165,6 @@ In this example (AK47):
 
 ---
 
-[Previous: Attribute Pool](Attribute-Pool) | [Next: Commands](Commands)
+| | |
+|:---|---:|
+| [Previous: Attribute Pool](Attribute-Pool) | [Next: Commands](Commands) |

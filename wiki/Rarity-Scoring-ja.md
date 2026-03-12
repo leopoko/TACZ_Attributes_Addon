@@ -39,4 +39,6 @@
 
 ---
 
-[前へ: ランダム属性生成](Random-Attribute-Generation-ja) | [次へ: Attribute Station](Attribute-Station-ja)
+| | |
+|:---|---:|
+| [前へ: ランダム属性生成](Random-Attribute-Generation-ja) | [次へ: Attribute Station](Attribute-Station-ja) |

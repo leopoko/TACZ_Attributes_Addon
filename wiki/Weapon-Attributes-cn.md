@@ -74,4 +74,6 @@
 
 ---
 
-[上一页: Enhancement Station](Enhancement-Station-cn) | [下一页: 属性池配置](Attribute-Pool-cn)
+| | |
+|:---|---:|
+| [上一页: Enhancement Station](Enhancement-Station-cn) | [下一页: 属性池](Attribute-Pool-cn) |

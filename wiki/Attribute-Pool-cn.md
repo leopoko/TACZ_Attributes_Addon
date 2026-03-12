@@ -173,4 +173,6 @@
 
 ---
 
-[上一页: 枪型号固定属性](Weapon-Attributes-cn) | [下一页: 枪械属性覆盖](Gun-Attribute-Overrides-cn)
+| | |
+|:---|---:|
+| [上一页: 固定属性](Weapon-Attributes-cn) | [下一页: 枪械覆盖](Gun-Attribute-Overrides-cn) |

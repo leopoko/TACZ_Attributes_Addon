@@ -34,4 +34,6 @@ ItemStack NBT → TaczAddon: {
 
 ---
 
-[이전: Apotheosis 연동](Apotheosis-kr)
+| | |
+|:---|---:|
+| [이전: Apotheosis](Apotheosis-kr) | |

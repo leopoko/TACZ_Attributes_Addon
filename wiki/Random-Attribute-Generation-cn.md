@@ -74,4 +74,6 @@ EXPONENTIAL 分布的指数。数值越大，结果越偏向最小值。
 
 ---
 
-[上一页: 功能开关](Feature-Toggles-cn) | [下一页: 稀有度评分阈值](Rarity-Scoring-cn)
+| | |
+|:---|---:|
+| [上一页: 功能开关](Feature-Toggles-cn) | [下一页: 稀有度评分](Rarity-Scoring-cn) |
