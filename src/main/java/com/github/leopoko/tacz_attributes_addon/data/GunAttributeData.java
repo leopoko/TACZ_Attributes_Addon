@@ -31,6 +31,9 @@ public class GunAttributeData {
     public static final String REROLL_COUNT_TAG = "RerollCount";
     public static final String ENHANCED_MODIFIERS_TAG = "EnhancedModifiers";
     public static final String ENHANCE_COUNT_TAG = "EnhanceCount";
+    public static final String PRESET_TAG = "TaczPreset";
+    public static final String PRESET_MIN_RARITY_TAG = "MinRarity";
+    public static final String PRESET_TARGET_RARITY_TAG = "TargetRarity";
 
     public static boolean hasAddonData(ItemStack stack) {
         CompoundTag tag = stack.getTag();
@@ -130,6 +133,50 @@ public class GunAttributeData {
         CompoundTag tag = stack.getTag();
         if (tag != null && tag.contains(ROOT_TAG)) {
             tag.remove(ROOT_TAG);
+        }
+    }
+
+    // ========== Preset (rarity pre-specification via NBT) ==========
+
+    /**
+     * Check if the item has a TaczPreset tag for rarity pre-specification.
+     */
+    public static boolean hasPreset(ItemStack stack) {
+        CompoundTag tag = stack.getTag();
+        return tag != null && tag.contains(PRESET_TAG, Tag.TAG_COMPOUND);
+    }
+
+    /**
+     * Get the minimum rarity preset value.
+     * @return rarity ordinal (0-3), or -1 if not set
+     */
+    public static int getPresetMinRarity(ItemStack stack) {
+        CompoundTag tag = stack.getTag();
+        if (tag == null || !tag.contains(PRESET_TAG, Tag.TAG_COMPOUND)) return -1;
+        CompoundTag preset = tag.getCompound(PRESET_TAG);
+        return preset.contains(PRESET_MIN_RARITY_TAG, Tag.TAG_ANY_NUMERIC)
+                ? preset.getInt(PRESET_MIN_RARITY_TAG) : -1;
+    }
+
+    /**
+     * Get the exact target rarity preset value.
+     * @return rarity ordinal (0-3), or -1 if not set
+     */
+    public static int getPresetTargetRarity(ItemStack stack) {
+        CompoundTag tag = stack.getTag();
+        if (tag == null || !tag.contains(PRESET_TAG, Tag.TAG_COMPOUND)) return -1;
+        CompoundTag preset = tag.getCompound(PRESET_TAG);
+        return preset.contains(PRESET_TARGET_RARITY_TAG, Tag.TAG_ANY_NUMERIC)
+                ? preset.getInt(PRESET_TARGET_RARITY_TAG) : -1;
+    }
+
+    /**
+     * Remove the TaczPreset tag after generation is complete.
+     */
+    public static void removePreset(ItemStack stack) {
+        CompoundTag tag = stack.getTag();
+        if (tag != null) {
+            tag.remove(PRESET_TAG);
         }
     }
 

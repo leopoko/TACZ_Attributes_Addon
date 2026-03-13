@@ -199,6 +199,46 @@ consumeItemId = "tacz:gunsmith_table"        # TACZ MODのアイテム
 > リロール回数はツールチップに表示されます。
 > 上限に達した銃はAttribute Stationで加工できなくなります。
 
+### 素材設定（station_materials.json）
+
+ファイル: `config/tacz_attributes_addon/station_materials.json`
+
+`consumeItem = true` の場合、このJSONファイルで複数の素材タイプを登録できます。各素材にはレアリティ制約を設定可能です。初回起動時にデフォルトファイルが自動生成されます。
+
+```json
+[
+  {
+    "item": "minecraft:diamond",
+    "count": 1
+  },
+  {
+    "item": "minecraft:emerald",
+    "count": 2,
+    "minRarity": 2
+  },
+  {
+    "item": "minecraft:nether_star",
+    "count": 1,
+    "targetRarity": 3
+  },
+  {
+    "item": "minecraft:amethyst_shard",
+    "count": 4,
+    "maxRarity": 1
+  }
+]
+```
+
+| フィールド | 説明 |
+|-----------|------|
+| `item` | アイテムID（必須） |
+| `count` | 消費数（デフォルト: 1） |
+| `targetRarity` | 確定レアリティ（0-3, 最優先） |
+| `minRarity` | 最低レアリティ保証（0-3） |
+| `maxRarity` | 最大レアリティ制限（0-3） |
+
+レアリティ制約フィールドはすべてオプションです。省略時は制約なし（通常ランダム）。`/taczaddon reload` でホットリロード対応。
+
 ---
 
 ## [apotheosis] Apotheosis連携設定
@@ -367,6 +407,27 @@ ItemStack NBT → TaczAddon: {
 | 0 | ADDITION | 加算 |
 | 1 | MULTIPLY_BASE | 基本値乗算 |
 | 2 | MULTIPLY_TOTAL | 合計値乗算 |
+
+### レアリティプリセット（TaczPreset）
+
+`/give`コマンドやルートテーブルで銃にレアリティを事前指定できます。`TaczAddon`とは別の独立したNBTタグです。属性生成完了後に自動的に除去されます。
+
+```
+ItemStack NBT → TaczPreset: {
+  MinRarity: 2,                   // 最低レアリティ保証（0-3, 任意）
+  TargetRarity: 3                 // 確定レアリティ（0-3, 任意、MinRarityより優先）
+}
+```
+
+- **MinRarity**: 指定レアリティ以上を保証。最大50回の再生成を試行します
+- **TargetRarity**: 指定レアリティを確定。MinRarityより優先されます
+- 両方省略した場合は通常の生成と同じ動作になります
+
+**使用例:**
+```
+/give @p tacz:modern_kinetic_gun{GunId:"tacz:ak47",TaczPreset:{MinRarity:2}}
+/give @p tacz:modern_kinetic_gun{GunId:"tacz:ak47",TaczPreset:{TargetRarity:3}}
+```
 
 ---
 

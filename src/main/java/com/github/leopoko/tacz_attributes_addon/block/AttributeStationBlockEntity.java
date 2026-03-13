@@ -3,10 +3,13 @@ package com.github.leopoko.tacz_attributes_addon.block;
 import com.github.leopoko.tacz_attributes_addon.config.CommonConfig;
 import com.github.leopoko.tacz_attributes_addon.data.GunAttributeData;
 import com.github.leopoko.tacz_attributes_addon.data.GunModifier;
+import com.github.leopoko.tacz_attributes_addon.data.StationMaterial;
+import com.github.leopoko.tacz_attributes_addon.data.StationMaterialRegistry;
 import com.github.leopoko.tacz_attributes_addon.handler.RarityHandler;
 import com.github.leopoko.tacz_attributes_addon.handler.WeaponTypeHandler;
 import com.github.leopoko.tacz_attributes_addon.init.ModBlockEntities;
 import com.github.leopoko.tacz_attributes_addon.random.AttributeGenerator;
+import com.github.leopoko.tacz_attributes_addon.random.RarityConstraintHelper;
 import com.tacz.guns.api.item.IGun;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -218,13 +221,19 @@ public class AttributeStationBlockEntity extends BlockEntity implements WorldlyC
             ItemStack material = getMaterial();
             if (material.isEmpty()) return false;
 
-            String requiredItemId = CommonConfig.STATION_CONSUME_ITEM_ID.get();
-            ResourceLocation required = new ResourceLocation(requiredItemId);
-            ResourceLocation materialId = ForgeRegistries.ITEMS.getKey(material.getItem());
-            if (!required.equals(materialId)) return false;
+            if (StationMaterialRegistry.hasRegisteredMaterials()) {
+                // Use station_materials.json registry
+                if (StationMaterialRegistry.findMatchingMaterial(material) == null) return false;
+            } else {
+                // Fallback to legacy config
+                String requiredItemId = CommonConfig.STATION_CONSUME_ITEM_ID.get();
+                ResourceLocation required = new ResourceLocation(requiredItemId);
+                ResourceLocation materialId = ForgeRegistries.ITEMS.getKey(material.getItem());
+                if (!required.equals(materialId)) return false;
 
-            int requiredCount = CommonConfig.STATION_CONSUME_COUNT.get();
-            if (material.getCount() < requiredCount) return false;
+                int requiredCount = CommonConfig.STATION_CONSUME_COUNT.get();
+                if (material.getCount() < requiredCount) return false;
+            }
         }
 
         return true;
@@ -240,26 +249,21 @@ public class AttributeStationBlockEntity extends BlockEntity implements WorldlyC
             GunAttributeData.incrementRerollCount(result);
         }
 
-        // Generate random attributes
-        CommonConfig.FixedAttributeMode fixedMode = CommonConfig.FIXED_ATTRIBUTE_MODE.get();
-        boolean applyRandom = fixedMode != CommonConfig.FixedAttributeMode.FIXED_ONLY;
-
-        if (applyRandom) {
-            List<GunModifier> modifiers = AttributeGenerator.generate(result, random);
-            GunAttributeData.setModifiers(result, modifiers);
+        // Resolve material rarity constraints
+        StationMaterial matchedMaterial = null;
+        if (CommonConfig.STATION_CONSUME_ITEM.get() && StationMaterialRegistry.hasRegisteredMaterials()) {
+            matchedMaterial = StationMaterialRegistry.findMatchingMaterial(getMaterial());
         }
 
-        // Always re-apply fixed attributes from config.
-        // Fixed attributes coexist with random attributes — both are stored separately
-        // (FixedModifiers vs Modifiers) and both are applied to the player simultaneously.
-        // Rerolling only changes random Modifiers; fixed attributes come from weapon config.
-        if (CommonConfig.ENABLE_WEAPON_TYPE_ATTRIBUTES.get()) {
-            WeaponTypeHandler.applyFixedAttributes(result);
-        }
-
-        // Calculate rarity (uses corrected scoring formula)
-        if (CommonConfig.ENABLE_RARITY_SCORING.get()) {
-            RarityHandler.calculateAndApplyRarity(result);
+        if (matchedMaterial != null && matchedMaterial.hasRarityConstraint()) {
+            // Generate with rarity constraint from material
+            RarityConstraintHelper.generateWithConstraint(result, random,
+                    matchedMaterial.getTargetRarity(),
+                    matchedMaterial.getMinRarity(),
+                    matchedMaterial.getMaxRarity());
+        } else {
+            // Standard generation (no material constraint)
+            RarityConstraintHelper.generateStandard(result, random);
         }
 
         GunAttributeData.setSealed(result, true);
@@ -267,7 +271,10 @@ public class AttributeStationBlockEntity extends BlockEntity implements WorldlyC
         // Consume material if required
         if (CommonConfig.STATION_CONSUME_ITEM.get()) {
             ItemStack material = getMaterial();
-            material.shrink(CommonConfig.STATION_CONSUME_COUNT.get());
+            int consumeCount = matchedMaterial != null
+                    ? matchedMaterial.getCount()
+                    : CommonConfig.STATION_CONSUME_COUNT.get();
+            material.shrink(consumeCount);
         }
 
         // Set result

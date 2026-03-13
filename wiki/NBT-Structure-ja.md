@@ -32,6 +32,27 @@ ItemStack NBT → TaczAddon: {
 | 1 | MULTIPLY_BASE | 基本値乗算 |
 | 2 | MULTIPLY_TOTAL | 合計値乗算 |
 
+### レアリティプリセット（TaczPreset）
+
+`/give`コマンドやルートテーブルで銃にレアリティを事前指定できます。`TaczAddon`とは別の独立したNBTタグです。属性生成完了後に自動的に除去されます。
+
+```
+ItemStack NBT → TaczPreset: {
+  MinRarity: 2,                   // 最低レアリティ保証（0-3, 任意）
+  TargetRarity: 3                 // 確定レアリティ（0-3, 任意、MinRarityより優先）
+}
+```
+
+- **MinRarity**: 指定レアリティ以上を保証。最大50回の再生成を試行します
+- **TargetRarity**: 指定レアリティを確定。MinRarityより優先されます
+- 両方省略した場合は通常の生成と同じ動作になります
+
+**使用例:**
+```
+/give @p tacz:modern_kinetic_gun{GunId:"tacz:ak47",TaczPreset:{MinRarity:2}}
+/give @p tacz:modern_kinetic_gun{GunId:"tacz:ak47",TaczPreset:{TargetRarity:3}}
+```
+
 ---
 
-[< 前へ: Apotheosis](Apotheosis-ja) | 
+[< 前へ: Apotheosis](Apotheosis-ja) |
