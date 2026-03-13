@@ -3,7 +3,7 @@ package com.github.leopoko.tacz_attributes_addon.compat.apotheosis;
 import com.github.leopoko.tacz_attributes_addon.bridge.AttributeBridge;
 import com.github.leopoko.tacz_attributes_addon.config.CommonConfig;
 import com.mojang.logging.LogUtils;
-import net.minecraftforge.common.MinecraftForge;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fml.ModList;
 import org.slf4j.Logger;
 
@@ -46,11 +46,7 @@ public class ApotheosisCompat {
                 LOGGER.warn("Failed to register GUN LootCategory, Apotheosis integration partially disabled");
             }
 
-            // 2. Register event handler for socket count
-            MinecraftForge.EVENT_BUS.register(GunSocketHandler.class);
-            LOGGER.info("Registered GunSocketHandler for GetItemSocketsEvent");
-
-            // 3. Wire gem modifier extraction into AttributeBridge
+            // 2. Wire gem modifier extraction into AttributeBridge
             AttributeBridge.setGemModifierSupplier(GemBridgeHelper::extractGemModifiers);
             LOGGER.info("Wired GemBridgeHelper into AttributeBridge");
 
@@ -63,5 +59,34 @@ public class ApotheosisCompat {
 
     public static boolean isApotheosisPresent() {
         return apotheosisPresent;
+    }
+
+    /**
+     * Sets initial socket count on a gun based on its rarity.
+     * Uses Apotheosis's native SocketHelper so Sigil of Socketing works naturally.
+     * Safe to call even when Apotheosis is not loaded (no-op).
+     */
+    public static void applyInitialSockets(ItemStack stack) {
+        if (!apotheosisPresent) return;
+        try {
+            GunSocketHandler.applyInitialSockets(stack);
+        } catch (NoClassDefFoundError ignored) {
+            // Apotheosis classes not available
+        }
+    }
+
+    /**
+     * Migration: sets initial sockets only if the gun doesn't already have them.
+     * Used for existing guns created before sockets were stored in NBT.
+     */
+    public static void applyInitialSocketsIfMissing(ItemStack stack) {
+        if (!apotheosisPresent) return;
+        try {
+            if (!GunSocketHandler.hasSockets(stack)) {
+                GunSocketHandler.applyInitialSockets(stack);
+            }
+        } catch (NoClassDefFoundError ignored) {
+            // Apotheosis classes not available
+        }
     }
 }

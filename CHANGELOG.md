@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.4]
+### 変更
+- Apotheosisソケット数を入手時に固定するように変更（従来はレアリティに連動して動的に変化）
+- ソケット拡張にApotheosisのSigil of Socketingを使用可能に
+- 既存の銃に対するソケット移行処理を追加（初回ロード時に自動適用）
+
+### 技術的変更
+- `GetItemSocketsEvent`のイベントハンドラを廃止し、`SocketHelper.setSockets()`でApotheosisネイティブNBTに直接書き込むように変更
+- リロール時・Attribute Station処理時にソケット数が変化しなくなった
+
 ## [1.3]
 ### 新機能
 - 属性グループ（排他制御）機能追加 - 類似属性のグループ化と同時出現数の制限

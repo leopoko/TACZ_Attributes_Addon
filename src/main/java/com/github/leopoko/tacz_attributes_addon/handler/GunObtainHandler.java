@@ -1,6 +1,7 @@
 package com.github.leopoko.tacz_attributes_addon.handler;
 
 import com.github.leopoko.tacz_attributes_addon.TaczAttributesAddon;
+import com.github.leopoko.tacz_attributes_addon.compat.apotheosis.ApotheosisCompat;
 import com.github.leopoko.tacz_attributes_addon.config.CommonConfig;
 import com.github.leopoko.tacz_attributes_addon.data.GunAttributeData;
 import com.github.leopoko.tacz_attributes_addon.data.GunModifier;
@@ -49,8 +50,13 @@ public class GunObtainHandler {
             IGun iGun = IGun.getIGunOrNull(stack);
             if (iGun == null) continue;
 
-            // Skip if already has addon data
-            if (GunAttributeData.hasAddonData(stack)) continue;
+            // Skip if already has addon data (but migrate sockets for existing guns)
+            if (GunAttributeData.hasAddonData(stack)) {
+                if (CommonConfig.ENABLE_APOTHEOSIS.get()) {
+                    ApotheosisCompat.applyInitialSocketsIfMissing(stack);
+                }
+                continue;
+            }
 
             // Apply attributes
             if (applyRandom) {
@@ -66,6 +72,11 @@ public class GunObtainHandler {
             // Calculate rarity
             if (CommonConfig.ENABLE_RARITY_SCORING.get()) {
                 RarityHandler.calculateAndApplyRarity(stack);
+            }
+
+            // Set initial Apotheosis sockets (fixed at obtain time, expandable via Sigil of Socketing)
+            if (CommonConfig.ENABLE_APOTHEOSIS.get()) {
+                ApotheosisCompat.applyInitialSockets(stack);
             }
 
             // Mark as sealed
