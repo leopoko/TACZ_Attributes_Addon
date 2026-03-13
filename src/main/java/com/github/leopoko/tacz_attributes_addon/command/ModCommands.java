@@ -6,6 +6,7 @@ import com.github.leopoko.tacz_attributes_addon.data.AttributeRegistry;
 import com.github.leopoko.tacz_attributes_addon.data.GunAttributeData;
 import com.github.leopoko.tacz_attributes_addon.data.GunAttributeOverrides;
 import com.github.leopoko.tacz_attributes_addon.data.GunModifier;
+import com.github.leopoko.tacz_attributes_addon.data.StationMaterialRegistry;
 import com.github.leopoko.tacz_attributes_addon.handler.RarityHandler;
 import com.github.leopoko.tacz_attributes_addon.handler.WeaponTypeHandler;
 import com.github.leopoko.tacz_attributes_addon.random.AttributeGenerator;
@@ -341,7 +342,8 @@ public class ModCommands {
         AttributeRegistry.reloadConfig(FMLPaths.CONFIGDIR.get());
         WeaponTypeHandler.loadConfig(FMLPaths.CONFIGDIR.get());
         GunAttributeOverrides.loadConfig(FMLPaths.CONFIGDIR.get());
-        source.sendSuccess(() -> Component.literal("Reloaded attribute_pool.json, weapon_attributes.json, and gun_attribute_overrides.json")
+        StationMaterialRegistry.reloadConfig(FMLPaths.CONFIGDIR.get());
+        source.sendSuccess(() -> Component.literal("Reloaded attribute_pool.json, weapon_attributes.json, gun_attribute_overrides.json, and station_materials.json")
                 .withStyle(ChatFormatting.GREEN), true);
         return 1;
     }

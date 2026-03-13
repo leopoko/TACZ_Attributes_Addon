@@ -199,6 +199,46 @@ consumeItemId = "tacz:gunsmith_table"        # TACZ MOD 的物品
 > 重掷次数会显示在物品提示信息中。
 > 达到上限的枪无法在属性工作台中继续处理。
 
+### 素材配置（station_materials.json）
+
+文件：`config/tacz_attributes_addon/station_materials.json`
+
+当 `consumeItem = true` 时，此 JSON 文件可以注册多种素材类型。每种素材可以设置稀有度约束。首次启动时会自动生成默认文件。
+
+```json
+[
+  {
+    "item": "minecraft:diamond",
+    "count": 1
+  },
+  {
+    "item": "minecraft:emerald",
+    "count": 2,
+    "minRarity": 2
+  },
+  {
+    "item": "minecraft:nether_star",
+    "count": 1,
+    "targetRarity": 3
+  },
+  {
+    "item": "minecraft:amethyst_shard",
+    "count": 4,
+    "maxRarity": 1
+  }
+]
+```
+
+| 字段 | 说明 |
+|------|------|
+| `item` | 物品 ID（必填） |
+| `count` | 消耗数量（默认：1） |
+| `targetRarity` | 确定稀有度（0-3，最高优先级） |
+| `minRarity` | 最低稀有度保证（0-3） |
+| `maxRarity` | 最高稀有度限制（0-3） |
+
+所有稀有度约束字段均为可选。省略时不设约束（正常随机）。可通过 `/taczaddon reload` 热重载。
+
 ---
 
 ## [apotheosis] Apotheosis 联动设置
