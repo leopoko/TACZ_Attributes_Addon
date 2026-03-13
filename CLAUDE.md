@@ -28,6 +28,15 @@ Minecraft 1.20.1 Forge MODアドオン。TACZ（銃MOD）とTACZ Attributes（�
 2. `CHANGELOG.md` の先頭に新バージョンのセクションを追加（`## [x.x]` 形式）
 3. ビルド確認: `./gradlew build`
 
+## 修正報告のルール
+
+バグ修正やコード変更を報告する際は、**1.21.1ブランチへの移行を担当しているAI向けの文章も併せて作成すること**。具体的には以下の情報を含める:
+
+- 対象ファイルとクラス名
+- 症状と原因の説明
+- 修正内容の要約
+- 1.21.1 で同等の修正を適用する際に注意すべき点（API変更、フィールド名の変更など）
+
 ### CurseForge公開設定
 - **プラグイン**: `me.modmuss50.mod-publish-plugin` v0.8.4
 - **プロジェクトID**: `1482794`（`gradle.properties` の `curseforge_project_id`）
