@@ -18,6 +18,7 @@ import com.tacz.guns.api.item.IGun;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
@@ -59,7 +60,7 @@ public class ModCommands {
                         .then(Commands.literal("enhanced")
                                 .executes(ctx -> clearEnhanced(ctx.getSource()))))
                 .then(Commands.literal("add")
-                        .then(Commands.argument("attribute", StringArgumentType.word())
+                        .then(Commands.argument("attribute", ResourceLocationArgument.id())
                                 .suggests((ctx, builder) -> {
                                     for (var entry : AttributeRegistry.getEntries()) {
                                         builder.suggest(entry.getAttributeId());
@@ -68,7 +69,7 @@ public class ModCommands {
                                 })
                                 .then(Commands.argument("value", DoubleArgumentType.doubleArg())
                                         .executes(ctx -> addAttribute(ctx.getSource(),
-                                                StringArgumentType.getString(ctx, "attribute"),
+                                                ResourceLocationArgument.getId(ctx, "attribute").toString(),
                                                 DoubleArgumentType.getDouble(ctx, "value"),
                                                 "MULTIPLY_BASE"))
                                         .then(Commands.argument("operation", StringArgumentType.word())
@@ -79,7 +80,7 @@ public class ModCommands {
                                                     return builder.buildFuture();
                                                 })
                                                 .executes(ctx -> addAttribute(ctx.getSource(),
-                                                        StringArgumentType.getString(ctx, "attribute"),
+                                                        ResourceLocationArgument.getId(ctx, "attribute").toString(),
                                                         DoubleArgumentType.getDouble(ctx, "value"),
                                                         StringArgumentType.getString(ctx, "operation")))))))
                 .then(Commands.literal("reroll")

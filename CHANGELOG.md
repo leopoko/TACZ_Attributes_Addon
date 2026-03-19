@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.5]
+### バグ修正
+- Split Modeでリコイル系属性（recoil, vertical_recoil, horizontal_recoil）の正負判定が逆になっていた問題を修正
+  - 負のscoreWeightを持つ属性は自動的に反転属性として扱い、負の値をバフ/正の値をデバフとして正しく分類
+- gun_attribute_overridesの`minValueNeg`/`maxValueNeg`がattribute_poolの`minValue`/`maxValue`範囲外の場合、負の属性が生成されない問題を修正
+  - オーバーライドで`minValuePos`/`maxValuePos`/`minValueNeg`/`maxValueNeg`が指定されている場合、ベース範囲に関係なくプールに追加されるように変更
+- `/taczaddon add`コマンドで`tacz_attributes:属性名`形式が入力できない問題を修正
+  - `StringArgumentType.word()`を`ResourceLocationArgument.id()`に変更し、コロンを含むリソースロケーションを正しくパース
+
 ## [1.4]
 ### 変更
 - Apotheosisソケット数を入手時に固定するように変更（従来はレアリティに連動して動的に変化）
