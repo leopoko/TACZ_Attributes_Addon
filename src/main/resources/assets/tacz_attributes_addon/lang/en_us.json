@@ -101,6 +101,9 @@
   "affix.tacz_attributes_addon:gun/agile": "Agile",
   "affix.tacz_attributes_addon:gun/forceful": "Forceful",
 
+  "loot_category.tacz_attributes_addon.gun": "Gun",
+  "loot_category.tacz_attributes_addon.gun.plural": "Guns",
+
   "item.tacz_attributes_addon.barrage": "???",
   "item.tacz_attributes_addon.barrage.desc": "Barrage!"
 }

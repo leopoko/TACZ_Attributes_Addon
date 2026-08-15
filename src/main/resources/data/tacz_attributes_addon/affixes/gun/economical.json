@@ -1,14 +1,21 @@
 {
   "type": "apotheosis:attribute",
-  "attribute": "tacz_attributes:ammo_save_chance",
-  "operation": "ADDITION",
-  "values": {
-    "common":   { "min": 0.02, "steps": 5, "step": 0.004 },
-    "uncommon": { "min": 0.04, "steps": 5, "step": 0.005 },
-    "rare":     { "min": 0.06, "steps": 5, "step": 0.006 },
-    "epic":     { "min": 0.08, "steps": 5, "step": 0.008 },
-    "mythic":   { "min": 0.12, "steps": 5, "step": 0.010 },
-    "ancient":  { "min": 0.15, "steps": 10, "step": 0.010 }
+  "definition": {
+    "affix_type": "stat",
+    "exclusive_set": [],
+    "weights": {
+      "quality": 0.1,
+      "weight": 20
+    }
   },
-  "types": ["gun"]
+  "attribute": "tacz_attributes:ammo_save_chance",
+  "operation": "add_value",
+  "categories": ["tacz_attributes_addon:gun"],
+  "values": {
+    "apotheosis:common":   { "min": 0.02,  "max": 0.04,  "step": 0.004 },
+    "apotheosis:uncommon": { "min": 0.04,  "max": 0.065, "step": 0.005 },
+    "apotheosis:rare":     { "min": 0.06,  "max": 0.09,  "step": 0.006 },
+    "apotheosis:epic":     { "min": 0.08,  "max": 0.12,  "step": 0.008 },
+    "apotheosis:mythic":   { "min": 0.12,  "max": 0.17,  "step": 0.010 }
+  }
 }

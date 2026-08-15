@@ -199,6 +199,46 @@ consumeItemId = "tacz:gunsmith_table"        # TACZ MOD의 아이템
 > 리롤 횟수는 툴팁에 표시됩니다.
 > 상한에 도달한 총기는 속성 작업대에서 가공할 수 없게 됩니다.
 
+### 소재 설정 (station_materials.json)
+
+파일: `config/tacz_attributes_addon/station_materials.json`
+
+`consumeItem = true`인 경우, 이 JSON 파일로 여러 소재 유형을 등록할 수 있습니다. 각 소재에는 희귀도 제약을 설정할 수 있습니다. 첫 실행 시 기본 파일이 자동 생성됩니다.
+
+```json
+[
+  {
+    "item": "minecraft:diamond",
+    "count": 1
+  },
+  {
+    "item": "minecraft:emerald",
+    "count": 2,
+    "minRarity": 2
+  },
+  {
+    "item": "minecraft:nether_star",
+    "count": 1,
+    "targetRarity": 3
+  },
+  {
+    "item": "minecraft:amethyst_shard",
+    "count": 4,
+    "maxRarity": 1
+  }
+]
+```
+
+| 필드 | 설명 |
+|------|------|
+| `item` | 아이템 ID (필수) |
+| `count` | 소비 수량 (기본값: 1) |
+| `targetRarity` | 확정 희귀도 (0-3, 최우선) |
+| `minRarity` | 최소 희귀도 보장 (0-3) |
+| `maxRarity` | 최대 희귀도 제한 (0-3) |
+
+모든 희귀도 제약 필드는 선택사항입니다. 생략 시 제약 없음 (일반 랜덤). `/taczaddon reload`로 핫 리로드 가능합니다.
+
 ---
 
 ## [apotheosis] Apotheosis 연동 설정
@@ -367,6 +407,27 @@ ItemStack NBT → TaczAddon: {
 | 0 | ADDITION | 가산 |
 | 1 | MULTIPLY_BASE | 기본값 곱연산 |
 | 2 | MULTIPLY_TOTAL | 합계값 곱연산 |
+
+### 희귀도 프리셋 (TaczPreset)
+
+`/give` 명령어나 전리품 테이블을 통해 총기의 희귀도를 사전 지정할 수 있습니다. `TaczAddon`과는 별도의 독립적인 NBT 태그이며, 속성 생성 완료 후 자동으로 제거됩니다.
+
+```
+ItemStack NBT → TaczPreset: {
+  MinRarity: 2,                   // 최소 희귀도 보장 (0-3, 선택사항)
+  TargetRarity: 3                 // 확정 희귀도 (0-3, 선택사항, MinRarity보다 우선)
+}
+```
+
+- **MinRarity**: 지정한 희귀도 이상을 보장합니다. 최대 50회 재생성을 시도합니다
+- **TargetRarity**: 지정한 희귀도를 확정합니다. MinRarity보다 우선됩니다
+- 둘 다 생략하면 일반 생성과 동일하게 동작합니다
+
+**사용 예시:**
+```
+/give @p tacz:modern_kinetic_gun{GunId:"tacz:ak47",TaczPreset:{MinRarity:2}}
+/give @p tacz:modern_kinetic_gun{GunId:"tacz:ak47",TaczPreset:{TargetRarity:3}}
+```
 
 ---
 

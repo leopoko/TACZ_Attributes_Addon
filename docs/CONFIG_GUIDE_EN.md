@@ -199,6 +199,46 @@ Maximum number of rerolls allowed per gun.
 > Reroll count is shown in the item tooltip.
 > Guns that have reached the limit cannot be processed in the Attribute Station.
 
+### Material Configuration (station_materials.json)
+
+File: `config/tacz_attributes_addon/station_materials.json`
+
+When `consumeItem = true`, this JSON file allows registering multiple material types. Each material can have rarity constraints. A default file is auto-generated on first launch.
+
+```json
+[
+  {
+    "item": "minecraft:diamond",
+    "count": 1
+  },
+  {
+    "item": "minecraft:emerald",
+    "count": 2,
+    "minRarity": 2
+  },
+  {
+    "item": "minecraft:nether_star",
+    "count": 1,
+    "targetRarity": 3
+  },
+  {
+    "item": "minecraft:amethyst_shard",
+    "count": 4,
+    "maxRarity": 1
+  }
+]
+```
+
+| Field | Description |
+|-------|-------------|
+| `item` | Item ID (required) |
+| `count` | Amount consumed (default: 1) |
+| `targetRarity` | Exact rarity (0-3, highest priority) |
+| `minRarity` | Minimum rarity guarantee (0-3) |
+| `maxRarity` | Maximum rarity limit (0-3) |
+
+All rarity constraint fields are optional. When omitted, no constraint is applied (normal random). Hot-reloadable via `/taczaddon reload`.
+
 ---
 
 ## [apotheosis] Apotheosis Integration Settings
@@ -367,6 +407,27 @@ ItemStack NBT → TaczAddon: {
 | 0 | ADDITION | Additive |
 | 1 | MULTIPLY_BASE | Multiplied against base value |
 | 2 | MULTIPLY_TOTAL | Multiplied against total value |
+
+### Rarity Preset (TaczPreset)
+
+You can pre-specify rarity for guns via `/give` commands or loot tables. This is a separate NBT tag independent of `TaczAddon`. It is automatically removed after attribute generation.
+
+```
+ItemStack NBT → TaczPreset: {
+  MinRarity: 2,                   // Minimum rarity guarantee (0-3, optional)
+  TargetRarity: 3                 // Exact rarity (0-3, optional, takes precedence over MinRarity)
+}
+```
+
+- **MinRarity**: Guarantees the specified rarity or higher. Up to 50 regeneration attempts are made
+- **TargetRarity**: Forces the exact specified rarity. Takes precedence over MinRarity
+- If both are omitted, normal generation behavior applies
+
+**Examples:**
+```
+/give @p tacz:modern_kinetic_gun{GunId:"tacz:ak47",TaczPreset:{MinRarity:2}}
+/give @p tacz:modern_kinetic_gun{GunId:"tacz:ak47",TaczPreset:{TargetRarity:3}}
+```
 
 ---
 

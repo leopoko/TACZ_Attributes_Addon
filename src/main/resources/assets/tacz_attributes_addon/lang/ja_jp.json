@@ -101,6 +101,9 @@
   "affix.tacz_attributes_addon:gun/agile": "敏捷の",
   "affix.tacz_attributes_addon:gun/forceful": "強打の",
 
+  "loot_category.tacz_attributes_addon.gun": "銃",
+  "loot_category.tacz_attributes_addon.gun.plural": "銃",
+
   "item.tacz_attributes_addon.barrage": "???",
   "item.tacz_attributes_addon.barrage.desc": "バラージュ！"
 }

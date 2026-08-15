@@ -1,34 +1,37 @@
 {
-  "weight": 5,
-  "quality": 0.4,
+  "type": "apotheosis:gem",
+  "weights": {
+    "quality": 0.4,
+    "weight": 5
+  },
   "bonuses": [
     {
       "type": "apotheosis:multi_attribute",
-      "gem_class": { "key": "gun", "types": ["gun"] },
+      "gem_class": { "key": "gun", "types": ["tacz_attributes_addon:gun"] },
       "desc": "bonus.apotheosis:multi_attr.desc.and",
       "modifiers": [
         {
           "attribute": "tacz_attributes:ammo_recovery_chance",
-          "operation": "ADDITION",
+          "operation": "add_value",
           "values": {
-            "common": 0.03,
-            "uncommon": 0.06,
-            "rare": 0.10,
-            "epic": 0.15,
-            "mythic": 0.20,
-            "ancient": 0.25
+            "cracked": 0.03,
+            "chipped": 0.06,
+            "flawed": 0.10,
+            "normal": 0.15,
+            "flawless": 0.20,
+            "perfect": 0.25
           }
         },
         {
           "attribute": "tacz_attributes:ammo_recovery_amount",
-          "operation": "ADDITION",
+          "operation": "add_value",
           "values": {
-            "common": 1.0,
-            "uncommon": 1.0,
-            "rare": 2.0,
-            "epic": 2.0,
-            "mythic": 3.0,
-            "ancient": 4.0
+            "cracked": 1.0,
+            "chipped": 1.0,
+            "flawed": 2.0,
+            "normal": 2.0,
+            "flawless": 3.0,
+            "perfect": 4.0
           }
         }
       ]

@@ -75,6 +75,12 @@ dependencies {
     compileOnly "curse.maven:apotheosis-313970:7703848"
     implementation "curse.maven:apothic-attributes-898963:7445079"
     implementation "curse.maven:placebo-283644:6926281"
+
+    runtimeOnly "curse.maven:apothic-attributes-898963:7445079"
+    runtimeOnly "curse.maven:placebo-283644:6926281"
+    runtimeOnly "curse.maven:apotheosis-313970:7703848"
+    runtimeOnly "curse.maven:apothic-enchanting-1063926:7659120"
+    runtimeOnly "curse.maven:apothic-spawners-986583:7492121"
 }
 
 // Resource expansion

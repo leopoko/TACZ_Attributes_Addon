@@ -166,15 +166,41 @@ public class AttributeGenerator {
         List<AttributeEntry> negativePool = new ArrayList<>();
 
         for (AttributeEntry entry : pool) {
-            double effectiveMax = override.getMaxValue(entry.getAttributeId(), entry.getMaxValue());
-            double effectiveMin = override.getMinValue(entry.getAttributeId(), entry.getMinValue());
+            String attrId = entry.getAttributeId();
+            double effectiveMax = override.getMaxValue(attrId, entry.getMaxValue());
+            double effectiveMin = override.getMinValue(attrId, entry.getMinValue());
             double threshold = entry.getBuffThreshold();
+            boolean inverted = entry.getScoreWeight() < 0;
 
-            if (effectiveMax > threshold) {
-                positivePool.add(entry);
-            }
-            if (effectiveMin < threshold) {
-                negativePool.add(entry);
+            // For inverted attributes (e.g., recoil where negative = buff):
+            //   positive pool = values below threshold (negative values = buff)
+            //   negative pool = values above threshold (positive values = debuff)
+            // For normal attributes:
+            //   positive pool = values above threshold (positive values = buff)
+            //   negative pool = values below threshold (negative values = debuff)
+
+            // Also check override pos/neg value ranges for pool membership
+            boolean hasOverridePosRange = !Double.isNaN(override.getMinValuePos(attrId, Double.NaN))
+                    || !Double.isNaN(override.getMaxValuePos(attrId, Double.NaN));
+            boolean hasOverrideNegRange = !Double.isNaN(override.getMinValueNeg(attrId, Double.NaN))
+                    || !Double.isNaN(override.getMaxValueNeg(attrId, Double.NaN));
+
+            if (inverted) {
+                // Inverted: buff = below threshold, debuff = above threshold
+                if (hasOverridePosRange || effectiveMin < threshold) {
+                    positivePool.add(entry);
+                }
+                if (hasOverrideNegRange || effectiveMax > threshold) {
+                    negativePool.add(entry);
+                }
+            } else {
+                // Normal: buff = above threshold, debuff = below threshold
+                if (hasOverridePosRange || effectiveMax > threshold) {
+                    positivePool.add(entry);
+                }
+                if (hasOverrideNegRange || effectiveMin < threshold) {
+                    negativePool.add(entry);
+                }
             }
         }
 
@@ -242,27 +268,45 @@ public class AttributeGenerator {
             double valMin, valMax;
 
             if (isPositiveSelection) {
-                // Positive roll: use positive value range
+                // Positive roll: generate a buff value
                 double threshold = entry.getBuffThreshold();
+                boolean inverted = entry.getScoreWeight() < 0;
                 double effectiveMin = override.getMinValue(attrId, entry.getMinValue());
                 double effectiveMax = override.getMaxValue(attrId, entry.getMaxValue());
-                valMin = override.getMinValuePos(attrId, Math.max(effectiveMin, threshold));
-                valMax = override.getMaxValuePos(attrId, effectiveMax);
-                // Normalize (swap if inverted)
-                if (valMin > valMax) { double tmp = valMin; valMin = valMax; valMax = tmp; }
-                // Ensure positive range
-                valMin = Math.max(valMin, threshold);
+
+                if (inverted) {
+                    // Inverted attribute (e.g., recoil): buff = values below threshold
+                    valMin = override.getMinValuePos(attrId, effectiveMin);
+                    valMax = override.getMaxValuePos(attrId, Math.min(effectiveMax, threshold));
+                    if (valMin > valMax) { double tmp = valMin; valMin = valMax; valMax = tmp; }
+                    valMax = Math.min(valMax, threshold);
+                } else {
+                    // Normal attribute: buff = values above threshold
+                    valMin = override.getMinValuePos(attrId, Math.max(effectiveMin, threshold));
+                    valMax = override.getMaxValuePos(attrId, effectiveMax);
+                    if (valMin > valMax) { double tmp = valMin; valMin = valMax; valMax = tmp; }
+                    valMin = Math.max(valMin, threshold);
+                }
             } else if (isNegativeSelection) {
-                // Negative roll: use negative value range
+                // Negative roll: generate a debuff value
                 double threshold = entry.getBuffThreshold();
+                boolean inverted = entry.getScoreWeight() < 0;
                 double effectiveMin = override.getMinValue(attrId, entry.getMinValue());
                 double effectiveMax = override.getMaxValue(attrId, entry.getMaxValue());
-                valMin = override.getMinValueNeg(attrId, effectiveMin);
-                valMax = override.getMaxValueNeg(attrId, Math.min(effectiveMax, threshold));
-                // Normalize (swap if inverted)
-                if (valMin > valMax) { double tmp = valMin; valMin = valMax; valMax = tmp; }
-                // Ensure negative range
-                valMax = Math.min(valMax, threshold);
+
+                if (inverted) {
+                    // Inverted attribute (e.g., recoil): debuff = values above threshold
+                    valMin = override.getMinValueNeg(attrId, Math.max(effectiveMin, threshold));
+                    valMax = override.getMaxValueNeg(attrId, effectiveMax);
+                    if (valMin > valMax) { double tmp = valMin; valMin = valMax; valMax = tmp; }
+                    valMin = Math.max(valMin, threshold);
+                } else {
+                    // Normal attribute: debuff = values below threshold
+                    valMin = override.getMinValueNeg(attrId, effectiveMin);
+                    valMax = override.getMaxValueNeg(attrId, Math.min(effectiveMax, threshold));
+                    if (valMin > valMax) { double tmp = valMin; valMin = valMax; valMax = tmp; }
+                    valMax = Math.min(valMax, threshold);
+                }
             } else {
                 // Linked addition: use full range
                 valMin = override.getMinValue(attrId, entry.getMinValue());

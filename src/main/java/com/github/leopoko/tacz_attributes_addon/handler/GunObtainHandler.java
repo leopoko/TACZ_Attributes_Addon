@@ -1,10 +1,10 @@
 package com.github.leopoko.tacz_attributes_addon.handler;
 
 import com.github.leopoko.tacz_attributes_addon.TaczAttributesAddon;
+import com.github.leopoko.tacz_attributes_addon.compat.apotheosis.ApotheosisCompat;
 import com.github.leopoko.tacz_attributes_addon.config.CommonConfig;
 import com.github.leopoko.tacz_attributes_addon.data.GunAttributeData;
-import com.github.leopoko.tacz_attributes_addon.data.GunModifier;
-import com.github.leopoko.tacz_attributes_addon.random.AttributeGenerator;
+import com.github.leopoko.tacz_attributes_addon.random.RarityConstraintHelper;
 import com.tacz.guns.api.item.IGun;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
@@ -13,8 +13,6 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
-
-import java.util.List;
 
 /**
  * Feature 1: Automatically applies random attributes to guns when obtained.
@@ -34,10 +32,6 @@ public class GunObtainHandler {
         // Use player's own tick count for multiplayer-safe interval checking
         if (player.tickCount % CHECK_INTERVAL != 0) return;
 
-        // Check if fixed-only mode (skip random in that case)
-        CommonConfig.FixedAttributeMode fixedMode = CommonConfig.FIXED_ATTRIBUTE_MODE.get();
-        boolean applyRandom = fixedMode != CommonConfig.FixedAttributeMode.FIXED_ONLY;
-
         Inventory inv = player.getInventory();
         RandomSource random = player.getRandom();
 
@@ -48,23 +42,31 @@ public class GunObtainHandler {
             IGun iGun = IGun.getIGunOrNull(stack);
             if (iGun == null) continue;
 
-            // Skip if already has addon data
-            if (GunAttributeData.hasAddonData(stack)) continue;
-
-            // Apply attributes
-            if (applyRandom) {
-                List<GunModifier> modifiers = AttributeGenerator.generate(stack, random);
-                GunAttributeData.setModifiers(stack, modifiers);
+            // Skip if already has addon data (but migrate sockets for existing guns)
+            if (GunAttributeData.hasAddonData(stack)) {
+                if (CommonConfig.ENABLE_APOTHEOSIS.get()) {
+                    ApotheosisCompat.applyInitialSocketsIfMissing(stack);
+                }
+                continue;
             }
 
-            // Apply fixed attributes if enabled
-            if (CommonConfig.ENABLE_WEAPON_TYPE_ATTRIBUTES.get()) {
-                WeaponTypeHandler.applyFixedAttributes(stack);
+            boolean hasPreset = GunAttributeData.hasPreset(stack);
+
+            if (hasPreset) {
+                // Read and remove preset before generation
+                int targetRarity = GunAttributeData.getPresetTargetRarity(stack);
+                int minRarity = GunAttributeData.getPresetMinRarity(stack);
+                GunAttributeData.removePreset(stack);
+
+                RarityConstraintHelper.generateWithConstraint(stack, random, targetRarity, minRarity, -1);
+            } else {
+                // Standard generation (no preset)
+                RarityConstraintHelper.generateStandard(stack, random);
             }
 
-            // Calculate rarity
-            if (CommonConfig.ENABLE_RARITY_SCORING.get()) {
-                RarityHandler.calculateAndApplyRarity(stack);
+            // Set initial Apotheosis sockets (fixed at obtain time, expandable via Sigil of Socketing)
+            if (CommonConfig.ENABLE_APOTHEOSIS.get()) {
+                ApotheosisCompat.applyInitialSockets(stack);
             }
 
             // Mark as sealed

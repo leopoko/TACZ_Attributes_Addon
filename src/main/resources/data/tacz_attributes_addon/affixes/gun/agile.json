@@ -1,14 +1,21 @@
 {
   "type": "apotheosis:attribute",
-  "attribute": "tacz_attributes:gun_movement_speed",
-  "operation": "MULTIPLY_BASE",
-  "values": {
-    "common":   { "min": 0.02, "steps": 5, "step": 0.004 },
-    "uncommon": { "min": 0.04, "steps": 5, "step": 0.006 },
-    "rare":     { "min": 0.06, "steps": 5, "step": 0.008 },
-    "epic":     { "min": 0.10, "steps": 5, "step": 0.010 },
-    "mythic":   { "min": 0.15, "steps": 5, "step": 0.012 },
-    "ancient":  { "min": 0.20, "steps": 10, "step": 0.012 }
+  "definition": {
+    "affix_type": "stat",
+    "exclusive_set": [],
+    "weights": {
+      "quality": 0.1,
+      "weight": 20
+    }
   },
-  "types": ["gun"]
+  "attribute": "tacz_attributes:gun_movement_speed",
+  "operation": "add_multiplied_base",
+  "categories": ["tacz_attributes_addon:gun"],
+  "values": {
+    "apotheosis:common":   { "min": 0.02,  "max": 0.04,  "step": 0.004 },
+    "apotheosis:uncommon": { "min": 0.04,  "max": 0.07,  "step": 0.006 },
+    "apotheosis:rare":     { "min": 0.06,  "max": 0.10,  "step": 0.008 },
+    "apotheosis:epic":     { "min": 0.10,  "max": 0.15,  "step": 0.010 },
+    "apotheosis:mythic":   { "min": 0.15,  "max": 0.21,  "step": 0.012 }
+  }
 }

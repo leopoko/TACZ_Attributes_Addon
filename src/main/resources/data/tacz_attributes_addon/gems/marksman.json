@@ -1,19 +1,22 @@
 {
-  "weight": 10,
-  "quality": 0,
+  "type": "apotheosis:gem",
+  "weights": {
+    "quality": 0,
+    "weight": 10
+  },
   "bonuses": [
     {
       "type": "apotheosis:attribute",
-      "gem_class": { "key": "gun", "types": ["gun"] },
+      "gem_class": { "key": "gun", "types": ["tacz_attributes_addon:gun"] },
       "attribute": "tacz_attributes:gun_damage",
-      "operation": "MULTIPLY_BASE",
+      "operation": "add_multiplied_base",
       "values": {
-        "common": 0.03,
-        "uncommon": 0.06,
-        "rare": 0.10,
-        "epic": 0.15,
-        "mythic": 0.22,
-        "ancient": 0.30
+        "cracked": 0.03,
+        "chipped": 0.06,
+        "flawed": 0.10,
+        "normal": 0.15,
+        "flawless": 0.22,
+        "perfect": 0.30
       }
     }
   ]

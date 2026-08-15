@@ -2,24 +2,24 @@ package com.github.leopoko.tacz_attributes_addon.compat.apotheosis;
 
 import com.github.leopoko.tacz_attributes_addon.config.CommonConfig;
 import com.github.leopoko.tacz_attributes_addon.data.GunAttributeData;
-import com.tacz.guns.api.item.IGun;
-import dev.shadowsoffire.apotheosis.event.GetItemSocketsEvent;
+import dev.shadowsoffire.apotheosis.socket.SocketHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
-import net.neoforged.bus.api.SubscribeEvent;
 
 /**
- * Handles Apotheosis GetItemSocketsEvent to provide socket counts for TACZ guns.
- * Registered manually via MinecraftForge.EVENT_BUS (not @Mod.EventBusSubscriber)
- * to avoid class loading issues when Apotheosis is absent.
+ * Handles Apotheosis socket initialization for TACZ guns.
+ * Socket count is determined once at obtain time and stored via Apotheosis's Data Components.
+ * After that, Apotheosis manages sockets natively — including Sigil of Socketing for expansion.
  */
 public class GunSocketHandler {
 
-    @SubscribeEvent
-    public static void onGetItemSockets(GetItemSocketsEvent event) {
-        ItemStack stack = event.getStack();
-        if (IGun.getIGunOrNull(stack) == null) return;
-
+    /**
+     * Sets initial sockets on a gun based on its rarity.
+     * Called once when the gun first receives addon data.
+     * Uses Apotheosis's own SocketHelper.setSockets() so the Sigil of Socketing
+     * can naturally add more sockets later.
+     */
+    public static void applyInitialSockets(ItemStack stack) {
         int sockets;
         if (CommonConfig.SOCKETS_SCALE_WITH_RARITY.get()) {
             Rarity rarity = GunAttributeData.getRarity(stack);
@@ -28,7 +28,14 @@ public class GunSocketHandler {
             sockets = CommonConfig.GUN_BASE_SOCKETS.get();
         }
 
-        event.setSockets(sockets);
+        SocketHelper.setSockets(stack, sockets);
+    }
+
+    /**
+     * Checks whether the gun already has Apotheosis socket data set.
+     */
+    public static boolean hasSockets(ItemStack stack) {
+        return SocketHelper.getSockets(stack) > 0;
     }
 
     private static int getSocketsForRarity(Rarity rarity) {

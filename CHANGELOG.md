@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.5]
+### バグ修正
+- Split Modeでリコイル系属性（recoil, vertical_recoil, horizontal_recoil）の正負判定が逆になっていた問題を修正
+  - 負のscoreWeightを持つ属性は自動的に反転属性として扱い、負の値をバフ/正の値をデバフとして正しく分類
+- gun_attribute_overridesの`minValueNeg`/`maxValueNeg`がattribute_poolの`minValue`/`maxValue`範囲外の場合、負の属性が生成されない問題を修正
+  - オーバーライドで`minValuePos`/`maxValuePos`/`minValueNeg`/`maxValueNeg`が指定されている場合、ベース範囲に関係なくプールに追加されるように変更
+- `/taczaddon add`コマンドで`tacz_attributes:属性名`形式が入力できない問題を修正
+  - `StringArgumentType.word()`を`ResourceLocationArgument.id()`に変更し、コロンを含むリソースロケーションを正しくパース
+
+## [1.4]
+### 新機能
+- ソケットの入手時固定化 - 銃入手時にApotheosisソケットを自動設定（レアリティに応じた初期スロット数）
+  - ソケット拡張はApotheosisデフォルトの Sigil of Socketing を使用
+- TaczPreset NBT対応 - 銃のレアリティをNBTタグで事前指定可能に
+- ステーション素材システム - Attribute Stationで複数素材サポート、レアリティ制約付き
+
+### 修正
+- Apotheosis 1.21.1 との互換性を修復
+  - GunLootCategoryをApotheosisの実レジストリに登録（ジェム・アフィックスが正しくロードされるように）
+  - ジェムJSON 11種を1.21.1フォーマットに変換（purityティア、operation名、weights構造の更新）
+  - アフィックスJSON 11種を1.21.1フォーマットに変換（definition wrapper、categories、namespaced rarity keys）
+  - LootCategoryの翻訳キー追加（銃カテゴリの表示名）
+
+### 設定追加
+- `station_materials.json` - Attribute Station素材の定義（レアリティ制約付き複数素材サポート）
+
 ## [1.3]
 ### 新機能
 - 属性グループ（排他制御）機能追加 - 類似属性のグループ化と同時出現数の制限

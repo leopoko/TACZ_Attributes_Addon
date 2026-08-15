@@ -6,6 +6,7 @@ import com.github.leopoko.tacz_attributes_addon.data.AttributeRegistry;
 import com.github.leopoko.tacz_attributes_addon.data.GunAttributeData;
 import com.github.leopoko.tacz_attributes_addon.data.GunAttributeOverrides;
 import com.github.leopoko.tacz_attributes_addon.data.GunModifier;
+import com.github.leopoko.tacz_attributes_addon.data.StationMaterialRegistry;
 import com.github.leopoko.tacz_attributes_addon.handler.RarityHandler;
 import com.github.leopoko.tacz_attributes_addon.handler.WeaponTypeHandler;
 import com.github.leopoko.tacz_attributes_addon.random.AttributeGenerator;
@@ -17,6 +18,7 @@ import com.tacz.guns.api.item.IGun;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
@@ -58,7 +60,7 @@ public class ModCommands {
                         .then(Commands.literal("enhanced")
                                 .executes(ctx -> clearEnhanced(ctx.getSource()))))
                 .then(Commands.literal("add")
-                        .then(Commands.argument("attribute", StringArgumentType.word())
+                        .then(Commands.argument("attribute", ResourceLocationArgument.id())
                                 .suggests((ctx, builder) -> {
                                     for (var entry : AttributeRegistry.getEntries()) {
                                         builder.suggest(entry.getAttributeId());
@@ -67,7 +69,7 @@ public class ModCommands {
                                 })
                                 .then(Commands.argument("value", DoubleArgumentType.doubleArg())
                                         .executes(ctx -> addAttribute(ctx.getSource(),
-                                                StringArgumentType.getString(ctx, "attribute"),
+                                                ResourceLocationArgument.getId(ctx, "attribute").toString(),
                                                 DoubleArgumentType.getDouble(ctx, "value"),
                                                 "ADD_MULTIPLIED_BASE"))
                                         .then(Commands.argument("operation", StringArgumentType.word())
@@ -78,7 +80,7 @@ public class ModCommands {
                                                     return builder.buildFuture();
                                                 })
                                                 .executes(ctx -> addAttribute(ctx.getSource(),
-                                                        StringArgumentType.getString(ctx, "attribute"),
+                                                        ResourceLocationArgument.getId(ctx, "attribute").toString(),
                                                         DoubleArgumentType.getDouble(ctx, "value"),
                                                         StringArgumentType.getString(ctx, "operation")))))))
                 .then(Commands.literal("reroll")
@@ -341,7 +343,8 @@ public class ModCommands {
         AttributeRegistry.reloadConfig(FMLPaths.CONFIGDIR.get());
         WeaponTypeHandler.loadConfig(FMLPaths.CONFIGDIR.get());
         GunAttributeOverrides.loadConfig(FMLPaths.CONFIGDIR.get());
-        source.sendSuccess(() -> Component.literal("Reloaded attribute_pool.json, weapon_attributes.json, and gun_attribute_overrides.json")
+        StationMaterialRegistry.reloadConfig(FMLPaths.CONFIGDIR.get());
+        source.sendSuccess(() -> Component.literal("Reloaded attribute_pool.json, weapon_attributes.json, gun_attribute_overrides.json, and station_materials.json")
                 .withStyle(ChatFormatting.GREEN), true);
         return 1;
     }
