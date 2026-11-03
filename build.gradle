@@ -246,6 +246,9 @@ publishMods {
         displayName = "${mod_name} v${mod_version} (Forge)"
         minecraftVersions.add(minecraft_version)
         javaVersions.add(JavaVersion.VERSION_17)
+        // CurseForge は環境グループ (Client/Server) の指定を必須とする（未指定だと 400 で拒否される）
+        clientRequired = true
+        serverRequired = true
         modLoaders.add("forge")
         modLoaders.add("neoforge")
         requires("timeless-and-classics-zero")
