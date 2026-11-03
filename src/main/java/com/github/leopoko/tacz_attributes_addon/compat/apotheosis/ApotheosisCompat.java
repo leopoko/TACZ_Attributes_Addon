@@ -40,8 +40,8 @@ public class ApotheosisCompat {
             // Guard: only execute if Apotheosis classes are actually available
             Class.forName("dev.shadowsoffire.apotheosis.Apoth");
 
-            // 1. Register GUN LootCategory
-            GunLootCategory.register();
+            // 1. GUN LootCategory is registered from the mod constructor (RegisterEvent);
+            //    here we only verify that it made it into the registry.
             if (!GunLootCategory.isRegistered()) {
                 LOGGER.warn("Failed to register GUN LootCategory, Apotheosis integration partially disabled");
             }

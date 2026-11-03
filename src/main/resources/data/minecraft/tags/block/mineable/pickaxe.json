@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "tacz_attributes_addon:attribute_station",
+    "tacz_attributes_addon:enhancement_station"
+  ]
+}

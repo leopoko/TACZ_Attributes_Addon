@@ -24,6 +24,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
@@ -64,6 +65,13 @@ public class TaczAttributesAddon {
         ModMenuTypes.MENU_TYPES.register(modEventBus);
         CREATIVE_MODE_TABS.register(modEventBus);
         ModIngredientTypes.INGREDIENT_TYPES.register(modEventBus);
+
+        // Apotheosis GUN LootCategory must be registered before the registry freezes,
+        // otherwise its ID is missing from the startup snapshot and breaks registry sync
+        // on dedicated servers. GunLootCategory is only class-loaded when Apotheosis is present.
+        if (ModList.get().isLoaded("apotheosis")) {
+            com.github.leopoko.tacz_attributes_addon.compat.apotheosis.GunLootCategory.registerDeferred(modEventBus);
+        }
 
         // Register lifecycle events
         modEventBus.addListener(this::commonSetup);

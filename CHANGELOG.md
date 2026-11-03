@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.6+1.21.1]
+### バグ修正
+- Attribute Station / Enhancement Station をツルハシで正常に採掘できず、壊しても何もドロップしなかった問題を修正
+  - `requiresCorrectToolForDrops()` が指定されているのに `minecraft:mineable/pickaxe` タグとルートテーブルが無かったため、どのツールでも「不適切なツール」扱いになっていた
+  - ブロックタグとルートテーブルを追加
+- 専用サーバーで TACZ_Attributes_Addon を導入すると、銃以外も含めて Apotheosis のアフィックスがすべて機能しなくなる問題を修正（ApothicAttributes 2.9.1 + Apotheosis 環境で報告）
+  - GUN LootCategory を、レジストリ凍結後にリフレクションで凍結を解除して追加していた。この登録は NeoForge の起動時スナップショットに含まれないため、専用サーバー接続時のレジストリ同期でクライアントの LootCategory ID がずれ、カテゴリIDで同期されるアフィックスデータ全体が壊れていたと考えられる（シングルプレイではレジストリ同期が行われないため発生しない、という報告内容とも一致）
+  - `DeferredRegister` で `RegisterEvent` 時に正規登録するよう変更。`sortedCategories` へのリフレクション追加も不要になった（Apotheosis のベイクコールバックで自動的に含まれる）
+  - `enableApotheosis` 設定はカテゴリの判定時に参照するようにした（登録はコンフィグ読込前に行う必要があるため）
+
 ## [1.5]
 ### バグ修正
 - Split Modeでリコイル系属性（recoil, vertical_recoil, horizontal_recoil）の正負判定が逆になっていた問題を修正
