@@ -152,16 +152,20 @@ dependencies {
     implementation fg.deobf("curse.maven:tacz-attributes-1113285:7724282")
     // Apotheosis - optional dependency for gem/socket integration
     compileOnly fg.deobf("curse.maven:apotheosis-313970:6461960")
+    // Placebo is needed at compile time because GemMixin calls Gem#getBonus (Gem extends Placebo types)
+    compileOnly fg.deobf("curse.maven:placebo-283644:6274231")
 
-    //runtimeOnly fg.deobf("curse.maven:apothic-attributes-898963:5634071")
+    runtimeOnly fg.deobf("curse.maven:apothic-attributes-898963:5634071")
     runtimeOnly fg.deobf("curse.maven:patchouli-306770:7731017")
     runtimeOnly fg.deobf("curse.maven:placebo-283644:6274231")
-    //runtimeOnly fg.deobf("curse.maven:apotheosis-313970:6461960")
+    runtimeOnly fg.deobf("curse.maven:apotheosis-313970:6461960")
     runtimeOnly fg.deobf("curse.maven:cloth-config-348521:5729105")
     runtimeOnly fg.deobf("curse.maven:create-328085:7178761")
     runtimeOnly fg.deobf("curse.maven:prism-lib-638111:4650325")
     runtimeOnly fg.deobf("curse.maven:iceberg-520110:5838149")
     runtimeOnly fg.deobf("curse.maven:legendary-tooltips-532127:4662781")
+    runtimeOnly fg.deobf("curse.maven:mmmmmmmmmmmm-225738:6860192")
+    runtimeOnly fg.deobf("curse.maven:selene-499980:7664875")
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 
 }
@@ -243,6 +247,7 @@ publishMods {
         minecraftVersions.add(minecraft_version)
         javaVersions.add(JavaVersion.VERSION_17)
         modLoaders.add("forge")
+        modLoaders.add("neoforge")
         requires("timeless-and-classics-zero")
         requires("tacz-attributes")
         optional("apotheosis")

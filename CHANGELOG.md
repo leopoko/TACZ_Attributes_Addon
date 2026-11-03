@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.6]
+### バグ修正
+- Attribute Station / Enhancement Station をツルハシで正常に採掘できず、壊しても何もドロップしなかった問題を修正
+  - `requiresCorrectToolForDrops()` が指定されているのに `minecraft:mineable/pickaxe` タグとルートテーブルが無かったため、どのツールでも「不適切なツール」扱いになっていた
+  - ブロックタグとルートテーブルを追加
+- Apotheosis Modern Ragnarok: Zero（ApoMR）と併用すると、本MODのジェムかApoMRの銃用ジェム・アフィックスのどちらかが銃に効かなくなる問題を修正
+  - Apotheosis 1.20.1 の `LootCategory.forItem()` は登録順で最初に一致したカテゴリを返す。本MODの `gun` とApoMRの `full_auto` / `semi_auto` / `shotgun` / `bolt_action` はどちらも共通セットアップで登録されるため、起動ごとに順序が変わり、先に登録された側がすべての銃を取っていた
+  - `gun` カテゴリはApoMRのカテゴリに該当しない銃だけにマッチするよう変更（ApoMRの分類を優先）
+  - `GemMixin` を追加し、ApoMRの銃カテゴリでボーナスが定義されていないジェムは `gun` のボーナスを使うようにした（`Gem#getBonus` と、ソケット可否判定の `Gem#isValidIn` の両方）
+  - ApoMR 6.0.0 環境で、AK47 / M700 / M870 / Glock17 に本MODのジェム11種すべてとApoMRのジェムが装着可能なことを確認
+
 ## [1.5]
 ### バグ修正
 - Split Modeでリコイル系属性（recoil, vertical_recoil, horizontal_recoil）の正負判定が逆になっていた問題を修正

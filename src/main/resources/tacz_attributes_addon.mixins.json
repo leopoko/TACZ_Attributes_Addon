@@ -6,7 +6,8 @@
   "refmap": "tacz_attributes_addon.refmap.json",
   "mixins": [
     "GunRarityMixin",
-    "LootControllerMixin"
+    "LootControllerMixin",
+    "GemMixin"
   ],
   "client": [
   ],
